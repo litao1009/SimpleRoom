@@ -1,0 +1,695 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="BLL\BaseBLL.cpp">
+      <Filter>BLL</Filter>
+    </ClCompile>
+    <ClCompile Include="DAL\BaseDAL.cpp">
+      <Filter>DAL</Filter>
+    </ClCompile>
+    <ClCompile Include="BaseDialog.cpp">
+      <Filter>Dlg</Filter>
+    </ClCompile>
+    <ClCompile Include="ODL\BaseODL.cpp">
+      <Filter>ODL</Filter>
+    </ClCompile>
+    <ClCompile Include="ODL\CameraODL.cpp">
+      <Filter>ODL</Filter>
+    </ClCompile>
+    <ClCompile Include="BLL\DecorBLL.cpp">
+      <Filter>BLL</Filter>
+    </ClCompile>
+    <ClCompile Include="DAL\DecorDAL.cpp">
+      <Filter>DAL</Filter>
+    </ClCompile>
+    <ClCompile Include="DAL\DesignDAL.cpp">
+      <Filter>DAL</Filter>
+    </ClCompile>
+    <ClCompile Include="DAL\FloorDAL.cpp">
+      <Filter>DAL</Filter>
+    </ClCompile>
+    <ClCompile Include="DAL\ObjGroupDAL.cpp">
+      <Filter>DAL</Filter>
+    </ClCompile>
+    <ClCompile Include="DAL\OrderDAL.cpp">
+      <Filter>DAL</Filter>
+    </ClCompile>
+    <ClCompile Include="DAL\SkinUnitDAL.cpp">
+      <Filter>DAL</Filter>
+    </ClCompile>
+    <ClCompile Include="DAL\WallFaceDAL.cpp">
+      <Filter>DAL</Filter>
+    </ClCompile>
+    <ClCompile Include="DAL\WallDAL.cpp">
+      <Filter>DAL</Filter>
+    </ClCompile>
+    <ClCompile Include="DAL\WallFaceZoneDAL.cpp">
+      <Filter>DAL</Filter>
+    </ClCompile>
+    <ClCompile Include="ODL\DecorODL.cpp">
+      <Filter>ODL</Filter>
+    </ClCompile>
+    <ClCompile Include="ODL\DesignODL.cpp">
+      <Filter>ODL</Filter>
+    </ClCompile>
+    <ClCompile Include="ODL\FloorODL.cpp">
+      <Filter>ODL</Filter>
+    </ClCompile>
+    <ClCompile Include="ODL\FloorZoneODL.cpp">
+      <Filter>ODL</Filter>
+    </ClCompile>
+    <ClCompile Include="ODL\GuideLineODL.cpp">
+      <Filter>ODL</Filter>
+    </ClCompile>
+    <ClCompile Include="ODL\GuideRectODL.cpp">
+      <Filter>ODL</Filter>
+    </ClCompile>
+    <ClCompile Include="ODL\ObjGroupODL.cpp">
+      <Filter>ODL</Filter>
+    </ClCompile>
+    <ClCompile Include="ODL\SkinUnitODL.cpp">
+      <Filter>ODL</Filter>
+    </ClCompile>
+    <ClCompile Include="ODL\SkyODL.cpp">
+      <Filter>ODL</Filter>
+    </ClCompile>
+    <ClCompile Include="ODL\WallFaceODL.cpp">
+      <Filter>ODL</Filter>
+    </ClCompile>
+    <ClCompile Include="ODL\WallFaceZoneODL.cpp">
+      <Filter>ODL</Filter>
+    </ClCompile>
+    <ClCompile Include="ODL\WallODL.cpp">
+      <Filter>ODL</Filter>
+    </ClCompile>
+    <ClCompile Include="BLL\DesignBLL.cpp">
+      <Filter>BLL</Filter>
+    </ClCompile>
+    <ClCompile Include="BLL\FloorBLL.cpp">
+      <Filter>BLL</Filter>
+    </ClCompile>
+    <ClCompile Include="BLL\RoomStyleBLL.cpp">
+      <Filter>BLL</Filter>
+    </ClCompile>
+    <ClCompile Include="BLL\RoomStyleLineBLL.cpp">
+      <Filter>BLL</Filter>
+    </ClCompile>
+    <ClCompile Include="BLL\SkinUnitBLL.cpp">
+      <Filter>BLL</Filter>
+    </ClCompile>
+    <ClCompile Include="BLL\WallBLL.cpp">
+      <Filter>BLL</Filter>
+    </ClCompile>
+    <ClCompile Include="BLL\WallFaceBLL.cpp">
+      <Filter>BLL</Filter>
+    </ClCompile>
+    <ClCompile Include="BLL\WallFaceZoneBLL.cpp">
+      <Filter>BLL</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneNode\CDataSceneNode.cpp">
+      <Filter>SceneNode</Filter>
+    </ClCompile>
+    <ClCompile Include="irrEngine\irrEngine.cpp">
+      <Filter>IrrEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="DlgRoomStyle.cpp">
+      <Filter>Dlg</Filter>
+    </ClCompile>
+    <ClCompile Include="DlgSelect.cpp">
+      <Filter>Dlg</Filter>
+    </ClCompile>
+    <ClCompile Include="BLL\ObjGroupBLL.cpp">
+      <Filter>BLL</Filter>
+    </ClCompile>
+    <ClCompile Include="BLL\OrderBLL.cpp">
+      <Filter>BLL</Filter>
+    </ClCompile>
+    <ClCompile Include="ChildFrm.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="TopoShape\CTopoShape.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="CtrlFuncView.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="DragDataListCtrl.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="ShowMgr\DrawEngine.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="ShowMgr\DrawImageEngine.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="MainFrm.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="ShapeTool.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="SubViewer.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="TestDrawPic.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="TestDrawPicDoc.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="TestDrawPicView.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="irrEngine\SRenderContext.cpp">
+      <Filter>IrrEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="irrEngine\XEffect\CShaderPre.cpp">
+      <Filter>IrrEngine\XEffect</Filter>
+    </ClCompile>
+    <ClCompile Include="irrEngine\XEffect\EffectHandler.cpp">
+      <Filter>IrrEngine\XEffect</Filter>
+    </ClCompile>
+    <ClCompile Include="NumberTextCtrl.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="DlgShader.cpp">
+      <Filter>Dlg</Filter>
+    </ClCompile>
+    <ClCompile Include="irrEngine\XEffect\SSAORenderCallback.cpp">
+      <Filter>IrrEngine\XEffect</Filter>
+    </ClCompile>
+    <ClCompile Include="irrEngine\TestSSAORB.cpp">
+      <Filter>IrrEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="DAL\DBConnection.cpp">
+      <Filter>DAL</Filter>
+    </ClCompile>
+    <ClCompile Include="DAL\sqlite3.c">
+      <Filter>DAL</Filter>
+    </ClCompile>
+    <ClCompile Include="DAL\DataManager.cpp">
+      <Filter>DAL</Filter>
+    </ClCompile>
+    <ClCompile Include="ODL\ODLTools.cpp">
+      <Filter>ODL</Filter>
+    </ClCompile>
+    <ClCompile Include="ODL\HoleODL.cpp">
+      <Filter>ODL</Filter>
+    </ClCompile>
+    <ClCompile Include="ODL\WithHoleODL.cpp">
+      <Filter>ODL</Filter>
+    </ClCompile>
+    <ClCompile Include="DlgSizeInfo.cpp">
+      <Filter>Dlg</Filter>
+    </ClCompile>
+    <ClCompile Include="DlgZoneInfo.cpp">
+      <Filter>Dlg</Filter>
+    </ClCompile>
+    <ClCompile Include="DlgLayer.cpp">
+      <Filter>Dlg</Filter>
+    </ClCompile>
+    <ClCompile Include="DockLayer.cpp">
+      <Filter>Dlg</Filter>
+    </ClCompile>
+    <ClCompile Include="DAL\SkinDAL.cpp">
+      <Filter>DAL</Filter>
+    </ClCompile>
+    <ClCompile Include="DockProperty.cpp">
+      <Filter>Dlg</Filter>
+    </ClCompile>
+    <ClCompile Include="DockSelect.cpp">
+      <Filter>Dlg</Filter>
+    </ClCompile>
+    <ClCompile Include="irrEngine\IrrExtension\CameraFollowSplineAnimator.cpp">
+      <Filter>IrrEngine\IrrExtension</Filter>
+    </ClCompile>
+    <ClCompile Include="irrEngine\IrrExtension\OrthoCameraRH.cpp">
+      <Filter>IrrEngine\IrrExtension</Filter>
+    </ClCompile>
+    <ClCompile Include="irrEngine\IrrExtension\SimpleFPSAnimator.cpp">
+      <Filter>IrrEngine\IrrExtension</Filter>
+    </ClCompile>
+    <ClCompile Include="irrEngine\IrrExtension\SimpleMayaAnimator.cpp">
+      <Filter>IrrEngine\IrrExtension</Filter>
+    </ClCompile>
+    <ClCompile Include="irrEngine\IrrExtension\SimpleOrthoAnimator.cpp">
+      <Filter>IrrEngine\IrrExtension</Filter>
+    </ClCompile>
+    <ClCompile Include="irrEngine\MetaRenderController.cpp">
+      <Filter>IrrEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="irrEngine\Implemention\GUIController.cpp">
+      <Filter>IrrEngine\Implemention</Filter>
+    </ClCompile>
+    <ClCompile Include="irrEngine\IrrExtension\GUIImageButton.cpp">
+      <Filter>IrrEngine\IrrExtension</Filter>
+    </ClCompile>
+    <ClCompile Include="irrEngine\Implemention\CompositionController.cpp">
+      <Filter>IrrEngine\Implemention</Filter>
+    </ClCompile>
+    <ClCompile Include="irrEngine\Implemention\MayaCameraController.cpp">
+      <Filter>IrrEngine\Implemention</Filter>
+    </ClCompile>
+    <ClCompile Include="irrEngine\Implemention\ResizeController.cpp">
+      <Filter>IrrEngine\Implemention</Filter>
+    </ClCompile>
+    <ClCompile Include="irrEngine\Implemention\FlyCameraController.cpp">
+      <Filter>IrrEngine\Implemention</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="BLL\BaseBLL.h">
+      <Filter>BLL</Filter>
+    </ClInclude>
+    <ClInclude Include="DAL\BaseDAL.h">
+      <Filter>DAL</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseDialog.h">
+      <Filter>Dlg</Filter>
+    </ClInclude>
+    <ClInclude Include="ODL\BaseODL.h">
+      <Filter>ODL</Filter>
+    </ClInclude>
+    <ClInclude Include="ODL\BaseODLFwd.h">
+      <Filter>ODL</Filter>
+    </ClInclude>
+    <ClInclude Include="ODL\CameraODL.h">
+      <Filter>ODL</Filter>
+    </ClInclude>
+    <ClInclude Include="ODL\CameraODLFwd.h">
+      <Filter>ODL</Filter>
+    </ClInclude>
+    <ClInclude Include="BLL\DecorBLL.h">
+      <Filter>BLL</Filter>
+    </ClInclude>
+    <ClInclude Include="DAL\DecorDAL.h">
+      <Filter>DAL</Filter>
+    </ClInclude>
+    <ClInclude Include="DAL\DesignDAL.h">
+      <Filter>DAL</Filter>
+    </ClInclude>
+    <ClInclude Include="DAL\FloorDAL.h">
+      <Filter>DAL</Filter>
+    </ClInclude>
+    <ClInclude Include="DAL\ObjGroupDAL.h">
+      <Filter>DAL</Filter>
+    </ClInclude>
+    <ClInclude Include="DAL\OrderDAL.h">
+      <Filter>DAL</Filter>
+    </ClInclude>
+    <ClInclude Include="DAL\SkinUnitDAL.h">
+      <Filter>DAL</Filter>
+    </ClInclude>
+    <ClInclude Include="DAL\WallFaceDAL.h">
+      <Filter>DAL</Filter>
+    </ClInclude>
+    <ClInclude Include="DAL\WallDAL.h">
+      <Filter>DAL</Filter>
+    </ClInclude>
+    <ClInclude Include="DAL\WallFaceZoneDAL.h">
+      <Filter>DAL</Filter>
+    </ClInclude>
+    <ClInclude Include="ODL\DecorODL.h">
+      <Filter>ODL</Filter>
+    </ClInclude>
+    <ClInclude Include="ODL\DesignODL.h">
+      <Filter>ODL</Filter>
+    </ClInclude>
+    <ClInclude Include="ODL\FloorODL.h">
+      <Filter>ODL</Filter>
+    </ClInclude>
+    <ClInclude Include="ODL\FloorZoneODL.h">
+      <Filter>ODL</Filter>
+    </ClInclude>
+    <ClInclude Include="ODL\GuideLineODL.h">
+      <Filter>ODL</Filter>
+    </ClInclude>
+    <ClInclude Include="ODL\GuideRectODL.h">
+      <Filter>ODL</Filter>
+    </ClInclude>
+    <ClInclude Include="ODL\ObjGroupODL.h">
+      <Filter>ODL</Filter>
+    </ClInclude>
+    <ClInclude Include="ODL\SkinUnitODL.h">
+      <Filter>ODL</Filter>
+    </ClInclude>
+    <ClInclude Include="ODL\SkyODL.h">
+      <Filter>ODL</Filter>
+    </ClInclude>
+    <ClInclude Include="ODL\WallFaceODL.h">
+      <Filter>ODL</Filter>
+    </ClInclude>
+    <ClInclude Include="ODL\WallFaceZoneODL.h">
+      <Filter>ODL</Filter>
+    </ClInclude>
+    <ClInclude Include="ODL\WallODL.h">
+      <Filter>ODL</Filter>
+    </ClInclude>
+    <ClInclude Include="BLL\DesignBLL.h">
+      <Filter>BLL</Filter>
+    </ClInclude>
+    <ClInclude Include="BLL\FloorBLL.h">
+      <Filter>BLL</Filter>
+    </ClInclude>
+    <ClInclude Include="BLL\RoomStyleBLL.h">
+      <Filter>BLL</Filter>
+    </ClInclude>
+    <ClInclude Include="BLL\RoomStyleLineBLL.h">
+      <Filter>BLL</Filter>
+    </ClInclude>
+    <ClInclude Include="BLL\SkinUnitBLL.h">
+      <Filter>BLL</Filter>
+    </ClInclude>
+    <ClInclude Include="BLL\WallBLL.h">
+      <Filter>BLL</Filter>
+    </ClInclude>
+    <ClInclude Include="BLL\WallFaceBLL.h">
+      <Filter>BLL</Filter>
+    </ClInclude>
+    <ClInclude Include="BLL\WallFaceZoneBLL.h">
+      <Filter>BLL</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneNode\CDataSceneNode.h">
+      <Filter>SceneNode</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneNode\CDataSceneNodeFwd.h">
+      <Filter>SceneNode</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneNode\TSceneNode.h">
+      <Filter>SceneNode</Filter>
+    </ClInclude>
+    <ClInclude Include="irrEngine\irrEngine.h">
+      <Filter>IrrEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="irrEngine\irrEngineFwd.h">
+      <Filter>IrrEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="irrEngine\EShaderType.h">
+      <Filter>IrrEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="DlgRoomStyle.h">
+      <Filter>Dlg</Filter>
+    </ClInclude>
+    <ClInclude Include="DlgSelect.h">
+      <Filter>Dlg</Filter>
+    </ClInclude>
+    <ClInclude Include="BLL\ObjGroupBLL.h">
+      <Filter>BLL</Filter>
+    </ClInclude>
+    <ClInclude Include="BLL\OrderBLL.h">
+      <Filter>BLL</Filter>
+    </ClInclude>
+    <ClInclude Include="ChildFrm.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="TopoShape\CTopoShape.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="CtrlFuncView.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="DragDataListCtrl.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="ShowMgr\DrawEngine.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="ShowMgr\DrawImageEngine.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="MainFrm.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="irrEngine\MaterialRenderer.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="PublicDefine.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="ShapeTool.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="SubViewer.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="TestDrawPic.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="TestDrawPicDoc.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="TestDrawPicView.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="irrEngine\SRenderContext.h">
+      <Filter>IrrEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="irrEngine\SRenderContextFwd.h">
+      <Filter>IrrEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="irrEngine\XEffect\CScreenQuad.h">
+      <Filter>IrrEngine\XEffect</Filter>
+    </ClInclude>
+    <ClInclude Include="irrEngine\XEffect\CShaderPre.h">
+      <Filter>IrrEngine\XEffect</Filter>
+    </ClInclude>
+    <ClInclude Include="irrEngine\XEffect\EffectCB.h">
+      <Filter>IrrEngine\XEffect</Filter>
+    </ClInclude>
+    <ClInclude Include="irrEngine\XEffect\EffectHandler.h">
+      <Filter>IrrEngine\XEffect</Filter>
+    </ClInclude>
+    <ClInclude Include="irrEngine\XEffect\EffectShaders.h">
+      <Filter>IrrEngine\XEffect</Filter>
+    </ClInclude>
+    <ClInclude Include="irrEngine\XEffect\XEffects.h">
+      <Filter>IrrEngine\XEffect</Filter>
+    </ClInclude>
+    <ClInclude Include="NumberTextCtrl.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="DlgShader.h">
+      <Filter>Dlg</Filter>
+    </ClInclude>
+    <ClInclude Include="irrEngine\XEffect\IPostProcessingRenderCallback.h">
+      <Filter>IrrEngine\XEffect</Filter>
+    </ClInclude>
+    <ClInclude Include="irrEngine\XEffect\SSAORenderCallback.h">
+      <Filter>IrrEngine\XEffect</Filter>
+    </ClInclude>
+    <ClInclude Include="irrEngine\TestSSAORB.h">
+      <Filter>IrrEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="DAL\DBConnection.h">
+      <Filter>DAL</Filter>
+    </ClInclude>
+    <ClInclude Include="DAL\sqlite3.h">
+      <Filter>DAL</Filter>
+    </ClInclude>
+    <ClInclude Include="DAL\DataManager.h">
+      <Filter>DAL</Filter>
+    </ClInclude>
+    <ClInclude Include="ODL\ODLTools.h">
+      <Filter>ODL</Filter>
+    </ClInclude>
+    <ClInclude Include="ODL\HoleODL.h">
+      <Filter>ODL</Filter>
+    </ClInclude>
+    <ClInclude Include="ODL\WithHoleODL.h">
+      <Filter>ODL</Filter>
+    </ClInclude>
+    <ClInclude Include="DlgSizeInfo.h">
+      <Filter>Dlg</Filter>
+    </ClInclude>
+    <ClInclude Include="DlgZoneInfo.h">
+      <Filter>Dlg</Filter>
+    </ClInclude>
+    <ClInclude Include="DlgLayer.h">
+      <Filter>Dlg</Filter>
+    </ClInclude>
+    <ClInclude Include="DockLayer.h">
+      <Filter>Dlg</Filter>
+    </ClInclude>
+    <ClInclude Include="DAL\SkinDAL.h">
+      <Filter>DAL</Filter>
+    </ClInclude>
+    <ClInclude Include="DockProperty.h">
+      <Filter>Dlg</Filter>
+    </ClInclude>
+    <ClInclude Include="DockSelect.h">
+      <Filter>Dlg</Filter>
+    </ClInclude>
+    <ClInclude Include="irrEngine\IrrExtension\CameraFollowSplineAnimator.h">
+      <Filter>IrrEngine\IrrExtension</Filter>
+    </ClInclude>
+    <ClInclude Include="irrEngine\IrrExtension\OrthoCameraRH.h">
+      <Filter>IrrEngine\IrrExtension</Filter>
+    </ClInclude>
+    <ClInclude Include="irrEngine\IrrExtension\SimpleFPSAnimator.h">
+      <Filter>IrrEngine\IrrExtension</Filter>
+    </ClInclude>
+    <ClInclude Include="irrEngine\IrrExtension\SimpleMayaAnimator.h">
+      <Filter>IrrEngine\IrrExtension</Filter>
+    </ClInclude>
+    <ClInclude Include="irrEngine\IrrExtension\SimpleOrthoAnimator.h">
+      <Filter>IrrEngine\IrrExtension</Filter>
+    </ClInclude>
+    <ClInclude Include="irrEngine\IRenderController.h">
+      <Filter>IrrEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="irrEngine\MetaRenderController.h">
+      <Filter>IrrEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="irrEngine\Implemention\GUIController.h">
+      <Filter>IrrEngine\Implemention</Filter>
+    </ClInclude>
+    <ClInclude Include="irrEngine\IrrExtension\GUIImageButton.h">
+      <Filter>IrrEngine\IrrExtension</Filter>
+    </ClInclude>
+    <ClInclude Include="irrEngine\Implemention\CompositionController.h">
+      <Filter>IrrEngine\Implemention</Filter>
+    </ClInclude>
+    <ClInclude Include="irrEngine\Implemention\MayaCameraController.h">
+      <Filter>IrrEngine\Implemention</Filter>
+    </ClInclude>
+    <ClInclude Include="irrEngine\Implemention\EventUserType.h">
+      <Filter>IrrEngine\Implemention</Filter>
+    </ClInclude>
+    <ClInclude Include="irrEngine\Implemention\ResizeController.h">
+      <Filter>IrrEngine\Implemention</Filter>
+    </ClInclude>
+    <ClInclude Include="irrEngine\Implemention\FlyCameraController.h">
+      <Filter>IrrEngine\Implemention</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\buttons.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\bmp00001.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="Data\Resource\default.png">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\filelarge.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\filesmall.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\info.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\main.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\nav_large.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\nav_large_hc.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\pages.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\pages_hc.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\pages_small.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\pages_small_hc.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="Data\Resource\Skin\show.jpg">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\TestDrawPic.ico">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\TestDrawPicDoc.ico">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\Toolbar.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\toolbar1.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\Toolbar256.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\writelarge.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\writesmall.bmp">
+      <Filter>res</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\TestDrawPic.rc2">
+      <Filter>res</Filter>
+    </None>
+    <None Include="res\ribbon.mfcribbon-ms">
+      <Filter>src</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="BLL">
+      <UniqueIdentifier>{6cdf05bc-99e0-49e2-8752-a8bd94baf231}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ODL">
+      <UniqueIdentifier>{eb5719ee-c64e-47cd-b441-2a09db0931b4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DAL">
+      <UniqueIdentifier>{7a7a1e6a-c201-48fd-a434-f13180943927}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dlg">
+      <UniqueIdentifier>{37ab8372-3a8a-443b-8104-a1d1ed800d99}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="res">
+      <UniqueIdentifier>{d98f7524-7bf9-41e5-a302-00f53144e416}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SceneNode">
+      <UniqueIdentifier>{702f4024-1665-4b82-aa92-2e9fffa1e59c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="IrrEngine">
+      <UniqueIdentifier>{d455667c-cc88-4ed1-a30e-f16f6e0c30cb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{8b03542b-f7f2-4cfc-815d-0a105702ef3b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="IrrEngine\XEffect">
+      <UniqueIdentifier>{f9c92006-4883-47fc-a176-259885624298}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="IrrEngine\IrrExtension">
+      <UniqueIdentifier>{b6c0d666-cc56-4fa8-889e-606ab5f1b56a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="IrrEngine\Implemention">
+      <UniqueIdentifier>{394676ec-7277-4071-a270-d716c9b036a1}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="TestDrawPic.rc">
+      <Filter>res</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt">
+      <Filter>src</Filter>
+    </Text>
+  </ItemGroup>
+</Project>

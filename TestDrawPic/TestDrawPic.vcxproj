@@ -1,0 +1,361 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{0F820366-883D-453C-A50F-12A72DA855FB}</ProjectGuid>
+    <RootNamespace>TestDrawPic</RootNamespace>
+    <Keyword>MFCProj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v110</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <UseOfMfc>Dynamic</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v110_xp</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+    <UseOfMfc>Dynamic</UseOfMfc>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(SolutionDir)OCCTLib\inc;$(SolutionDir)externals/Irrlicht/source;$(SolutionDir)externals/Irrlicht/include;$(ProjectDir);$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)OCCTLib\libd;$(LibraryPath)</LibraryPath>
+    <GenerateManifest>false</GenerateManifest>
+    <IntDir>$(ObjDir)</IntDir>
+    <OutDir>$(SolutionDir)build\bin\$(ProjectName)\$(Configuration)$(Platform)\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <IntDir>$(ObjDir)</IntDir>
+    <OutDir>$(SolutionDir)build\bin\$(ProjectName)\$(Configuration)$(Platform)\</OutDir>
+    <IncludePath>$(SolutionDir)OCCTLib\inc;$(SolutionDir)externals/Irrlicht/source;$(SolutionDir)externals/Irrlicht/include;$(ProjectDir);$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)OCCTLib\libd;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;WNT;_IRR_STATIC_LIB_;SQLITE_HAS_CODEC=1;SQLITE_SECURE_DELETE;SQLITE_SOUNDEX;SQLITE_ENABLE_COLUMN_METADATA;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>TKOffset.lib;TKFillet.lib;TKFeat.lib;TKBool.lib;TKShHealing.lib;TKSTL.lib;TKXMesh.lib;TKHLR.lib;TKBO.lib;TKMesh.lib;TKPrim.lib;TKTopAlgo.lib;TKGeomAlgo.lib;TKBRep.lib;TKGeomBase.lib;TKG3d.lib;TKG2d.lib;TKAdvTools.lib;TKMath.lib;TKernel.lib;$(SolutionDir)build\lib\Irrlicht\Static lib - DebugWin32\Irrlicht.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <Midl>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+      <ValidateAllParameters>true</ValidateAllParameters>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </Midl>
+    <ResourceCompile>
+      <Culture>0x0804</Culture>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <PostBuildEvent>
+      <Command>copy /y $(SolutionDir)OCCTLib\bind\*.dll $(OutDir)
+copy /y $(SolutionDir)OCCTLib\bind\*.pdb $(OutDir)
+xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;WNT;_IRR_STATIC_LIB_;SQLITE_HAS_CODEC=1;SQLITE_SECURE_DELETE;SQLITE_SOUNDEX;SQLITE_ENABLE_COLUMN_METADATA;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>TKOffset.lib;TKFillet.lib;TKFeat.lib;TKBool.lib;TKShHealing.lib;TKSTL.lib;TKXMesh.lib;TKHLR.lib;TKBO.lib;TKMesh.lib;TKPrim.lib;TKTopAlgo.lib;TKGeomAlgo.lib;TKBRep.lib;TKGeomBase.lib;TKG3d.lib;TKG2d.lib;TKAdvTools.lib;TKMath.lib;TKernel.lib;$(SolutionDir)build\lib\Irrlicht\Static lib - ReleaseWin32\Irrlicht.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <Midl>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+      <ValidateAllParameters>true</ValidateAllParameters>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </Midl>
+    <ResourceCompile>
+      <Culture>0x0804</Culture>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <PostBuildEvent>
+      <Command>copy /y $(SolutionDir)OCCTLib\bin\*.dll $(OutDir)
+xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="BaseDialog.h" />
+    <ClInclude Include="BLL\FloorBLL.h" />
+    <ClInclude Include="CtrlFuncView.h" />
+    <ClInclude Include="DAL\DBConnection.h" />
+    <ClInclude Include="DAL\FloorDAL.h" />
+    <ClInclude Include="DAL\sqlite3.h" />
+    <ClInclude Include="DAL\DataManager.h" />
+    <ClInclude Include="DlgLayer.h" />
+    <ClInclude Include="DlgRoomStyle.h" />
+    <ClInclude Include="DlgShader.h" />
+    <ClInclude Include="DlgSizeInfo.h" />
+    <ClInclude Include="DlgZoneInfo.h" />
+    <ClInclude Include="DockLayer.h" />
+    <ClInclude Include="DockProperty.h" />
+    <ClInclude Include="DockSelect.h" />
+    <ClInclude Include="DragDataListCtrl.h" />
+    <ClInclude Include="irrEngine\Implemention\CompositionController.h" />
+    <ClInclude Include="irrEngine\Implemention\EventUserType.h" />
+    <ClInclude Include="irrEngine\Implemention\FlyCameraController.h" />
+    <ClInclude Include="irrEngine\Implemention\GUIController.h" />
+    <ClInclude Include="irrEngine\Implemention\MayaCameraController.h" />
+    <ClInclude Include="irrEngine\Implemention\ResizeController.h" />
+    <ClInclude Include="irrEngine\IrrExtension\CameraFollowSplineAnimator.h" />
+    <ClInclude Include="irrEngine\IrrExtension\GUIImageButton.h" />
+    <ClInclude Include="irrEngine\IrrExtension\OrthoCameraRH.h" />
+    <ClInclude Include="irrEngine\IrrExtension\SimpleFPSAnimator.h" />
+    <ClInclude Include="irrEngine\IrrExtension\SimpleMayaAnimator.h" />
+    <ClInclude Include="irrEngine\IrrExtension\SimpleOrthoAnimator.h" />
+    <ClInclude Include="irrEngine\MetaRenderController.h" />
+    <ClInclude Include="irrEngine\IRenderController.h" />
+    <ClInclude Include="irrEngine\TestSSAORB.h" />
+    <ClInclude Include="irrEngine\XEffect\CScreenQuad.h" />
+    <ClInclude Include="irrEngine\XEffect\CShaderPre.h" />
+    <ClInclude Include="irrEngine\XEffect\EffectCB.h" />
+    <ClInclude Include="irrEngine\XEffect\EffectHandler.h" />
+    <ClInclude Include="irrEngine\XEffect\EffectShaders.h" />
+    <ClInclude Include="irrEngine\XEffect\IPostProcessingRenderCallback.h" />
+    <ClInclude Include="irrEngine\XEffect\SSAORenderCallback.h" />
+    <ClInclude Include="irrEngine\XEffect\XEffects.h" />
+    <ClInclude Include="NumberTextCtrl.h" />
+    <ClInclude Include="ODL\BaseODLFwd.h" />
+    <ClInclude Include="ODL\CameraODL.h" />
+    <ClInclude Include="ODL\CameraODLFwd.h" />
+    <ClInclude Include="ODL\WithHoleODL.h" />
+    <ClInclude Include="ODL\HoleODL.h" />
+    <ClInclude Include="ODL\ODLTools.h" />
+    <ClInclude Include="SceneNode\TSceneNode.h" />
+    <ClInclude Include="DlgSelect.h" />
+    <ClInclude Include="ShowMgr\DrawImageEngine.h" />
+    <ClInclude Include="ODL\FloorZoneODL.h" />
+    <ClInclude Include="ODL\FloorODL.h" />
+    <ClInclude Include="ODL\DesignODL.h" />
+    <ClInclude Include="ODL\ObjGroupODL.h" />
+    <ClInclude Include="ODL\DecorODL.h" />
+    <ClInclude Include="ODL\GuideLineODL.h" />
+    <ClInclude Include="ODL\BaseODL.h" />
+    <ClInclude Include="DAL\BaseDAL.h" />
+    <ClInclude Include="BLL\BaseBLL.h" />
+    <ClInclude Include="ChildFrm.h" />
+    <ClInclude Include="BLL\DesignBLL.h" />
+    <ClInclude Include="BLL\DecorBLL.h" />
+    <ClInclude Include="DAL\DesignDAL.h" />
+    <ClInclude Include="DAL\DecorDAL.h" />
+    <ClInclude Include="BLL\RoomStyleBLL.h" />
+    <ClInclude Include="BLL\RoomStyleLineBLL.h" />
+    <ClInclude Include="SceneNode\CDataSceneNode.h" />
+    <ClInclude Include="ShowMgr\DrawEngine.h" />
+    <ClInclude Include="irrEngine\EShaderType.h" />
+    <ClInclude Include="irrEngine\irrEngine.h" />
+    <ClInclude Include="irrEngine\irrEngineFwd.h" />
+    <ClInclude Include="irrEngine\MaterialRenderer.h" />
+    <ClInclude Include="irrEngine\SRenderContext.h" />
+    <ClInclude Include="irrEngine\SRenderContextFwd.h" />
+    <ClInclude Include="MainFrm.h" />
+    <ClInclude Include="BLL\ObjGroupBLL.h" />
+    <ClInclude Include="DAL\ObjGroupDAL.h" />
+    <ClInclude Include="BLL\OrderBLL.h" />
+    <ClInclude Include="DAL\OrderDAL.h" />
+    <ClInclude Include="PublicDefine.h" />
+    <ClInclude Include="ODL\GuideRectODL.h" />
+    <ClInclude Include="Resource.h" />
+    <ClInclude Include="BLL\WallBLL.h" />
+    <ClInclude Include="BLL\WallFaceZoneBLL.h" />
+    <ClInclude Include="DAL\WallDAL.h" />
+    <ClInclude Include="DAL\WallFaceZoneDAL.h" />
+    <ClInclude Include="ODL\WallODL.h" />
+    <ClInclude Include="ODL\WallFaceZoneODL.h" />
+    <ClInclude Include="SceneNode\CDataSceneNodeFwd.h" />
+    <ClInclude Include="ShapeTool.h" />
+    <ClInclude Include="BLL\SkinUnitBLL.h" />
+    <ClInclude Include="DAL\SkinUnitDAL.h" />
+    <ClInclude Include="ODL\SkinUnitODL.h" />
+    <ClInclude Include="ODL\SkyODL.h" />
+    <ClInclude Include="DAL\SkinDAL.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="SubViewer.h" />
+    <ClInclude Include="targetver.h" />
+    <ClInclude Include="TestDrawPic.h" />
+    <ClInclude Include="TestDrawPicDoc.h" />
+    <ClInclude Include="TestDrawPicView.h" />
+    <ClInclude Include="TopoShape\CTopoShape.h" />
+    <ClInclude Include="BLL\WallFaceBLL.h" />
+    <ClInclude Include="ODL\WallFaceODL.h" />
+    <ClInclude Include="DAL\WallFaceDAL.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="BaseDialog.cpp" />
+    <ClCompile Include="BLL\FloorBLL.cpp" />
+    <ClCompile Include="CtrlFuncView.cpp" />
+    <ClCompile Include="DAL\DBConnection.cpp" />
+    <ClCompile Include="DAL\FloorDAL.cpp" />
+    <ClCompile Include="DAL\sqlite3.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="DAL\DataManager.cpp" />
+    <ClCompile Include="DlgLayer.cpp" />
+    <ClCompile Include="DlgRoomStyle.cpp" />
+    <ClCompile Include="DlgSelect.cpp" />
+    <ClCompile Include="DlgShader.cpp" />
+    <ClCompile Include="DlgSizeInfo.cpp" />
+    <ClCompile Include="DlgZoneInfo.cpp" />
+    <ClCompile Include="DockLayer.cpp" />
+    <ClCompile Include="DockProperty.cpp" />
+    <ClCompile Include="DockSelect.cpp" />
+    <ClCompile Include="irrEngine\Implemention\CompositionController.cpp" />
+    <ClCompile Include="irrEngine\Implemention\FlyCameraController.cpp" />
+    <ClCompile Include="irrEngine\Implemention\GUIController.cpp" />
+    <ClCompile Include="irrEngine\Implemention\MayaCameraController.cpp" />
+    <ClCompile Include="irrEngine\Implemention\ResizeController.cpp" />
+    <ClCompile Include="irrEngine\IrrExtension\CameraFollowSplineAnimator.cpp" />
+    <ClCompile Include="irrEngine\IrrExtension\GUIImageButton.cpp" />
+    <ClCompile Include="irrEngine\IrrExtension\OrthoCameraRH.cpp" />
+    <ClCompile Include="irrEngine\IrrExtension\SimpleFPSAnimator.cpp" />
+    <ClCompile Include="irrEngine\IrrExtension\SimpleMayaAnimator.cpp" />
+    <ClCompile Include="irrEngine\IrrExtension\SimpleOrthoAnimator.cpp" />
+    <ClCompile Include="irrEngine\MetaRenderController.cpp" />
+    <ClCompile Include="irrEngine\TestSSAORB.cpp" />
+    <ClCompile Include="irrEngine\XEffect\CShaderPre.cpp" />
+    <ClCompile Include="irrEngine\XEffect\EffectHandler.cpp" />
+    <ClCompile Include="irrEngine\XEffect\SSAORenderCallback.cpp" />
+    <ClCompile Include="NumberTextCtrl.cpp" />
+    <ClCompile Include="ODL\CameraODL.cpp" />
+    <ClCompile Include="DragDataListCtrl.cpp" />
+    <ClCompile Include="ODL\HoleODL.cpp" />
+    <ClCompile Include="ODL\ODLTools.cpp" />
+    <ClCompile Include="ODL\WithHoleODL.cpp" />
+    <ClCompile Include="ShowMgr\DrawImageEngine.cpp" />
+    <ClCompile Include="ODL\FloorZoneODL.cpp" />
+    <ClCompile Include="ODL\FloorODL.cpp" />
+    <ClCompile Include="ODL\DesignODL.cpp" />
+    <ClCompile Include="ODL\ObjGroupODL.cpp" />
+    <ClCompile Include="ODL\DecorODL.cpp" />
+    <ClCompile Include="ODL\GuideLineODL.cpp" />
+    <ClCompile Include="ODL\BaseODL.cpp" />
+    <ClCompile Include="DAL\BaseDAL.cpp" />
+    <ClCompile Include="BLL\BaseBLL.cpp" />
+    <ClCompile Include="ChildFrm.cpp" />
+    <ClCompile Include="BLL\DesignBLL.cpp" />
+    <ClCompile Include="BLL\DecorBLL.cpp" />
+    <ClCompile Include="DAL\DesignDAL.cpp" />
+    <ClCompile Include="DAL\DecorDAL.cpp" />
+    <ClCompile Include="BLL\RoomStyleBLL.cpp" />
+    <ClCompile Include="BLL\RoomStyleLineBLL.cpp" />
+    <ClCompile Include="ShowMgr\DrawEngine.cpp" />
+    <ClCompile Include="irrEngine\irrEngine.cpp" />
+    <ClCompile Include="irrEngine\SRenderContext.cpp" />
+    <ClCompile Include="MainFrm.cpp" />
+    <ClCompile Include="BLL\ObjGroupBLL.cpp" />
+    <ClCompile Include="DAL\ObjGroupDAL.cpp" />
+    <ClCompile Include="BLL\OrderBLL.cpp" />
+    <ClCompile Include="BLL\WallBLL.cpp" />
+    <ClCompile Include="BLL\WallFaceZoneBLL.cpp" />
+    <ClCompile Include="DAL\OrderDAL.cpp" />
+    <ClCompile Include="DAL\WallDAL.cpp" />
+    <ClCompile Include="DAL\WallFaceZoneDAL.cpp" />
+    <ClCompile Include="ODL\GuideRectODL.cpp" />
+    <ClCompile Include="ODL\WallODL.cpp" />
+    <ClCompile Include="ODL\WallFaceZoneODL.cpp" />
+    <ClCompile Include="SceneNode\CDataSceneNode.cpp" />
+    <ClCompile Include="ShapeTool.cpp" />
+    <ClCompile Include="BLL\SkinUnitBLL.cpp" />
+    <ClCompile Include="DAL\SkinUnitDAL.cpp" />
+    <ClCompile Include="ODL\SkinUnitODL.cpp" />
+    <ClCompile Include="ODL\SkyODL.cpp" />
+    <ClCompile Include="DAL\SkinDAL.cpp" />
+    <ClCompile Include="stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="SubViewer.cpp" />
+    <ClCompile Include="TestDrawPic.cpp" />
+    <ClCompile Include="TestDrawPicDoc.cpp" />
+    <ClCompile Include="TestDrawPicView.cpp" />
+    <ClCompile Include="TopoShape\CTopoShape.cpp" />
+    <ClCompile Include="BLL\WallFaceBLL.cpp" />
+    <ClCompile Include="ODL\WallFaceODL.cpp" />
+    <ClCompile Include="DAL\WallFaceDAL.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="TestDrawPic.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Data\Resource\default.png" />
+    <Image Include="Data\Resource\Skin\show.jpg" />
+    <Image Include="res\bmp00001.bmp" />
+    <Image Include="res\buttons.bmp" />
+    <Image Include="res\filelarge.bmp" />
+    <Image Include="res\filesmall.bmp" />
+    <Image Include="res\info.bmp" />
+    <Image Include="res\main.bmp" />
+    <Image Include="res\nav_large.bmp" />
+    <Image Include="res\nav_large_hc.bmp" />
+    <Image Include="res\pages.bmp" />
+    <Image Include="res\pages_hc.bmp" />
+    <Image Include="res\pages_small.bmp" />
+    <Image Include="res\pages_small_hc.bmp" />
+    <Image Include="res\TestDrawPic.ico" />
+    <Image Include="res\TestDrawPicDoc.ico" />
+    <Image Include="res\Toolbar.bmp" />
+    <Image Include="res\toolbar1.bmp" />
+    <Image Include="res\Toolbar256.bmp" />
+    <Image Include="res\writelarge.bmp" />
+    <Image Include="res\writesmall.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\ribbon.mfcribbon-ms" />
+    <None Include="res\TestDrawPic.rc2" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties RESOURCE_FILE="TestDrawPic.rc" />
+    </VisualStudio>
+  </ProjectExtensions>
+</Project>
