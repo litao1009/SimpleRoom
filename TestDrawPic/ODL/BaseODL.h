@@ -2,16 +2,19 @@
 #define BaseODL_h__
 
 #pragma once
-#include "..\\PublicDefine.h"
+
+#include "PublicDefine.h"
+#include "ODLTools.h"
+#include "BaseODLFwd.h"
+
+#include "BLL/BaseBLL.h"
+
+#include "SceneNode/TSceneNode.h"
+#include "TopoShape/CTopoShape.h"
+
 #include <vector>
 #include <gdiplus.h>
 #include <math.h>
-
-#include "ODLTools.h"
-#include "BaseODLFwd.h"
-#include "BLL/BaseBLL.h"
-#include "SceneNode/TSceneNode.h"
-#include "TopoShape/CTopoShape.h"
 
 #include "Geom_Curve.hxx"
 #include "gp_pnt.hxx"

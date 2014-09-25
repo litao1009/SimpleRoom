@@ -259,6 +259,21 @@
     <ClCompile Include="irrEngine\Implemention\FlyCameraController.cpp">
       <Filter>IrrEngine\Implemention</Filter>
     </ClCompile>
+    <ClCompile Include="irrEngine\IrrExtension\SceneNode2D.cpp">
+      <Filter>IrrEngine\IrrExtension</Filter>
+    </ClCompile>
+    <ClCompile Include="irrEngine\IrrExtension\BaseSceneNode.cpp">
+      <Filter>IrrEngine\IrrExtension</Filter>
+    </ClCompile>
+    <ClCompile Include="irrEngine\IrrExtension\SceneNode3D.cpp">
+      <Filter>IrrEngine\IrrExtension</Filter>
+    </ClCompile>
+    <ClCompile Include="irrEngine\IrrExtension\CombineSceneNode.cpp">
+      <Filter>IrrEngine\IrrExtension</Filter>
+    </ClCompile>
+    <ClCompile Include="irrEngine\Implemention\DrawingController.cpp">
+      <Filter>IrrEngine\Implemention</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BLL\BaseBLL.h">
@@ -573,6 +588,24 @@
     <ClInclude Include="irrEngine\Implemention\FlyCameraController.h">
       <Filter>IrrEngine\Implemention</Filter>
     </ClInclude>
+    <ClInclude Include="irrEngine\IrrExtension\SceneNode2D.h">
+      <Filter>IrrEngine\IrrExtension</Filter>
+    </ClInclude>
+    <ClInclude Include="irrEngine\IrrExtension\SceneNode3D.h">
+      <Filter>IrrEngine\IrrExtension</Filter>
+    </ClInclude>
+    <ClInclude Include="irrEngine\IrrExtension\BaseSceneNode.h">
+      <Filter>IrrEngine\IrrExtension</Filter>
+    </ClInclude>
+    <ClInclude Include="irrEngine\IrrExtension\CombineSceneNode.h">
+      <Filter>IrrEngine\IrrExtension</Filter>
+    </ClInclude>
+    <ClInclude Include="irrEngine\Implemention\DrawingController.h">
+      <Filter>IrrEngine\Implemention</Filter>
+    </ClInclude>
+    <ClInclude Include="irrEngine\Implemention\2D\DrawingLineCtrller.h">
+      <Filter>IrrEngine\Implemention\2D</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\buttons.bmp">
@@ -680,6 +713,9 @@
     </Filter>
     <Filter Include="IrrEngine\Implemention">
       <UniqueIdentifier>{394676ec-7277-4071-a270-d716c9b036a1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="IrrEngine\Implemention\2D">
+      <UniqueIdentifier>{dbc41202-3f09-48fd-9c99-b5c777984c6e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
