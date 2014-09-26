@@ -17,6 +17,7 @@
 #include "irrEngine/irrEngine.h"
 #include "MainFrm.h"
 #include "TestDrawPicView.h"
+#include "DAL/BaseDAL.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -132,36 +133,7 @@ BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
 
 BOOL CMainFrame::CreateDockableDlg(int nInitialWidth)
 {
-	//左边选择框
-	if (!m_wndSelect.Create(_T("选择产品"), this, CRect(0, 0, 200, 700), TRUE, IDR_DOCK_SELECT, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | CBRS_LEFT | CBRS_FLOAT_MULTI, AFX_CBRS_REGULAR_TABS, AFX_DEFAULT_DOCKING_PANE_STYLE & ~AFX_CBRS_FLOAT & ~AFX_CBRS_CLOSE))
-	{
-		TRACE0("未能创建“选择产品”窗口\n");
-		return FALSE; // 未能创建
-	}
-	m_wndSelect.EnableDocking(CBRS_ALIGN_LEFT);
-	this->AddPane(&m_wndSelect);
-	ShowPane(&m_wndSelect,TRUE,FALSE, TRUE);
-
-	if (!m_wndProperty.Create(_T("属性"), this, CRect(0, 0, 200, 700), TRUE, IDR_DOCK_PROPERTY, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | CBRS_RIGHT | CBRS_FLOAT_MULTI))
-	{
-		TRACE0("未能创建“属性”窗口\n");
-		return FALSE; // 未能创建
-	}
-	m_wndProperty.EnableDocking( CBRS_ALIGN_ANY);
-
-	DockPane(&m_wndProperty);
-	ShowPane(&m_wndProperty,TRUE,FALSE, TRUE);
-
-
-	if (!m_wndLayer.Create(_T("房间结构"), this, CRect(0, 0, 200, 700), TRUE, IDR_DOCK_LAYER, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | CBRS_RIGHT | CBRS_FLOAT_MULTI))
-	{
-		TRACE0("未能创建“房间结构”窗口\n");
-		return FALSE; // 未能创建
-	}
-	m_wndLayer.EnableDocking( CBRS_ALIGN_ANY);
-
-	DockPane(&m_wndLayer);
-	ShowPane(&m_wndLayer,TRUE,FALSE, TRUE);
+	
 	return TRUE;
 }
 

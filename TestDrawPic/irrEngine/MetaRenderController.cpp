@@ -2,11 +2,67 @@
 
 #include "MetaRenderController.h"
 
+#ifdef DBG_EVENT
+#include "Irrlicht/os.h"
+#endif
+
 bool MetaRenderController::OnEvent( const irr::SEvent& event )
+{
+	return OnGUIEvent(event);
+}
+
+bool MetaRenderController::OnPreEvent( const irr::SEvent& event )
+{
+#ifdef DBG_EVENT
+	irr::os::Printer::print("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+#endif // DBG_EVENT	
+
+	for ( auto& controller : ControllerList_ )
+	{
+
+#ifdef DBG_EVENT
+		std::string str = "OnPreEvent:";
+		str += controller->GetName();
+		irr::os::Printer::print(str.c_str());
+#endif // DBG_EVENT	
+
+		if ( controller->OnPreEvent(event) )
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool MetaRenderController::OnPostEvent( const irr::SEvent& event )
 {
 	for ( auto& controller : ControllerList_ )
 	{
-		if ( controller->OnEvent(event) )
+#ifdef DBG_EVENT
+		std::string str = "OnPostEvent:";
+		str += controller->GetName();
+		irr::os::Printer::print(str.c_str());
+#endif
+		if ( controller->OnPostEvent(event) )
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool MetaRenderController::OnGUIEvent( const irr::SEvent& event )
+{
+	for ( auto& controller : ControllerList_ )
+	{
+#ifdef DBG_EVENT
+		std::string str = "OnGUIEvent:";
+		str += controller->GetName();
+		irr::os::Printer::print(str.c_str());
+#endif
+		if ( controller->OnGUIEvent(event) )
 		{
 			return true;
 		}
@@ -67,9 +123,10 @@ void MetaRenderController::PushController( IRenderControllerSPtr controller )
 {
 	if ( controller )
 	{
-		controller->PreInit(RC_.lock());
+		auto rc = GetRenderContextSPtr();
+		controller->PreInit(rc);
 		ControllerList_.push_back(controller);
 		controller->SetParent(shared_from_this());
-		controller->PostInit(RC_.lock());
+		controller->PostInit(rc);
 	}
 }

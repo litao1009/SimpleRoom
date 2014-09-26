@@ -35,6 +35,8 @@ GUIController::GUIController()
 	TopCameraActive_ = true;
 	MayaCameraActive_ = false;
 	FPSCameraActive_ = false;
+
+	SetName("GUIController");
 }
 
 
@@ -103,13 +105,8 @@ void GUIController::PostInit( SRenderContextSPtr sprc )
 	}
 }
 
-bool GUIController::OnEvent( const irr::SEvent& event )
+bool GUIController::OnPreEvent( const irr::SEvent& event )
 {
-	if ( !IsEnable() )
-	{
-		return false;
-	}
-
 	if ( ResizeImage_->GetState() == CGUIImageButton::EIS_PRESSED )
 	{
 		if ( event.EventType == EET_MOUSE_INPUT_EVENT && event.MouseInput.Event == EMIE_MOUSE_MOVED)
@@ -117,11 +114,31 @@ bool GUIController::OnEvent( const irr::SEvent& event )
 			SEvent evt;
 			evt.EventType = EET_USER_EVENT;
 			evt.UserEvent.UserData1 = EUT_RESIZE_CHANGE_DURING;
-			auto spParent = GetParent().lock();
+			auto spParent = GetParentSPtr();
 			assert(spParent);
-			spParent->OnEvent(evt);
+			spParent->OnPreEvent(evt);
+
+			return true;
 		}
 	}
+
+	auto sprc = GetRenderContextSPtr();
+	if ( sprc )
+	{
+		sprc->CursorControl_->setActiveIcon(Icon_);
+	}
+
+	return false;
+}
+
+bool GUIController::OnGUIEvent( const irr::SEvent& event )
+{
+	if ( !IsEnable() )
+	{
+		return false;
+	}
+
+	auto ret = false;
 
 	if ( event.EventType == EET_GUI_EVENT )
 	{
@@ -143,11 +160,13 @@ bool GUIController::OnEvent( const irr::SEvent& event )
 				SEvent evt;
 				evt.EventType = EET_USER_EVENT;
 				evt.UserEvent.UserData1 = EUT_RESIZE_CHANGE_BEGIN;
-				auto spParent = GetParent().lock();
+				auto spParent = GetParentSPtr();
 				assert(spParent);
-				spParent->OnEvent(evt);
+				spParent->OnPreEvent(evt);
 
 				Icon_ = ECI_SIZENESW;
+
+				ret = true;
 			}
 
 			if ( event.GUIEvent.EventType == (EGUI_EVENT_TYPE)CGUIImageButton::EIS_LEFTUP )
@@ -155,18 +174,20 @@ bool GUIController::OnEvent( const irr::SEvent& event )
 				SEvent evt;
 				evt.EventType = EET_USER_EVENT;
 				evt.UserEvent.UserData1 = EUT_RESIZE_CHANGE_END;
-				auto spParent = GetParent().lock();
+				auto spParent = GetParentSPtr();
 				assert(spParent);
-				spParent->OnEvent(evt);
+				spParent->OnPreEvent(evt);
 
 				Icon_ = ECI_SIZENESW;
+
+				ret = true;
 			}
 		}
 
 		//Mininum
 		if ( event.GUIEvent.Caller == MinimumImage_.get() )
 		{
-			if ( event.GUIEvent.EventType == (EGUI_EVENT_TYPE)CGUIImageButton::EIS_LEFTUP )
+			if ( event.GUIEvent.EventType == (EGUI_EVENT_TYPE)CGUIImageButton::EIS_PRESSED )
 			{
 				Minimum_ = true;
 				CameraRestore_ = CameraVisible_;
@@ -175,16 +196,18 @@ bool GUIController::OnEvent( const irr::SEvent& event )
 				SEvent evt;
 				evt.EventType = EET_USER_EVENT;
 				evt.UserEvent.UserData1 = EUT_RESIZE_MINIMUM;
-				auto spParent = GetParent().lock();
+				auto spParent = GetParentSPtr();
 				assert(spParent);
-				spParent->OnEvent(evt);
+				spParent->OnPreEvent(evt);
+
+				ret = true;
 			}
 		}
 
 		//Restore
 		if ( event.GUIEvent.Caller == RestoreImage_.get() )
 		{
-			if ( event.GUIEvent.EventType == (EGUI_EVENT_TYPE)CGUIImageButton::EIS_LEFTUP )
+			if ( event.GUIEvent.EventType == (EGUI_EVENT_TYPE)CGUIImageButton::EIS_PRESSED )
 			{
 				Minimum_ = false;
 				CameraVisible_ = CameraRestore_;
@@ -192,26 +215,30 @@ bool GUIController::OnEvent( const irr::SEvent& event )
 				SEvent evt;
 				evt.EventType = EET_USER_EVENT;
 				evt.UserEvent.UserData1 = EUT_RESIZE_RESTORE;
-				auto spParent = GetParent().lock();
+				auto spParent = GetParentWPtr().lock();
 				assert(spParent);
-				spParent->OnEvent(evt);
+				spParent->OnPreEvent(evt);
+
+				ret = true;
 			}
 		}
 
 		//CameraVisible
 		if ( event.GUIEvent.Caller == this->ShowCameraImage_.get() )
 		{
-			if ( event.GUIEvent.EventType == (EGUI_EVENT_TYPE)CGUIImageButton::EIS_LEFTUP )
+			if ( event.GUIEvent.EventType == (EGUI_EVENT_TYPE)CGUIImageButton::EIS_PRESSED )
 			{
 				CameraVisible_ = !CameraVisible_;
 				CameraRestore_ = CameraVisible_;
+
+				ret = true;
 			}
 		}
 
-		//Camera TODO
+		//Camera
 		if ( event.GUIEvent.Caller == this->TopCameraImage_.get() )
 		{
-			if ( event.GUIEvent.EventType == (EGUI_EVENT_TYPE)CGUIImageButton::EIS_LEFTUP )
+			if ( event.GUIEvent.EventType == (EGUI_EVENT_TYPE)CGUIImageButton::EIS_PRESSED )
 			{
 				TopCameraImage_->setImage(TopActiveTex_.get());
 				FPSCameraImage_->setImage(FPSDActiveTex_.get());
@@ -219,12 +246,14 @@ bool GUIController::OnEvent( const irr::SEvent& event )
 				TopCameraActive_ = true;
 				MayaCameraActive_ = false;
 				FPSCameraActive_ = false;
+
+				ret = true;
 			}
 		}
 
 		if ( event.GUIEvent.Caller == this->FPSCameraImage_.get() )
 		{
-			if ( event.GUIEvent.EventType == (EGUI_EVENT_TYPE)CGUIImageButton::EIS_LEFTUP )
+			if ( event.GUIEvent.EventType == (EGUI_EVENT_TYPE)CGUIImageButton::EIS_PRESSED )
 			{
 				TopCameraImage_->setImage(TopDActiveTex_.get());
 				FPSCameraImage_->setImage(FPSActiveTex_.get());
@@ -232,12 +261,14 @@ bool GUIController::OnEvent( const irr::SEvent& event )
 				TopCameraActive_ = false;
 				MayaCameraActive_ = false;
 				FPSCameraActive_ = true;
+
+				ret = true;
 			}
 		}
 
 		if ( event.GUIEvent.Caller == this->MayaCameraImage_.get() )
 		{
-			if ( event.GUIEvent.EventType == (EGUI_EVENT_TYPE)CGUIImageButton::EIS_LEFTUP )
+			if ( event.GUIEvent.EventType == (EGUI_EVENT_TYPE)CGUIImageButton::EIS_PRESSED )
 			{
 				TopCameraImage_->setImage(TopDActiveTex_.get());
 				FPSCameraImage_->setImage(FPSDActiveTex_.get());
@@ -245,17 +276,19 @@ bool GUIController::OnEvent( const irr::SEvent& event )
 				TopCameraActive_ = false;
 				MayaCameraActive_ = true;
 				FPSCameraActive_ = false;
+
+				ret = true;
 			}
 		}
 	}
 
-	auto sprc = RC_.lock();
+	auto sprc = GetRenderContextSPtr();
 	if ( sprc )
 	{
 		sprc->CursorControl_->setActiveIcon(Icon_);
 	}
 
-	return false;
+	return ret;
 }
 
 void GUIController::OnResize(const SRenderContext& rc)

@@ -159,11 +159,16 @@ bool SRenderContext::PostEvent( irr::SEvent& evt )
 {
 	bool absorbed = false;
 
-	absorbed = ImpUPtr_->RenderController_->OnEvent(evt);
+	absorbed = ImpUPtr_->RenderController_->OnPreEvent(evt);
 
 	if (!absorbed)
 	{
 		absorbed = GUIEnv_->postEventFromUser(evt);
+	}
+
+	if ( !absorbed )
+	{
+		absorbed = ImpUPtr_->RenderController_->OnPostEvent(evt);
 	}
 
 	if (!absorbed)

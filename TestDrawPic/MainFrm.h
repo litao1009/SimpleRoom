@@ -15,9 +15,6 @@
 #pragma once
 
 #include "Resource.h"
-#include "DockSelect.h"
-#include "DockProperty.h"
-#include "DockLayer.h"
 
 class CMainFrame : public CMDIFrameWndEx
 {
@@ -34,8 +31,6 @@ public:
 	BOOL CreateDockableDlg(int nInitialWidth);
 	BOOL CreateCaptionBar();
 
-public:
-	void RefreshLayer(CView* pActiveView, CBaseODLSPtr spRoot){m_wndLayer.Refresh(pActiveView, spRoot);};
 	
 // 重写
 public:
@@ -54,9 +49,7 @@ protected:  // 控件条嵌入成员
 	CMFCRibbonApplicationButton m_MainButton;
 	CMFCToolBarImages m_PanelImages;
 	CMFCRibbonStatusBar  m_wndStatusBar;
-	CDockSelect m_wndSelect;
-	CDockProperty m_wndProperty;
-	CDockLayer m_wndLayer;
+
 	CMFCCaptionBar    m_wndCaptionBar;
 
 // 生成的消息映射函数

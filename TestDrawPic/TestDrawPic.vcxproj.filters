@@ -7,13 +7,7 @@
     <ClCompile Include="DAL\BaseDAL.cpp">
       <Filter>DAL</Filter>
     </ClCompile>
-    <ClCompile Include="BaseDialog.cpp">
-      <Filter>Dlg</Filter>
-    </ClCompile>
     <ClCompile Include="ODL\BaseODL.cpp">
-      <Filter>ODL</Filter>
-    </ClCompile>
-    <ClCompile Include="ODL\CameraODL.cpp">
       <Filter>ODL</Filter>
     </ClCompile>
     <ClCompile Include="BLL\DecorBLL.cpp">
@@ -46,42 +40,6 @@
     <ClCompile Include="DAL\WallFaceZoneDAL.cpp">
       <Filter>DAL</Filter>
     </ClCompile>
-    <ClCompile Include="ODL\DecorODL.cpp">
-      <Filter>ODL</Filter>
-    </ClCompile>
-    <ClCompile Include="ODL\DesignODL.cpp">
-      <Filter>ODL</Filter>
-    </ClCompile>
-    <ClCompile Include="ODL\FloorODL.cpp">
-      <Filter>ODL</Filter>
-    </ClCompile>
-    <ClCompile Include="ODL\FloorZoneODL.cpp">
-      <Filter>ODL</Filter>
-    </ClCompile>
-    <ClCompile Include="ODL\GuideLineODL.cpp">
-      <Filter>ODL</Filter>
-    </ClCompile>
-    <ClCompile Include="ODL\GuideRectODL.cpp">
-      <Filter>ODL</Filter>
-    </ClCompile>
-    <ClCompile Include="ODL\ObjGroupODL.cpp">
-      <Filter>ODL</Filter>
-    </ClCompile>
-    <ClCompile Include="ODL\SkinUnitODL.cpp">
-      <Filter>ODL</Filter>
-    </ClCompile>
-    <ClCompile Include="ODL\SkyODL.cpp">
-      <Filter>ODL</Filter>
-    </ClCompile>
-    <ClCompile Include="ODL\WallFaceODL.cpp">
-      <Filter>ODL</Filter>
-    </ClCompile>
-    <ClCompile Include="ODL\WallFaceZoneODL.cpp">
-      <Filter>ODL</Filter>
-    </ClCompile>
-    <ClCompile Include="ODL\WallODL.cpp">
-      <Filter>ODL</Filter>
-    </ClCompile>
     <ClCompile Include="BLL\DesignBLL.cpp">
       <Filter>BLL</Filter>
     </ClCompile>
@@ -106,17 +64,8 @@
     <ClCompile Include="BLL\WallFaceZoneBLL.cpp">
       <Filter>BLL</Filter>
     </ClCompile>
-    <ClCompile Include="SceneNode\CDataSceneNode.cpp">
-      <Filter>SceneNode</Filter>
-    </ClCompile>
     <ClCompile Include="irrEngine\irrEngine.cpp">
       <Filter>IrrEngine</Filter>
-    </ClCompile>
-    <ClCompile Include="DlgRoomStyle.cpp">
-      <Filter>Dlg</Filter>
-    </ClCompile>
-    <ClCompile Include="DlgSelect.cpp">
-      <Filter>Dlg</Filter>
     </ClCompile>
     <ClCompile Include="BLL\ObjGroupBLL.cpp">
       <Filter>BLL</Filter>
@@ -136,16 +85,7 @@
     <ClCompile Include="DragDataListCtrl.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="ShowMgr\DrawEngine.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="ShowMgr\DrawImageEngine.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="MainFrm.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="ShapeTool.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="stdafx.cpp">
@@ -175,9 +115,6 @@
     <ClCompile Include="NumberTextCtrl.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="DlgShader.cpp">
-      <Filter>Dlg</Filter>
-    </ClCompile>
     <ClCompile Include="irrEngine\XEffect\SSAORenderCallback.cpp">
       <Filter>IrrEngine\XEffect</Filter>
     </ClCompile>
@@ -193,35 +130,8 @@
     <ClCompile Include="DAL\DataManager.cpp">
       <Filter>DAL</Filter>
     </ClCompile>
-    <ClCompile Include="ODL\ODLTools.cpp">
-      <Filter>ODL</Filter>
-    </ClCompile>
-    <ClCompile Include="ODL\HoleODL.cpp">
-      <Filter>ODL</Filter>
-    </ClCompile>
-    <ClCompile Include="ODL\WithHoleODL.cpp">
-      <Filter>ODL</Filter>
-    </ClCompile>
-    <ClCompile Include="DlgSizeInfo.cpp">
-      <Filter>Dlg</Filter>
-    </ClCompile>
-    <ClCompile Include="DlgZoneInfo.cpp">
-      <Filter>Dlg</Filter>
-    </ClCompile>
-    <ClCompile Include="DlgLayer.cpp">
-      <Filter>Dlg</Filter>
-    </ClCompile>
-    <ClCompile Include="DockLayer.cpp">
-      <Filter>Dlg</Filter>
-    </ClCompile>
     <ClCompile Include="DAL\SkinDAL.cpp">
       <Filter>DAL</Filter>
-    </ClCompile>
-    <ClCompile Include="DockProperty.cpp">
-      <Filter>Dlg</Filter>
-    </ClCompile>
-    <ClCompile Include="DockSelect.cpp">
-      <Filter>Dlg</Filter>
     </ClCompile>
     <ClCompile Include="irrEngine\IrrExtension\CameraFollowSplineAnimator.cpp">
       <Filter>IrrEngine\IrrExtension</Filter>
@@ -274,6 +184,18 @@
     <ClCompile Include="irrEngine\Implemention\DrawingController.cpp">
       <Filter>IrrEngine\Implemention</Filter>
     </ClCompile>
+    <ClCompile Include="irrEngine\Implemention\2D\DrawingLineCtrller.cpp">
+      <Filter>IrrEngine\Implemention\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="irrEngine\Implemention\2D\DrawingLineWallCtrller.cpp">
+      <Filter>IrrEngine\Implemention\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="ODL\ODLTools.cpp">
+      <Filter>ODL</Filter>
+    </ClCompile>
+    <ClCompile Include="ODL\DesignODL.cpp">
+      <Filter>ODL</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BLL\BaseBLL.h">
@@ -282,19 +204,7 @@
     <ClInclude Include="DAL\BaseDAL.h">
       <Filter>DAL</Filter>
     </ClInclude>
-    <ClInclude Include="BaseDialog.h">
-      <Filter>Dlg</Filter>
-    </ClInclude>
     <ClInclude Include="ODL\BaseODL.h">
-      <Filter>ODL</Filter>
-    </ClInclude>
-    <ClInclude Include="ODL\BaseODLFwd.h">
-      <Filter>ODL</Filter>
-    </ClInclude>
-    <ClInclude Include="ODL\CameraODL.h">
-      <Filter>ODL</Filter>
-    </ClInclude>
-    <ClInclude Include="ODL\CameraODLFwd.h">
       <Filter>ODL</Filter>
     </ClInclude>
     <ClInclude Include="BLL\DecorBLL.h">
@@ -327,42 +237,6 @@
     <ClInclude Include="DAL\WallFaceZoneDAL.h">
       <Filter>DAL</Filter>
     </ClInclude>
-    <ClInclude Include="ODL\DecorODL.h">
-      <Filter>ODL</Filter>
-    </ClInclude>
-    <ClInclude Include="ODL\DesignODL.h">
-      <Filter>ODL</Filter>
-    </ClInclude>
-    <ClInclude Include="ODL\FloorODL.h">
-      <Filter>ODL</Filter>
-    </ClInclude>
-    <ClInclude Include="ODL\FloorZoneODL.h">
-      <Filter>ODL</Filter>
-    </ClInclude>
-    <ClInclude Include="ODL\GuideLineODL.h">
-      <Filter>ODL</Filter>
-    </ClInclude>
-    <ClInclude Include="ODL\GuideRectODL.h">
-      <Filter>ODL</Filter>
-    </ClInclude>
-    <ClInclude Include="ODL\ObjGroupODL.h">
-      <Filter>ODL</Filter>
-    </ClInclude>
-    <ClInclude Include="ODL\SkinUnitODL.h">
-      <Filter>ODL</Filter>
-    </ClInclude>
-    <ClInclude Include="ODL\SkyODL.h">
-      <Filter>ODL</Filter>
-    </ClInclude>
-    <ClInclude Include="ODL\WallFaceODL.h">
-      <Filter>ODL</Filter>
-    </ClInclude>
-    <ClInclude Include="ODL\WallFaceZoneODL.h">
-      <Filter>ODL</Filter>
-    </ClInclude>
-    <ClInclude Include="ODL\WallODL.h">
-      <Filter>ODL</Filter>
-    </ClInclude>
     <ClInclude Include="BLL\DesignBLL.h">
       <Filter>BLL</Filter>
     </ClInclude>
@@ -387,15 +261,6 @@
     <ClInclude Include="BLL\WallFaceZoneBLL.h">
       <Filter>BLL</Filter>
     </ClInclude>
-    <ClInclude Include="SceneNode\CDataSceneNode.h">
-      <Filter>SceneNode</Filter>
-    </ClInclude>
-    <ClInclude Include="SceneNode\CDataSceneNodeFwd.h">
-      <Filter>SceneNode</Filter>
-    </ClInclude>
-    <ClInclude Include="SceneNode\TSceneNode.h">
-      <Filter>SceneNode</Filter>
-    </ClInclude>
     <ClInclude Include="irrEngine\irrEngine.h">
       <Filter>IrrEngine</Filter>
     </ClInclude>
@@ -404,12 +269,6 @@
     </ClInclude>
     <ClInclude Include="irrEngine\EShaderType.h">
       <Filter>IrrEngine</Filter>
-    </ClInclude>
-    <ClInclude Include="DlgRoomStyle.h">
-      <Filter>Dlg</Filter>
-    </ClInclude>
-    <ClInclude Include="DlgSelect.h">
-      <Filter>Dlg</Filter>
     </ClInclude>
     <ClInclude Include="BLL\ObjGroupBLL.h">
       <Filter>BLL</Filter>
@@ -429,12 +288,6 @@
     <ClInclude Include="DragDataListCtrl.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="ShowMgr\DrawEngine.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="ShowMgr\DrawImageEngine.h">
-      <Filter>src</Filter>
-    </ClInclude>
     <ClInclude Include="MainFrm.h">
       <Filter>src</Filter>
     </ClInclude>
@@ -445,9 +298,6 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="Resource.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="ShapeTool.h">
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="stdafx.h">
@@ -495,9 +345,6 @@
     <ClInclude Include="NumberTextCtrl.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="DlgShader.h">
-      <Filter>Dlg</Filter>
-    </ClInclude>
     <ClInclude Include="irrEngine\XEffect\IPostProcessingRenderCallback.h">
       <Filter>IrrEngine\XEffect</Filter>
     </ClInclude>
@@ -516,35 +363,8 @@
     <ClInclude Include="DAL\DataManager.h">
       <Filter>DAL</Filter>
     </ClInclude>
-    <ClInclude Include="ODL\ODLTools.h">
-      <Filter>ODL</Filter>
-    </ClInclude>
-    <ClInclude Include="ODL\HoleODL.h">
-      <Filter>ODL</Filter>
-    </ClInclude>
-    <ClInclude Include="ODL\WithHoleODL.h">
-      <Filter>ODL</Filter>
-    </ClInclude>
-    <ClInclude Include="DlgSizeInfo.h">
-      <Filter>Dlg</Filter>
-    </ClInclude>
-    <ClInclude Include="DlgZoneInfo.h">
-      <Filter>Dlg</Filter>
-    </ClInclude>
-    <ClInclude Include="DlgLayer.h">
-      <Filter>Dlg</Filter>
-    </ClInclude>
-    <ClInclude Include="DockLayer.h">
-      <Filter>Dlg</Filter>
-    </ClInclude>
     <ClInclude Include="DAL\SkinDAL.h">
       <Filter>DAL</Filter>
-    </ClInclude>
-    <ClInclude Include="DockProperty.h">
-      <Filter>Dlg</Filter>
-    </ClInclude>
-    <ClInclude Include="DockSelect.h">
-      <Filter>Dlg</Filter>
     </ClInclude>
     <ClInclude Include="irrEngine\IrrExtension\CameraFollowSplineAnimator.h">
       <Filter>IrrEngine\IrrExtension</Filter>
@@ -605,6 +425,21 @@
     </ClInclude>
     <ClInclude Include="irrEngine\Implemention\2D\DrawingLineCtrller.h">
       <Filter>IrrEngine\Implemention\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="irrEngine\Implemention\2D\DrawingLineWallCtrller.h">
+      <Filter>IrrEngine\Implemention\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="ODL\ODLTools.h">
+      <Filter>ODL</Filter>
+    </ClInclude>
+    <ClInclude Include="ODL\TSceneNode.h">
+      <Filter>ODL</Filter>
+    </ClInclude>
+    <ClInclude Include="ODL\BaseODLFwd.h">
+      <Filter>ODL</Filter>
+    </ClInclude>
+    <ClInclude Include="ODL\DesignODL.h">
+      <Filter>ODL</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -695,9 +530,6 @@
     </Filter>
     <Filter Include="res">
       <UniqueIdentifier>{d98f7524-7bf9-41e5-a302-00f53144e416}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="SceneNode">
-      <UniqueIdentifier>{702f4024-1665-4b82-aa92-2e9fffa1e59c}</UniqueIdentifier>
     </Filter>
     <Filter Include="IrrEngine">
       <UniqueIdentifier>{d455667c-cc88-4ed1-a30e-f16f6e0c30cb}</UniqueIdentifier>

@@ -10,7 +10,7 @@ ResizeController::ResizeController(HWND h)
 }
 
 
-bool ResizeController::OnEvent( const irr::SEvent& event )
+bool ResizeController::OnPreEvent( const irr::SEvent& event )
 {
 	if ( event.EventType == irr::EET_USER_EVENT && event.UserEvent.UserData1 == EUT_RESIZE_MINIMUM )
 	{

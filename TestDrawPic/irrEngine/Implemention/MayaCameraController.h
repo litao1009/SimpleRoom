@@ -4,7 +4,7 @@
 #pragma once
 
 #include "irrEngine/IRenderController.h"
-#include "SceneNode/CDataSceneNodeFwd.h"
+#include "irrEngine/IrrExtension/CombineSceneNode.h"
 
 #include <vector>
 
@@ -28,7 +28,7 @@ public:
 private:
 
 	ICameraSceneNodeSPtr			MayaCamera_;
-	std::vector<CDataSceneNode*>	TmpNodes_;
+	std::vector<CCombineSceneNode*>	TmpNodes_;
 	
 };
 

@@ -29,12 +29,8 @@ protected: // 仅从序列化创建
 public:
 	CTestDrawPicDoc* GetDocument() const;
 	CMainFrame* GetMainFrame() const;
-	void SwitchToEdit(CBaseODLSPtr spObj);
-	void EditZone(CBaseODLSPtr spZone);
 // 操作
 public:
-	void	InitDrawEngine();
-	void SetCameraInfo(bool visible, const gp_Pnt& position, const gp_Pnt& target, float fov);
 
 	COleDropTarget* m_pDrop;
 private:

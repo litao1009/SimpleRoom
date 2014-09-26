@@ -14,7 +14,7 @@ public:
 
 public:
 
-	virtual bool	OnEvent(const irr::SEvent& event);
+	virtual bool	OnPreEvent(const irr::SEvent& event);
 
 private:
 

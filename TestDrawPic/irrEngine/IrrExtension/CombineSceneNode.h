@@ -7,12 +7,19 @@
 #include "SceneNode2D.h"
 #include "SceneNode3D.h"
 
+class	CCombineSceneNode;
+typedef	std::shared_ptr<CCombineSceneNode>	CombineSceneNodeSPtr;
+
 class	CCombineSceneNode : public CBaseSceneNode
 {
 public:
 
 	CCombineSceneNode(SRenderContextWPtr rcWPtr, CBaseODLWPtr odlWPtr, std::string typeName="");
 	~CCombineSceneNode();
+
+public:
+
+	static	CombineSceneNodeSPtr	Create(SRenderContextWPtr rcWPtr, CBaseODLWPtr odlWPtr, std::string typeName="");
 
 public://CBaseSceneNode
 

@@ -38,6 +38,8 @@ CompositionController::CompositionController():ImpUPtr_(new Imp)
 	imp_.GUIController_ = std::make_shared<GUIController>();
 	imp_.MayaCameraController_ = std::make_shared<MayaCameraController>();
 	imp_.FlyCameraController_ = std::make_shared<FlyCameraController>();
+
+	SetName("CompositionController");
 }
 
 CompositionController::~CompositionController()
@@ -108,8 +110,10 @@ void CompositionController::PreInit( SRenderContextSPtr sprc )
 	}
 
 	imp_.MayaCameraController_->SetMayaCamera(imp_.MayaCamera_);
+
 	sprc->PushController(std::static_pointer_cast<IRenderController>(imp_.FlyCameraController_));
 	sprc->PushController(std::static_pointer_cast<IRenderController>(imp_.GUIController_));
+
 	sprc->PushController(std::static_pointer_cast<IRenderController>(imp_.MayaCameraController_));
 }
 
@@ -119,7 +123,7 @@ void CompositionController::PostInit( SRenderContextSPtr sprc )
 	IRenderController::PostInit(sprc);
 }
 
-bool CompositionController::OnEvent( const irr::SEvent& event )
+bool CompositionController::OnPreEvent( const irr::SEvent& event )
 {
 	auto& imp_ = *ImpUPtr_;
 
@@ -356,24 +360,7 @@ bool CompositionController::PreRender3D( const SRenderContext& rc )
 
 void CompositionController::PostRender3D( const SRenderContext& rc )
 {
-	/*	test draw line
-	irr::scene::SMesh mesh2D;
-	irr::scene::SMeshBuffer mb2D;
-	mb2D.Vertices.push_back(irr::video::S3DVertex(-2000,4000,-2000, 0,0,1,irr::video::SColor(~0), 0,1));
-	mb2D.Vertices.push_back(irr::video::S3DVertex(-2000,4000,2000, 0,0,1,irr::video::SColor(~0), 1,1));
-	mb2D.Vertices.push_back(irr::video::S3DVertex(2000,4000,2000, 0,0,1,irr::video::SColor(~0), 1,0));
-	mb2D.Vertices.push_back(irr::video::S3DVertex(2000,4000,-2000, 0,0,1,irr::video::SColor(~0), 0,0));
-	mb2D.Indices.push_back(0);
-	mb2D.Indices.push_back(1);
-	mb2D.Indices.push_back(2);
-	mb2D.Indices.push_back(3);
-
-	irr::video::SMaterial mat;
-	mat.Lighting = false;
-	mat.Thickness = 4;
-	rc.Smgr_->getVideoDriver()->setMaterial(mat);
-	rc.Smgr_->getVideoDriver()->drawVertexPrimitiveList(mb2D.getVertices(), mb2D.getVertexCount(), mb2D.getIndices(), mb2D.getIndexCount()-1, irr::video::EVT_STANDARD, irr::scene::EPT_LINE_STRIP);
-	*/
+	
 }
 
 bool CompositionController::PreRender2D( const SRenderContext& rc )

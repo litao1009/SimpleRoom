@@ -202,6 +202,14 @@ LRESULT CSubViewer::DefWindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 			m_spRenderContext->PostEvent(evt);
 		}
 		break;
+	case WM_LBUTTONDBLCLK:
+		{
+			bNeedRedraw=true;
+
+			evt.MouseInput.Event = irr::EMIE_LMOUSE_DOUBLE_CLICK;
+			m_spRenderContext->PostEvent(evt);
+		}
+		break;
 	case WM_LBUTTONUP:
 		{
 			bNeedRedraw=true;

@@ -2,14 +2,13 @@
 
 #include "MayaCameraController.h"
 
-#include "SceneNode/CDataSceneNode.h"
 #include "irrEngine/SRenderContext.h"
 
 #include "ODL/BaseODL.h"
 
 MayaCameraController::MayaCameraController()
 {
-	
+	SetName("MayaCameraController");
 }
 
 bool MayaCameraController::PreRender3D( const SRenderContext& rc )
@@ -40,10 +39,10 @@ bool MayaCameraController::PreRender3D( const SRenderContext& rc )
 	auto selectedSceneNode = smgr->getSceneCollisionManager()->getSceneNodeAndCollisionPointFromRay(ray, intersection, hitTriangle, 0xFF );
 	while ( selectedSceneNode )
 	{
-		assert(nullptr!=dynamic_cast<CDataSceneNode*>(selectedSceneNode));
+		assert(nullptr!=dynamic_cast<CCombineSceneNode*>(selectedSceneNode));
 
-		auto dsn = static_cast<CDataSceneNode*>(selectedSceneNode);
-		auto odlType = dsn->GetBaseODL().lock()->GetType();
+		auto dsn = static_cast<CCombineSceneNode*>(selectedSceneNode);
+		auto odlType = dsn->GetBaseODLSPtr()->GetType();
 
 		if ( EOBT_Wall == odlType ||
 			EOBT_Wall_Face == odlType ||

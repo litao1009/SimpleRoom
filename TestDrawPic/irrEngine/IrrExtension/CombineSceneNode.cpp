@@ -24,7 +24,7 @@ CCombineSceneNode::CCombineSceneNode( SRenderContextWPtr rcWPtr, CBaseODLWPtr od
 
 CCombineSceneNode::~CCombineSceneNode()
 {
-
+	
 }
 
 void CCombineSceneNode::OnRegisterSceneNode()
@@ -133,4 +133,12 @@ void CCombineSceneNode::CreateTriSelector()
 void CCombineSceneNode::Init()
 {
 
+}
+
+CombineSceneNodeSPtr CCombineSceneNode::Create( SRenderContextWPtr rcWPtr, CBaseODLWPtr odlWPtr, std::string typeName/*=""*/ )
+{
+	auto newNode = new CCombineSceneNode(rcWPtr, odlWPtr, typeName);
+	CombineSceneNodeSPtr sptr(newNode, [](CCombineSceneNode* p){ p->drop(); });
+
+	return sptr;
 }

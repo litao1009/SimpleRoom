@@ -77,7 +77,6 @@ bool CSimpleOrthoAnimator::OnEvent(const irr::SEvent& evt)
 			break;
 		case irr::EMIE_RMOUSE_PRESSED_DOWN:
 			MouseKeys[2] = true;
-			ResetMouse = true;
 			break;
 		case irr::EMIE_LMOUSE_LEFT_UP:
 			MouseKeys[0] = false;

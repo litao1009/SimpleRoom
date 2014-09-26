@@ -31,7 +31,7 @@ bool CGUIImageButton::OnEvent( const SEvent& event )
 				if ( Parent )
 				{
 					newEvent.GUIEvent.EventType = (irr::gui::EGUI_EVENT_TYPE)EIS_HOVERD;
-					Parent->OnEvent(newEvent);
+					return Parent->OnEvent(newEvent);
 				}
 			}
 		}
@@ -45,27 +45,21 @@ bool CGUIImageButton::OnEvent( const SEvent& event )
 				if ( Parent )
 				{
 					newEvent.GUIEvent.EventType = (irr::gui::EGUI_EVENT_TYPE)EIS_NORMAL;
-					Parent->OnEvent(newEvent);
+					return Parent->OnEvent(newEvent);
 				}
 			}
 
 			if ( EET_MOUSE_INPUT_EVENT == event.EventType && EMIE_LMOUSE_PRESSED_DOWN == event.MouseInput.Event )
 			{
 				State_ = EIS_PRESSED;
-				/*
-				POINT point;
-				GetCursorPos(&point);
 
-				StartPoint_.X = point.x;
-				StartPoint_.Y = point.y;
-				*/
 				StartPoint_.X = event.MouseInput.X;
 				StartPoint_.Y = event.MouseInput.Y;
 
 				if ( Parent )
 				{
 					newEvent.GUIEvent.EventType = (irr::gui::EGUI_EVENT_TYPE)EIS_PRESSED;
-					Parent->OnEvent(newEvent);
+					return Parent->OnEvent(newEvent);
 				}
 			}
 		}
@@ -81,7 +75,7 @@ bool CGUIImageButton::OnEvent( const SEvent& event )
 					if ( Parent )
 					{
 						newEvent.GUIEvent.EventType = (irr::gui::EGUI_EVENT_TYPE)EIS_NORMAL;
-						Parent->OnEvent(newEvent);
+						return Parent->OnEvent(newEvent);
 					}
 				}
 				
@@ -89,15 +83,17 @@ bool CGUIImageButton::OnEvent( const SEvent& event )
 
 			if ( EET_MOUSE_INPUT_EVENT == event.EventType && EMIE_LMOUSE_LEFT_UP == event.MouseInput.Event && Environment->getHovered() == this )
 			{
-				State_ = EIS_LEFTUP;
+				State_ = EIS_HOVERD;
 
 				if ( Parent )
 				{
 					newEvent.GUIEvent.EventType = (irr::gui::EGUI_EVENT_TYPE)EIS_LEFTUP;
 					Parent->OnEvent(newEvent);
+					newEvent.GUIEvent.EventType = (irr::gui::EGUI_EVENT_TYPE)EIS_HOVERD;
+					Parent->OnEvent(newEvent);
 				}
 
-				State_ = EIS_HOVERD;
+				return true;
 			}
 
 			if ( EET_MOUSE_INPUT_EVENT == event.EventType && EMIE_LMOUSE_LEFT_UP == event.MouseInput.Event && HoldPressed_ && Environment->getHovered() != this )
@@ -107,7 +103,7 @@ bool CGUIImageButton::OnEvent( const SEvent& event )
 				if ( Parent )
 				{
 					newEvent.GUIEvent.EventType = (irr::gui::EGUI_EVENT_TYPE)EIS_NORMAL;
-					Parent->OnEvent(newEvent);
+					return Parent->OnEvent(newEvent);
 				}
 			}
 		}

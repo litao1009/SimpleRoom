@@ -9,6 +9,7 @@
 #include "ICameraSceneNode.h"
 
 #include <memory>
+#include <string>
 
 typedef	std::shared_ptr<irr::scene::ICameraSceneNode>		ICameraSceneNodeSPtr;
 
@@ -25,42 +26,57 @@ public:
 		Enable_ = true;
 	}
 
+public://IEventReceiver 
+
+	//No need to override this function normaly
+	virtual bool	OnEvent(const irr::SEvent& event) { return OnGUIEvent(event); }
+
 public:
 
 	virtual	void	PreInit(SRenderContextSPtr sprc) {}
 
 	virtual	void	PostInit(SRenderContextSPtr sprc) { assert(sprc); RC_ = sprc; }
 
-	virtual bool	OnEvent(const irr::SEvent& event) { return false; }
+	virtual	bool	OnGUIEvent(const irr::SEvent& evt) { return false; }
+
+	virtual bool	OnPreEvent(const irr::SEvent& evt) { return false; }
+
+	virtual	bool	OnPostEvent(const irr::SEvent& evt) { return false; }
 
 	virtual	void	OnResize(const SRenderContext& rc) {}
 
-public:
-
 	virtual bool	PreRender3D(const SRenderContext& rc) { return true; }
+
 	virtual void	PostRender3D(const SRenderContext& rc) {}
 
 	virtual bool	PreRender2D(const SRenderContext& rc) { return true; }
+
 	virtual void	PostRender2D(const SRenderContext& rc) {}
 
 public:
 
-	bool	IsEnable() const { return Enable_; }
+	bool					IsEnable() const { return Enable_; }
 
-	void	SetEnable(bool val) { Enable_ = val; }
+	void					SetEnable(bool val) { Enable_ = val; }
 
-	IRenderControllerWPtr	GetParent() const { return Parent_; }
+	IRenderControllerWPtr	GetParentWPtr() const { return Parent_; }
 
-	void	SetParent(IRenderControllerWPtr parent) { Parent_ = parent; }
+	IRenderControllerSPtr	GetParentSPtr() const { return Parent_.lock(); }
 
-protected:
+	void					SetParent(IRenderControllerWPtr parent) { Parent_ = parent; }
+	
+	SRenderContextSPtr		GetRenderContextSPtr() const { return RC_.lock(); }
 
-	SRenderContextWPtr	RC_;
+	void					SetName(std::string str) { Name_ = str; }
+
+	const std::string&		GetName() const { return Name_; }
 
 private:
 
+	std::string				Name_;
 	bool					Enable_;
 	IRenderControllerWPtr	Parent_;
+	SRenderContextWPtr		RC_;
 };
 
 #endif // SRenderController_h__

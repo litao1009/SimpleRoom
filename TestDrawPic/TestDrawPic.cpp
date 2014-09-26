@@ -21,12 +21,15 @@
 #include "ChildFrm.h"
 #include "TestDrawPicDoc.h"
 #include "TestDrawPicView.h"
-#include "ShowMgr/DrawEngine.h"
-#include "vld.h"
+
+
 // #ifdef _DEBUG
 // #define new DEBUG_NEW
 // #endif
-#include "./DAL/DBConnection.h"
+#include "DAL/DBConnection.h"
+#include "DAL/DataManager.h"
+
+#include "vld.h"
 
 // CTestDrawPicApp
 
@@ -52,7 +55,7 @@ CTestDrawPicApp::CTestDrawPicApp()
 
 	// TODO: 在此处添加构造代码，
 	// 将所有重要的初始化放置在 InitInstance 中
-	CDrawEngine::GetInstance();
+
 	//m_pEngine=NULL;
 }
 

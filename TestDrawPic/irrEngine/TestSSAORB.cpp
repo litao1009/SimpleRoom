@@ -6,12 +6,12 @@
 #include "irrlicht.h"
 
 #include "resource.h"
-#include "DlgShader.h"
+//#include "DlgShader.h"
 
 void TestSSAORB::OnPreRender( EffectHandler* effect )
 {
 	SSAORenderCallback::OnPreRender(effect);
-
+	/*
 	if ( !Dlg_ )
 	{
 		return;
@@ -33,4 +33,5 @@ void TestSSAORB::OnPreRender( EffectHandler* effect )
 
 	auto SSAO_OUTPUT_MULTIPLIER = Dlg_->GetSSAOOutputMultiplier();
 	effect->setPostProcessingEffectConstant(materialType, "SSAO_OUTPUT_MULTIPLIER", &SSAO_OUTPUT_MULTIPLIER, 1);
+	*/
 }

@@ -14,6 +14,12 @@ public://IRenderController
 
 	virtual bool	OnEvent(const irr::SEvent& event);
 
+	virtual bool	OnPreEvent(const irr::SEvent& event);
+
+	virtual bool	OnPostEvent(const irr::SEvent& event);
+
+	virtual	bool	OnGUIEvent(const irr::SEvent& event);
+
 	virtual	void	OnResize(const SRenderContext& rc);
 
 	virtual bool	PreRender3D(const SRenderContext& rc);
@@ -26,7 +32,7 @@ public://IRenderController
 
 public:
 
-	void	PushController(IRenderControllerSPtr controller);
+	virtual void	PushController(IRenderControllerSPtr controller);
 
 private:
 

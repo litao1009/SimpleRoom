@@ -22,7 +22,7 @@ public:
 
 	virtual	void	PostInit(SRenderContextSPtr sprc);
 
-	virtual bool	OnEvent(const irr::SEvent& event);
+	virtual bool	OnPreEvent(const irr::SEvent& event);
 
 	virtual	void	OnResize(const SRenderContext& rc);
 
