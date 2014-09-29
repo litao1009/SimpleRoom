@@ -24,6 +24,7 @@
 #include "TestDrawPicView.h"
 #include "MainFrm.h"
 #include "irrEngine/SRenderContext.h"
+#include "StatusMgr.h"
 
 // #ifdef _DEBUG
 // #define new DEBUG_NEW
@@ -209,13 +210,13 @@ BOOL CTestDrawPicView::Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName, DWO
 	BOOL bRet = CCtrlFuncView::Create(lpszClassName, lpszWindowName, dwStyle, rect, pParentWnd, nID, pContext);
 	
 	
-	m_vwSubViewPort.Create(_T(""), WS_VISIBLE|WS_CHILD|SS_NOTIFY|SS_OWNERDRAW|WS_CLIPSIBLINGS,CRect(0,600,200,200),this,IDR_VIEW_SUBVIEWER);
-	auto rootODL = std::make_shared<CDesignODL>(m_vwSubViewPort.GetSafeHwnd());
+	GetSubView().Create(_T(""), WS_VISIBLE|WS_CHILD|SS_NOTIFY|SS_OWNERDRAW|WS_CLIPSIBLINGS,CRect(0,600,200,200),this,IDR_VIEW_SUBVIEWER);
+	auto rootODL = std::make_shared<CDesignODL>(GetSubView().GetSafeHwnd());
 	SetRoot(rootODL);
 
 	rootODL->Init();
 
-	m_vwSubViewPort.SetRenderContext(rootODL->GetRenderContext());
+	GetSubView().SetRenderContext(rootODL->GetRenderContext());
 
 	m_pDrop=new COleDropTarget();
 
@@ -265,13 +266,6 @@ void CTestDrawPicView::OnRButtonUp(UINT /* nFlags */, CPoint point)
 
 void CTestDrawPicView::OnContextMenu(CWnd* /* pWnd */, CPoint point)
 {
-
-	CMenu menu;
-	menu.LoadMenu(IDR_MENU_POPUP);
-	CMenu* pPopup = menu.GetSubMenu(0);
-
-	pPopup->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,GetParent());
-
 }
 
 
@@ -286,18 +280,18 @@ void CTestDrawPicView::OnSize(UINT nType, int cx, int cy)
 		CRect rtMain;
 		GetWindowRect(rtMain);
 
-		if (m_vwSubViewPort.GetSafeHwnd())
+		if (GetSubView().GetSafeHwnd())
 		{
 			if ( firstUpdate )
 			{
-				m_vwSubViewPort.MoveWindow(0,rtMain.Height()-500, 800,500);
+				GetSubView().MoveWindow(0,rtMain.Height()-500, 800,500);
 				firstUpdate = false;
 			}
 			else
 			{
 				CRect rtSub;
-				m_vwSubViewPort.GetWindowRect(rtSub);
-				m_vwSubViewPort.MoveWindow(0, rtMain.Height()-rtSub.Height(), rtSub.Width(), rtSub.Height());
+				GetSubView().GetWindowRect(rtSub);
+				GetSubView().MoveWindow(0, rtMain.Height()-rtSub.Height(), rtSub.Width(), rtSub.Height());
 			}
 		}
 	}
@@ -350,8 +344,7 @@ BOOL CTestDrawPicView::OnEraseBkgnd(CDC* pDC)
 
 void CTestDrawPicView::OnBtnCreateWallLine()
 {
-	
-	
+	StatusMgr::GetInstance().DrawingState_ = StatusMgr::EDS_LINE_WALL;
 }
 
 void CTestDrawPicView::OnUpdateBtnCreateWallLine(CCmdUI *pCmdUI)
@@ -361,7 +354,7 @@ void CTestDrawPicView::OnUpdateBtnCreateWallLine(CCmdUI *pCmdUI)
 
 void CTestDrawPicView::OnBtnCreateWallRect()
 {
-	
+	StatusMgr::GetInstance().DrawingState_ = StatusMgr::EDS_RECT_WALL;
 }
 
 void CTestDrawPicView::OnUpdateBtnCreateWallRect(CCmdUI *pCmdUI)
@@ -582,6 +575,15 @@ BOOL CTestDrawPicView::PreTranslateMessage(MSG* pMsg)
 		case 'D':
 			evt.KeyInput.Key = irr::KEY_KEY_D;
 			break;
+		case VK_ESCAPE:
+			evt.KeyInput.Key = irr::KEY_ESCAPE;
+			break;
+		case VK_SHIFT:
+			evt.KeyInput.Key = irr::KEY_SHIFT;
+			break;
+		case VK_CONTROL:
+			evt.KeyInput.Key = irr::KEY_CONTROL;
+			break;
 		default:
 			break;
 		}
@@ -591,62 +593,41 @@ BOOL CTestDrawPicView::PreTranslateMessage(MSG* pMsg)
 
 	if (pMsg->message==WM_KEYUP)
 	{
+		irr::SEvent evt;
+		evt.EventType = irr::EET_KEY_INPUT_EVENT;
+		evt.KeyInput.PressedDown = false;
 		switch (pMsg->wParam)
 		{
-		case VK_DELETE:
-			{
-				
-			}
+		case 'w':
+		case 'W':
+			evt.KeyInput.Key = irr::KEY_KEY_W;
+			break;
+		case 'a':
+		case 'A':
+			evt.KeyInput.Key = irr::KEY_KEY_A;
+			break;
+		case 's':
+		case 'S':
+			evt.KeyInput.Key = irr::KEY_KEY_S;
+			break;
+		case 'd':
+		case 'D':
+			evt.KeyInput.Key = irr::KEY_KEY_D;
+			break;
+		case VK_ESCAPE:
+			evt.KeyInput.Key = irr::KEY_ESCAPE;
+			break;
+		case VK_SHIFT:
+			evt.KeyInput.Key = irr::KEY_SHIFT;
+			break;
+		case VK_CONTROL:
+			evt.KeyInput.Key = irr::KEY_CONTROL;
 			break;
 		default:
-			{
-				irr::SEvent evt;
-				evt.EventType = irr::EET_KEY_INPUT_EVENT;
-				evt.KeyInput.PressedDown = false;
-				switch (pMsg->wParam)
-				{
-				case 'w':
-				case 'W':
-					evt.KeyInput.Key = irr::KEY_KEY_W;
-					break;
-				case 'a':
-				case 'A':
-					evt.KeyInput.Key = irr::KEY_KEY_A;
-					break;
-				case 's':
-				case 'S':
-					evt.KeyInput.Key = irr::KEY_KEY_S;
-					break;
-				case 'd':
-				case 'D':
-					evt.KeyInput.Key = irr::KEY_KEY_D;
-					break;
-				default:
-					break;
-				}
-
-				rc->PostEvent(evt);
-
-				switch (pMsg->wParam)
-				{
-				case 'Q':
-				case 'q':
-					{
-						//ÐÂ½¨Ç½
-
-					}
-					break;
-				case 'F':
-				case 'f':
-					{
-						//Ç½Ãæ±à¼­
-
-					}
-					break;
-				}
-			}
 			break;
 		}
+
+		rc->PostEvent(evt);
 	}
 
 	return CView::PreTranslateMessage(pMsg);

@@ -19,9 +19,6 @@ enum EUserType
 
 	//Ω· ¯“∆∂Ø
 	EUT_RESIZE_CHANGE_END,
-
-	//ª≠«Ω
-	EUT_FINISH_DRAW_LINE_WALL
 };
 
 #define WM_IRR_DLG_MSG		WM_USER+1

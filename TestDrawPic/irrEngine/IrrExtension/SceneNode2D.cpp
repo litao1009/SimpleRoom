@@ -13,8 +13,8 @@ using namespace video;
 using namespace core;
 
 
-CSceneNode2D::CSceneNode2D(SRenderContextWPtr rcWPtr, CBaseODLWPtr odlWPtr, std::string typeName):
-	CBaseSceneNode(rcWPtr, odlWPtr, typeName)
+CSceneNode2D::CSceneNode2D(SRenderContextWPtr rcWPtr, CBaseODLWPtr odlWPtr):
+	CBaseSceneNode(rcWPtr, odlWPtr)
 {
 	Mesh_ = nullptr;
 }

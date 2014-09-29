@@ -26,6 +26,13 @@ public:
 		EDWLS_COUNT
 	};
 
+	class	SResult
+	{
+	public:
+		TopoDS_Shape	Shape_;
+		PointList		Pnts_;
+	};
+
 public:
 
 	DrawingLineWallCtrller();
@@ -48,7 +55,13 @@ public:
 
 	void						SetWallThickness(float val) { WallThickness_ = val; }
 
-	TopoDS_Shape				GetShape() const { return FaceShape_; }
+	SResult						GetResult() const
+	{
+		SResult s;
+		s.Shape_ = FaceShape_;
+		s.Pnts_ = Pnts_;
+		return s;
+	}
 
 private:
 
@@ -58,11 +71,15 @@ private:
 	irr::scene::IMeshBuffer*	TmpRect_;
 	irr::scene::IMeshBuffer*	MeshBuf_;
 	irr::scene::IMeshBuffer*	LineMeshBuf_;
+	irr::scene::IMeshBuffer*	PathMeshBuf_;
 	irr::video::SMaterial		Material_;
 	TopoDS_Shape				FaceShape_;
-	irr::core::vector2di		CurrentPos_;
+	irr::core::vector2di		CursorIPos_;
+	irr::core::vector3df		CurrentPos_;
 	EDrawingWallLineState		State_;
-
+	float						PolarAngle_;
+	float						LastAngle_;
+	bool						SimpleChecker_;
 };
 
 typedef	std::shared_ptr<DrawingLineWallCtrller>	DrawingLineWallCtrllerSPtr;

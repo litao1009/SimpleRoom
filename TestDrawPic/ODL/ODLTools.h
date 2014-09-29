@@ -9,30 +9,42 @@
 #include "TopoDS_Face.hxx"
 #include "gp_Dir.hxx"
 
+#include <vector>
 #include <boost/optional.hpp>
 
 class	ODLTools
 {
 public:
 
-	class	SFaceMesh
+	class	SSingleMesh
 	{
 	public:
 
 		irr::scene::IMesh*		Mesh_;
 		irr::core::vector3df	Translation_;
 		irr::core::vector3df	Rotation_;
+		irr::core::vector3df	Dir_;
 		irr::core::aabbox3df	Box_;
+		TopoDS_Shape			Shape_;
 	};
-	typedef	boost::optional<SFaceMesh>	SFaceMeshOpt;
+	typedef	boost::optional<SSingleMesh>	SSingelMeshOpt;
+
+	class	SMeshSet
+	{
+	public:
+		SSingelMeshOpt				RawMesh_;
+		std::vector<SSingelMeshOpt>	Faces_;
+	};
 
 public:
 
-	static	SFaceMeshOpt		CreateFaceMesh(TopoDS_Face& faceShape, const gp_Dir& faceDir);
+	static	SSingelMeshOpt		CreateFaceMesh(TopoDS_Face& faceShape, const gp_Dir& faceDir);
 
-	static	SFaceMeshOpt		CalculateRelation(const TopoDS_Shape& faceShape, const gp_Dir& faceDir);
+	static	SSingelMeshOpt		CalculateRelation(const TopoDS_Shape& faceShape, const gp_Dir& faceDir);
 
 	static	irr::scene::IMesh*	CreateMesh(TopoDS_Shape& shape);
+
+	static	SMeshSet			CreateMesh(const TopoDS_Shape& shape, const boost::optional<gp_Dir>& refDir = boost::none, bool withIndependentFace = false );
 
 	static	irr::scene::IMesh*	CreateSimpleRectMesh(const irr::core::rectf& rect);
 

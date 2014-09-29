@@ -39,5 +39,15 @@ bool FlyCameraController::PreRender3D( const SRenderContext& rc )
 		}
 	}
 
-	return true;
+	return false;
+}
+
+bool FlyCameraController::OnPreEvent( const irr::SEvent& event )
+{
+	if ( IsFlying() )
+	{
+		return true;
+	}
+
+	return false;
 }

@@ -16,6 +16,7 @@
 #include "GeomLProp_SLProps.hxx"
 #include "Bnd_Box.hxx"
 #include "BRepBndLib.hxx"
+#include "gp_Quaternion.hxx"
 
 //Irrlicht
 #include "CDynamicMeshBuffer.h"
@@ -26,9 +27,9 @@ using namespace core;
 using namespace scene;
 using namespace video;
 
-ODLTools::SFaceMeshOpt ODLTools::CreateFaceMesh( TopoDS_Face& faceShape, const gp_Dir& faceDir )
+ODLTools::SSingelMeshOpt ODLTools::CreateFaceMesh( TopoDS_Face& faceShape, const gp_Dir& faceDir )
 {
-	SFaceMesh ret;
+	SSingleMesh ret;
 
 	Handle(Geom_Surface) surf = BRep_Tool::Surface(faceShape);
 	Standard_Real umin,umax,vmin,vmax;
@@ -287,7 +288,7 @@ irr::scene::IMesh* ODLTools::CreateMesh( TopoDS_Shape& shape )
 			auto adjU = Mix(umin, umax, u);
 			auto adjV = Mix(vmin, vmax, v);
 			vector3df pos(static_cast<f32>(pnt.X()), static_cast<f32>(pnt.Y()), static_cast<f32>(pnt.Z()));
-			vector2df coord(static_cast<f32>(u),static_cast<f32>(v));
+			vector2df coord(static_cast<f32>(u-umin),static_cast<f32>(v-vmin));
 			S3DVertex meshVertex(pos, normal, clr, coord);
 
 			meshBufferPtr->getVertexBuffer().push_back(meshVertex);
@@ -329,9 +330,215 @@ irr::scene::IMesh* ODLTools::CreateMesh( TopoDS_Shape& shape )
 	return mesh;
 }
 
-ODLTools::SFaceMeshOpt ODLTools::CalculateRelation( const TopoDS_Shape& faceShape, const gp_Dir& faceDir )
+ODLTools::SMeshSet ODLTools::CreateMesh( const TopoDS_Shape& shape, const boost::optional<gp_Dir>& refDir /*= boost::none*/, bool withIndependentFace /*= false */ )
 {
-	SFaceMesh ret;
+	SMeshSet ret;
+
+	auto totalMeshBuffer = new CDynamicMeshBuffer(EVT_STANDARD, EIT_32BIT);
+	totalMeshBuffer->setHardwareMappingHint(EHM_STATIC);
+	decltype(totalMeshBuffer) curFaceMeshBuffer = nullptr;
+
+	auto toBuildShape = shape;
+
+	gp_Trsf preTrans;
+	
+	{//调整Shape
+		Bnd_Box rawBox;
+		BRepBndLib::Add(toBuildShape, rawBox);
+		
+		Standard_Real xMin,xMax,yMin,yMax,zMin,zMax;
+		rawBox.Get(xMin, yMin, zMin, xMax, yMax, zMax);
+
+		gp_Trsf tranToOriginal, roateToDZ;
+		tranToOriginal.SetTranslation(gp_Pnt((xMax+xMin)/2, (yMax+yMin)/2, (zMax+zMin)/2), gp::Origin());
+		if ( refDir )
+		{
+			roateToDZ.SetRotation(gp_Quaternion(*refDir, gp::DZ()));
+		}
+
+		preTrans = roateToDZ * tranToOriginal;
+		toBuildShape.Move(preTrans);
+	}
+
+	{//生成Mesh
+		for ( TopExp_Explorer exp(toBuildShape, TopAbs_FACE); exp.More(); exp.Next() )
+		{
+			auto& curFace = TopoDS::Face(exp.Current());
+
+			Handle(Geom_Surface) surf = BRep_Tool::Surface(curFace);
+
+			Standard_Real umin,umax,vmin,vmax;
+			BRepTools::UVBounds(curFace, umin, umax, vmin, vmax);
+			auto faceDir = GeomLProp_SLProps(surf, umin, vmin, 1, 0.001).Normal();
+			if ( TopAbs_REVERSED == curFace.Orientation() )
+			{
+				faceDir.Reverse();
+			}
+
+			gp_Trsf faceTrans;
+			{
+				Bnd_Box faceBox;
+				BRepBndLib::Add(curFace, faceBox);
+				Standard_Real xMin,xMax,yMin,yMax,zMin,zMax;
+				faceBox.Get(xMin, yMin, zMin, xMax, yMax, zMax);
+
+				gp_Trsf tranToOriginal, roateToDZ;
+				tranToOriginal.SetTranslation(gp_Pnt((xMax+xMin)/2, (yMax+yMin)/2, (zMax+zMin)/2), gp::Origin());
+				roateToDZ.SetRotation(gp_Quaternion(*refDir, gp::DZ()));
+
+				faceTrans = roateToDZ * tranToOriginal;				
+			}
+
+			BRepMesh::Mesh(curFace, 0.1);
+
+			TopLoc_Location L;
+			Handle (Poly_Triangulation) polyTriangles = BRep_Tool::Triangulation(curFace,L);
+
+			if ( polyTriangles.IsNull() )
+			{
+				return ret;
+			}
+
+			if ( withIndependentFace )
+			{
+				curFaceMeshBuffer = new CDynamicMeshBuffer(EVT_STANDARD, EIT_32BIT);
+				curFaceMeshBuffer->setHardwareMappingHint(EHM_STATIC);
+			}
+
+			const TColgp_Array1OfPnt& aNodes = polyTriangles->Nodes();
+			const Poly_Array1OfTriangle& triangles = polyTriangles->Triangles();
+
+			auto vsize = totalMeshBuffer->getVertexBuffer().allocated_size();
+			auto isize = totalMeshBuffer->getIndexBuffer().allocated_size();
+			auto curVertexSize = totalMeshBuffer->getVertexBuffer().size();
+			totalMeshBuffer->getVertexBuffer().reallocate(vsize + aNodes.Length());
+			totalMeshBuffer->getIndexBuffer().reallocate(isize + triangles.Length()*3);
+
+			vector3df normal(static_cast<f32>(faceDir.X()), static_cast<f32>(faceDir.Y()), static_cast<f32>(faceDir.Z()));
+
+			SColor clr(0xff, 0xff, 0xff, 0xff);
+			TColgp_Array1OfPnt transNodes(1, aNodes.Length());
+			for( auto index=1; index<=aNodes.Length(); ++index )
+			{
+				auto pnt = aNodes(index).Transformed(L);
+				auto facePnt = pnt.Transformed(faceTrans);
+
+				transNodes(index) = pnt;
+
+				GeomAPI_ProjectPointOnSurf projpnta(pnt, surf);
+				Quantity_Parameter u,v;
+				projpnta.LowerDistanceParameters(u, v);
+
+				auto adjU = Mix(umin, umax, u);
+				auto adjV = Mix(vmin, vmax, v);
+				vector3df pos(static_cast<f32>(pnt.X()), static_cast<f32>(pnt.Y()), static_cast<f32>(pnt.Z()));
+				vector2df coord(static_cast<f32>(u-umin),static_cast<f32>(v-vmin));
+				S3DVertex meshVertex(pos, normal, clr, coord);
+
+				totalMeshBuffer->getVertexBuffer().push_back(meshVertex);
+
+				if ( curFaceMeshBuffer )
+				{
+					vector3df pos(static_cast<f32>(facePnt.X()), static_cast<f32>(facePnt.Y()), static_cast<f32>(facePnt.Z()));
+					S3DVertex faceVertex(pos, normal, clr, coord);
+
+					curFaceMeshBuffer->getVertexBuffer().push_back(faceVertex);
+				}
+			}
+
+			totalMeshBuffer->recalculateBoundingBox();
+			if ( curFaceMeshBuffer )
+			{
+				curFaceMeshBuffer->recalculateBoundingBox();
+			}
+
+			for( auto index=1,n1=0,n2=0,n3=0; index<=triangles.Length(); ++index )
+			{
+				triangles(index).Get(n1,n2,n3);
+
+				gp_Vec v1(transNodes(n1), transNodes(n2));
+				gp_Vec v2(transNodes(n1), transNodes(n3));
+
+				auto v = v1.Crossed(v2);
+
+				if ( gp_Dir(v).Angle(faceDir) > M_PI_2 )
+				{
+					totalMeshBuffer->getIndexBuffer().push_back(n1-1+curVertexSize);
+					totalMeshBuffer->getIndexBuffer().push_back(n2-1+curVertexSize);
+					totalMeshBuffer->getIndexBuffer().push_back(n3-1+curVertexSize);
+
+					if ( curFaceMeshBuffer )
+					{
+						curFaceMeshBuffer->getIndexBuffer().push_back(n1-1);
+						curFaceMeshBuffer->getIndexBuffer().push_back(n2-1);
+						curFaceMeshBuffer->getIndexBuffer().push_back(n3-1);
+					}
+				}
+				else
+				{
+					totalMeshBuffer->getIndexBuffer().push_back(n1-1+curVertexSize);
+					totalMeshBuffer->getIndexBuffer().push_back(n3-1+curVertexSize);
+					totalMeshBuffer->getIndexBuffer().push_back(n2-1+curVertexSize);
+
+					if ( curFaceMeshBuffer )
+					{
+						curFaceMeshBuffer->getIndexBuffer().push_back(n1-1);
+						curFaceMeshBuffer->getIndexBuffer().push_back(n3-1);
+						curFaceMeshBuffer->getIndexBuffer().push_back(n2-1);
+					}
+				}
+			}
+
+			if ( curFaceMeshBuffer )
+			{
+				SSingleMesh newFace;
+
+				faceTrans.Invert();
+				auto faceTranslation = faceTrans.TranslationPart();
+				auto faceRotation = faceTrans.GetRotation();
+				Standard_Real rX,rY,rZ;
+				faceRotation.GetEulerAngles(gp_Extrinsic_XYZ, rX, rY, rZ);
+
+				auto newMesh = new SMesh;
+				newMesh->addMeshBuffer(curFaceMeshBuffer);
+				curFaceMeshBuffer->drop();
+
+				newFace.Shape_ = curFace;
+				newFace.Mesh_ = newMesh;
+				newFace.Dir_.set(static_cast<float>(faceDir.X()), static_cast<float>(faceDir.Y()), static_cast<float>(faceDir.Z()));
+				newFace.Translation_.set(static_cast<float>(faceTranslation.X()), static_cast<float>(faceTranslation.Y()), static_cast<float>(faceTranslation.Z()));
+				newFace.Rotation_.set(static_cast<float>(radToDeg(rX)), static_cast<float>(radToDeg(rY)), static_cast<float>(radToDeg(rZ)));
+				curFaceMeshBuffer = nullptr;
+
+				ret.Faces_.push_back(newFace);
+			}
+		}
+	}
+
+	auto totoalMesh = new SMesh;
+	totoalMesh->addMeshBuffer(totalMeshBuffer);
+	totoalMesh->recalculateBoundingBox();
+	totalMeshBuffer->drop();
+
+	SSingleMesh retMesh;
+
+	preTrans.Invert();
+	auto solidTranslation = preTrans.TranslationPart();
+	auto solidRotation = preTrans.GetRotation();
+	Standard_Real rX,rY,rZ;
+	solidRotation.GetEulerAngles(gp_Extrinsic_XYZ, rX, rY, rZ);
+	retMesh.Translation_.set(static_cast<float>(solidTranslation.X()), static_cast<float>(solidTranslation.Y()), static_cast<float>(solidTranslation.Z()));
+	retMesh.Rotation_.set(static_cast<float>(radToDeg(rX)), static_cast<float>(radToDeg(rY)), static_cast<float>(radToDeg(rZ)));
+
+	retMesh.Mesh_ = totoalMesh;
+	ret.RawMesh_ = retMesh;
+
+	return ret;
+}
+
+ODLTools::SSingelMeshOpt ODLTools::CalculateRelation( const TopoDS_Shape& faceShape, const gp_Dir& faceDir )
+{
+	SSingleMesh ret;
 
 	Bnd_Box bb;
 	BRepBndLib::Add(faceShape, bb);

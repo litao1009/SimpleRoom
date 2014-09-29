@@ -81,7 +81,7 @@ void MetaRenderController::OnResize(const SRenderContext& rc)
 
 bool MetaRenderController::PreRender3D( const SRenderContext& rc )
 {
-	auto ret = true;
+	auto ret = false;
 
 	for ( auto& controller : ControllerList_ )
 	{
@@ -101,7 +101,7 @@ void MetaRenderController::PostRender3D( const SRenderContext& rc )
 
 bool MetaRenderController::PreRender2D( const SRenderContext& rc )
 {
-	auto ret = true;
+	auto ret = false;
 
 	for ( auto& controller : ControllerList_ )
 	{

@@ -181,9 +181,6 @@
     <ClCompile Include="irrEngine\IrrExtension\CombineSceneNode.cpp">
       <Filter>IrrEngine\IrrExtension</Filter>
     </ClCompile>
-    <ClCompile Include="irrEngine\Implemention\DrawingController.cpp">
-      <Filter>IrrEngine\Implemention</Filter>
-    </ClCompile>
     <ClCompile Include="irrEngine\Implemention\2D\DrawingLineCtrller.cpp">
       <Filter>IrrEngine\Implemention\2D</Filter>
     </ClCompile>
@@ -195,6 +192,21 @@
     </ClCompile>
     <ClCompile Include="ODL\DesignODL.cpp">
       <Filter>ODL</Filter>
+    </ClCompile>
+    <ClCompile Include="ODL\WallODL.cpp">
+      <Filter>ODL</Filter>
+    </ClCompile>
+    <ClCompile Include="ODL\GroupODL.cpp">
+      <Filter>ODL</Filter>
+    </ClCompile>
+    <ClCompile Include="ODL\WallFaceODL.cpp">
+      <Filter>ODL</Filter>
+    </ClCompile>
+    <ClCompile Include="irrEngine\Implemention\2D\DrawingRectWallCtrller.cpp">
+      <Filter>IrrEngine\Implemention\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="irrEngine\Implemention\GridController.cpp">
+      <Filter>IrrEngine\Implemention</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -420,9 +432,6 @@
     <ClInclude Include="irrEngine\IrrExtension\CombineSceneNode.h">
       <Filter>IrrEngine\IrrExtension</Filter>
     </ClInclude>
-    <ClInclude Include="irrEngine\Implemention\DrawingController.h">
-      <Filter>IrrEngine\Implemention</Filter>
-    </ClInclude>
     <ClInclude Include="irrEngine\Implemention\2D\DrawingLineCtrller.h">
       <Filter>IrrEngine\Implemention\2D</Filter>
     </ClInclude>
@@ -440,6 +449,24 @@
     </ClInclude>
     <ClInclude Include="ODL\DesignODL.h">
       <Filter>ODL</Filter>
+    </ClInclude>
+    <ClInclude Include="ODL\WallODL.h">
+      <Filter>ODL</Filter>
+    </ClInclude>
+    <ClInclude Include="ODL\GroupODL.h">
+      <Filter>ODL</Filter>
+    </ClInclude>
+    <ClInclude Include="ODL\WallFaceODL.h">
+      <Filter>ODL</Filter>
+    </ClInclude>
+    <ClInclude Include="irrEngine\Implemention\2D\DrawingRectWallCtrller.h">
+      <Filter>IrrEngine\Implemention\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="irrEngine\Implemention\GridController.h">
+      <Filter>IrrEngine\Implemention</Filter>
+    </ClInclude>
+    <ClInclude Include="StatusMgr.h">
+      <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

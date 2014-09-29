@@ -70,6 +70,5 @@ void CCtrlFuncView::Dump(CDumpContext& dc) const
 
 void CCtrlFuncView::OnLButtonDblClk(UINT nFlags, CPoint point)
 {
-
 	CView::OnLButtonDblClk(nFlags, point);
 }

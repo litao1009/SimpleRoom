@@ -23,7 +23,7 @@ public:
 
 public:
 
-	CBaseSceneNode(SRenderContextWPtr rcWPtr, CBaseODLWPtr odlWPtr, std::string typeName="");
+	CBaseSceneNode(SRenderContextWPtr rcWPtr, CBaseODLWPtr odlWPtr);
 	~CBaseSceneNode();
 
 public:
@@ -34,8 +34,6 @@ public:
 
 	CBaseODLWPtr		GetBaseODLWPtr() const { return BaseODLWPtr_; }
 	CBaseODLSPtr		GetBaseODLSPtr() const { return BaseODLWPtr_.lock(); }
-
-	const std::string&	GetTypeName() const { return TypeName_; }
 
 	SRenderContextWPtr	GetRenderContextWPtr() const { return RenderContextWPtr_; }
 	SRenderContextSPtr	GetRenderContextSPtr() const { return RenderContextWPtr_.lock(); }
@@ -49,7 +47,6 @@ protected:
 
 private:
 
-	std::string				TypeName_;
 	irr::s32				m_SaveID;
 
 	irr::video::SColor		DbgColor_;

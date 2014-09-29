@@ -16,6 +16,8 @@ public://IRenderController
 
 	virtual	bool	PreRender3D(const SRenderContext& rc);
 
+	virtual bool	OnPreEvent(const irr::SEvent& event);
+
 public:
 
 	bool	IsFlying() const;

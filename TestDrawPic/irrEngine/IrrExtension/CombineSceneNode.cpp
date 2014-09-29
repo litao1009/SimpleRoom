@@ -9,11 +9,11 @@
 
 #include "ODL/BaseODL.h"
 
-CCombineSceneNode::CCombineSceneNode( SRenderContextWPtr rcWPtr, CBaseODLWPtr odlWPtr, std::string typeName/*=""*/ )
-	:CBaseSceneNode(rcWPtr, odlWPtr, typeName)
+CCombineSceneNode::CCombineSceneNode( SRenderContextWPtr rcWPtr, CBaseODLWPtr odlWPtr)
+	:CBaseSceneNode(rcWPtr, odlWPtr)
 {
-	Node2D_ = new CSceneNode2D(rcWPtr, odlWPtr, typeName + "_2D");
-	Node3D_ = new CSceneNode3D(rcWPtr, odlWPtr, typeName + "_2D");
+	Node2D_ = new CSceneNode2D(rcWPtr, odlWPtr);
+	Node3D_ = new CSceneNode3D(rcWPtr, odlWPtr);
 
 	addChild(Node2D_);
 	addChild(Node3D_);
@@ -97,37 +97,37 @@ bool CCombineSceneNode::isReadOnlyMaterials() const
 
 void CCombineSceneNode::AddToShadowPass()
 {
-	(Node3D_)->AddToShadowPass();
+	Node3D_->AddToShadowPass();
 }
 
 bool CCombineSceneNode::IsInShadowPass() const
 {
-	return (Node3D_)->IsInShadowPass();
+	return Node3D_->IsInShadowPass();
 }
 
 void CCombineSceneNode::RemoveFromShadowPass()
 {
-	(Node3D_)->RemoveFromShadowPass();
+	Node3D_->RemoveFromShadowPass();
 }
 
 void CCombineSceneNode::AddToDepthPass()
 {
-	(Node3D_)->AddToDepthPass();
+	Node3D_->AddToDepthPass();
 }
 
 bool CCombineSceneNode::IsInDepthPass() const
 {
-	return (Node3D_)->IsInDepthPass();
+	return Node3D_->IsInDepthPass();
 }
 
 void CCombineSceneNode::RemoveFromDepthPass()
 {
-	(Node3D_)->RemoveFromDepthPass();
+	Node3D_->RemoveFromDepthPass();
 }
 
 void CCombineSceneNode::CreateTriSelector()
 {
-	(Node3D_)->CreateTriSelector();
+	Node3D_->CreateTriSelector();
 }
 
 void CCombineSceneNode::Init()
@@ -135,9 +135,9 @@ void CCombineSceneNode::Init()
 
 }
 
-CombineSceneNodeSPtr CCombineSceneNode::Create( SRenderContextWPtr rcWPtr, CBaseODLWPtr odlWPtr, std::string typeName/*=""*/ )
+CombineSceneNodeSPtr CCombineSceneNode::Create( SRenderContextWPtr rcWPtr, CBaseODLWPtr odlWPtr )
 {
-	auto newNode = new CCombineSceneNode(rcWPtr, odlWPtr, typeName);
+	auto newNode = new CCombineSceneNode(rcWPtr, odlWPtr);
 	CombineSceneNodeSPtr sptr(newNode, [](CCombineSceneNode* p){ p->drop(); });
 
 	return sptr;

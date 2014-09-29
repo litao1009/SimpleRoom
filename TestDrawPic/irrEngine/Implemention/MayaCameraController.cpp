@@ -15,7 +15,7 @@ bool MayaCameraController::PreRender3D( const SRenderContext& rc )
 {
 	if ( !IsEnable() )
 	{
-		return true;
+		return false;
 	}
 
 	auto driver = rc.Smgr_->getVideoDriver();
@@ -26,7 +26,7 @@ bool MayaCameraController::PreRender3D( const SRenderContext& rc )
 
 	if ( smgr->getActiveCamera() != MayaCamera_.get() )
 	{
-		return true;
+		return false;
 	}
 
 	irr::core::line3d<irr::f32> ray;
@@ -67,7 +67,7 @@ bool MayaCameraController::PreRender3D( const SRenderContext& rc )
 		selectedSceneNode = smgr->getSceneCollisionManager()->getSceneNodeAndCollisionPointFromRay(ray, intersection, hitTriangle, 0xFF );
 	}
 
-	return true;
+	return false;
 }
 
 void MayaCameraController::PostRender3D( const SRenderContext& rc )

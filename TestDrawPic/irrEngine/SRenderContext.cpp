@@ -195,8 +195,8 @@ void SRenderContext::Render()
 
 	driver->beginScene(true, true, BackGroundClr_, VideoData_);	
 
-	auto needRender3D = imp_.RenderController_->PreRender3D(*this);
-	if ( needRender3D )
+	auto absorbed3D = imp_.RenderController_->PreRender3D(*this);
+	if ( !absorbed3D )
 	{
 		//smgr->drawAll();
 		imp_.Effect_->update();
@@ -204,8 +204,8 @@ void SRenderContext::Render()
 		imp_.RenderController_->PostRender3D(*this);
 	}
 
-	auto needRender2D = imp_.RenderController_->PreRender2D(*this);
-	if ( needRender2D )
+	auto absorbed2D = imp_.RenderController_->PreRender2D(*this);
+	if ( !absorbed2D )
 	{
 		guimgr->drawAll();
 

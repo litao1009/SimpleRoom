@@ -20,10 +20,6 @@ public:
 
 	virtual	void	PreInit(SRenderContextSPtr sprc);
 
-	virtual	void	PostInit(SRenderContextSPtr sprc);
-
-	virtual bool	OnPreEvent(const irr::SEvent& event);
-
 	virtual	void	OnResize(const SRenderContext& rc);
 
 public:

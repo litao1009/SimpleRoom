@@ -130,10 +130,11 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClInclude Include="DragDataListCtrl.h" />
     <ClInclude Include="irrEngine\Implemention\2D\DrawingLineCtrller.h" />
     <ClInclude Include="irrEngine\Implemention\2D\DrawingLineWallCtrller.h" />
+    <ClInclude Include="irrEngine\Implemention\2D\DrawingRectWallCtrller.h" />
     <ClInclude Include="irrEngine\Implemention\CompositionController.h" />
-    <ClInclude Include="irrEngine\Implemention\DrawingController.h" />
     <ClInclude Include="irrEngine\Implemention\EventUserType.h" />
     <ClInclude Include="irrEngine\Implemention\FlyCameraController.h" />
+    <ClInclude Include="irrEngine\Implemention\GridController.h" />
     <ClInclude Include="irrEngine\Implemention\GUIController.h" />
     <ClInclude Include="irrEngine\Implemention\MayaCameraController.h" />
     <ClInclude Include="irrEngine\Implemention\ResizeController.h" />
@@ -161,6 +162,7 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClInclude Include="NumberTextCtrl.h" />
     <ClInclude Include="ODL\BaseODLFwd.h" />
     <ClInclude Include="ODL\DesignODL.h" />
+    <ClInclude Include="ODL\GroupODL.h" />
     <ClInclude Include="ODL\ODLTools.h" />
     <ClInclude Include="ODL\TSceneNode.h" />
     <ClInclude Include="ODL\BaseODL.h" />
@@ -184,6 +186,8 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClInclude Include="DAL\ObjGroupDAL.h" />
     <ClInclude Include="BLL\OrderBLL.h" />
     <ClInclude Include="DAL\OrderDAL.h" />
+    <ClInclude Include="ODL\WallFaceODL.h" />
+    <ClInclude Include="ODL\WallODL.h" />
     <ClInclude Include="PublicDefine.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="BLL\WallBLL.h" />
@@ -193,6 +197,7 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClInclude Include="BLL\SkinUnitBLL.h" />
     <ClInclude Include="DAL\SkinUnitDAL.h" />
     <ClInclude Include="DAL\SkinDAL.h" />
+    <ClInclude Include="StatusMgr.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="SubViewer.h" />
     <ClInclude Include="targetver.h" />
@@ -215,9 +220,10 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClCompile Include="DAL\DataManager.cpp" />
     <ClCompile Include="irrEngine\Implemention\2D\DrawingLineCtrller.cpp" />
     <ClCompile Include="irrEngine\Implemention\2D\DrawingLineWallCtrller.cpp" />
+    <ClCompile Include="irrEngine\Implemention\2D\DrawingRectWallCtrller.cpp" />
     <ClCompile Include="irrEngine\Implemention\CompositionController.cpp" />
-    <ClCompile Include="irrEngine\Implemention\DrawingController.cpp" />
     <ClCompile Include="irrEngine\Implemention\FlyCameraController.cpp" />
+    <ClCompile Include="irrEngine\Implemention\GridController.cpp" />
     <ClCompile Include="irrEngine\Implemention\GUIController.cpp" />
     <ClCompile Include="irrEngine\Implemention\MayaCameraController.cpp" />
     <ClCompile Include="irrEngine\Implemention\ResizeController.cpp" />
@@ -239,6 +245,7 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClCompile Include="NumberTextCtrl.cpp" />
     <ClCompile Include="DragDataListCtrl.cpp" />
     <ClCompile Include="ODL\DesignODL.cpp" />
+    <ClCompile Include="ODL\GroupODL.cpp" />
     <ClCompile Include="ODL\ODLTools.cpp" />
     <ClCompile Include="ODL\BaseODL.cpp" />
     <ClCompile Include="DAL\BaseDAL.cpp" />
@@ -264,6 +271,8 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClCompile Include="BLL\SkinUnitBLL.cpp" />
     <ClCompile Include="DAL\SkinUnitDAL.cpp" />
     <ClCompile Include="DAL\SkinDAL.cpp" />
+    <ClCompile Include="ODL\WallFaceODL.cpp" />
+    <ClCompile Include="ODL\WallODL.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>

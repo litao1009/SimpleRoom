@@ -45,11 +45,11 @@ public:
 
 	virtual	void	OnResize(const SRenderContext& rc) {}
 
-	virtual bool	PreRender3D(const SRenderContext& rc) { return true; }
+	virtual bool	PreRender3D(const SRenderContext& rc) { return false; }
 
 	virtual void	PostRender3D(const SRenderContext& rc) {}
 
-	virtual bool	PreRender2D(const SRenderContext& rc) { return true; }
+	virtual bool	PreRender2D(const SRenderContext& rc) { return false; }
 
 	virtual void	PostRender2D(const SRenderContext& rc) {}
 

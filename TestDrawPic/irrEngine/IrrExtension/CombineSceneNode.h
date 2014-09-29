@@ -14,12 +14,12 @@ class	CCombineSceneNode : public CBaseSceneNode
 {
 public:
 
-	CCombineSceneNode(SRenderContextWPtr rcWPtr, CBaseODLWPtr odlWPtr, std::string typeName="");
+	CCombineSceneNode(SRenderContextWPtr rcWPtr, CBaseODLWPtr odlWPtr);
 	~CCombineSceneNode();
 
 public:
 
-	static	CombineSceneNodeSPtr	Create(SRenderContextWPtr rcWPtr, CBaseODLWPtr odlWPtr, std::string typeName="");
+	static	CombineSceneNodeSPtr	Create(SRenderContextWPtr rcWPtr, CBaseODLWPtr odlWPtr);
 
 public://CBaseSceneNode
 
@@ -66,6 +66,9 @@ public:
 	void	CreateTriSelector();
 
 	void	Init();
+
+	CSceneNode3D*	GetSceneNode2D() const { return Node3D_; }
+	CSceneNode2D*	GetSceneNode3D() const { return Node2D_; }
 
 private:
 

@@ -19,11 +19,15 @@
 #include "BRep_Tool.hxx"
 #include "STLAPI.hxx"
 
-static	irr::core::vector3df s_PntNormal(0,1,0);
+#include "StatusMgr.h"
+
+static	irr::core::vector3df s_PntNormal(0,-1,0);
 static	irr::core::vector2df s_PntCoord(0,0);
 static	irr::core::plane3df	 s_PntPlane(0,0,0,0,1,0);
 static	irr::video::SColor	 s_PntColor(~0);
 static	irr::video::SColor	 s_LineColor(0xFF000000);
+static	irr::video::SColor	 s_PathColor(0xFF0000FF);
+static	irr::video::SColor	 s_RedColor(0xFFFF0000);
 
 DrawingLineWallCtrller::DrawingLineWallCtrller()
 {
@@ -31,6 +35,7 @@ DrawingLineWallCtrller::DrawingLineWallCtrller()
 	LineMeshBuf_ = nullptr;
 
 	TmpRect_ = new irr::scene::SMeshBuffer;
+	PathMeshBuf_ = new irr::scene::SMeshBuffer;
 
 	irr::core::vector3df defaultPos;
 	auto smeshBuf = static_cast<irr::scene::SMeshBuffer*>(TmpRect_);
@@ -51,10 +56,14 @@ DrawingLineWallCtrller::DrawingLineWallCtrller()
 	Material_.Thickness = 3;
 
 	NeedUpdateMesh_ = false;
+	SimpleChecker_ = true;
 
 	WallThickness_ = 200;
+	LastAngle_ = 0;
 
 	State_ = EDWLS_BEGIN;
+
+	PolarAngle_ = 30.f;
 
 	SetName("DrawingLineWallCtrller");
 }
@@ -75,16 +84,37 @@ DrawingLineWallCtrller::~DrawingLineWallCtrller()
 	{
 		TmpRect_->drop();
 	}
+
+	if ( PathMeshBuf_ )
+	{
+		PathMeshBuf_->drop();
+	}
 }
 
 bool DrawingLineWallCtrller::OnPostEvent( const irr::SEvent& event )
 {
+	if ( !IsEnable() )
+	{
+		return false;
+	}
+
 	if ( event.EventType == irr::EET_MOUSE_INPUT_EVENT )
 	{
 		if ( event.MouseInput.Event == irr::EMIE_MOUSE_MOVED )
 		{
-			CurrentPos_.X = event.MouseInput.X;
-			CurrentPos_.Y = event.MouseInput.Y;
+			CursorIPos_.X = event.MouseInput.X;
+			CursorIPos_.Y = event.MouseInput.Y;
+
+			if ( StatusMgr::GetInstance().GridAlign_ )
+			{
+				CurrentPos_ = *StatusMgr::GetInstance().GridAlign_;
+			}
+			else
+			{
+				auto smgr = GetRenderContextSPtr()->Smgr_.get();
+				auto line = smgr->getSceneCollisionManager()->getRayFromScreenCoordinates(CursorIPos_);
+				s_PntPlane.getIntersectionWithLine(line.start, line.getVector(), CurrentPos_);
+			}
 
 			return false;
 		}
@@ -99,14 +129,8 @@ bool DrawingLineWallCtrller::OnPostEvent( const irr::SEvent& event )
 				if ( event.MouseInput.Event == irr::EMIE_LMOUSE_PRESSED_DOWN )
 				{
 					State_ = EDWLS_DRAWING;
-
-					auto smgr = GetRenderContextSPtr()->Smgr_.get();
-
-					auto line = smgr->getSceneCollisionManager()->getRayFromScreenCoordinates(CurrentPos_);
-					irr::core::vector3df position;
-					s_PntPlane.getIntersectionWithLine(line.start, line.getVector(), position);
 					
-					Pnts_.push_back(position);
+					Pnts_.push_back(CurrentPos_);
 
 					return true;
 				}
@@ -119,16 +143,15 @@ bool DrawingLineWallCtrller::OnPostEvent( const irr::SEvent& event )
 			{
 				if ( event.MouseInput.Event == irr::EMIE_LMOUSE_PRESSED_DOWN )
 				{
-					auto smgr = GetRenderContextSPtr()->Smgr_.get();
+					if ( !SimpleChecker_ )
+					{
+						return true;
+					}
 
-					auto line = smgr->getSceneCollisionManager()->getRayFromScreenCoordinates(CurrentPos_);
-
-					irr::core::vector3df position;
-					s_PntPlane.getIntersectionWithLine(line.start, line.getVector(), position);
-
-					Pnts_.push_back(position);
+					Pnts_.push_back(CurrentPos_);
 
 					NeedUpdateMesh_ = true;
+					SimpleChecker_ = true;
 
 					return true;
 				}
@@ -139,25 +162,30 @@ bool DrawingLineWallCtrller::OnPostEvent( const irr::SEvent& event )
 				if ( event.MouseInput.Event == irr::EMIE_RMOUSE_PRESSED_DOWN )
 				{
 					State_ = EDWLS_FINISH;
-
-					irr::SEvent evt;
-					evt.EventType = irr::EET_USER_EVENT;
-					evt.UserEvent.UserData1 = EUT_FINISH_DRAW_LINE_WALL;
-
-					GetParentSPtr()->OnPostEvent(evt);
 					return true;
 				}
 			}
 
 			if ( event.EventType == irr::EET_KEY_INPUT_EVENT )
 			{
-				if ( event.KeyInput.Key == irr::KEY_ESCAPE )
+				if ( event.KeyInput.Key == irr::KEY_ESCAPE && event.KeyInput.PressedDown )
 				{
-					if ( !Pnts_.empty() )
+					assert(!Pnts_.empty());
+					
+					Pnts_.pop_back();
 					{
-						Pnts_.pop_back();
+						auto smeshBuf = static_cast<irr::scene::SMeshBuffer*>(PathMeshBuf_);
+						smeshBuf->Vertices.erase(smeshBuf->getVertexCount()-1);
+						smeshBuf->Indices.erase(smeshBuf->getIndexCount()-1);
+					}
+					NeedUpdateMesh_ = true;
 
-						NeedUpdateMesh_ = true;
+					if ( Pnts_.size() == 1 )
+					{
+						MeshBuf_->drop();
+						LineMeshBuf_->drop();
+						MeshBuf_ = nullptr;
+						LineMeshBuf_ = nullptr;
 					}
 
 					if ( Pnts_.empty() )
@@ -184,6 +212,13 @@ bool DrawingLineWallCtrller::PreRender3D( const SRenderContext& rc )
 	using namespace scene;
 	using namespace video;
 
+	SetEnable(StatusMgr::GetInstance().DrawingState_ == StatusMgr::EDS_LINE_WALL);
+	if ( !IsEnable() )
+	{
+		Reset();
+		return true;
+	}
+
 	switch (State_)
 	{
 	case DrawingLineWallCtrller::EDWLS_BEGIN:
@@ -197,21 +232,32 @@ bool DrawingLineWallCtrller::PreRender3D( const SRenderContext& rc )
 				break;
 			}
 
+			if ( Pnts_.size() >= 2 )
+			{
+				auto& back2 = Pnts_[Pnts_.size()-2];
+				auto vec1 = (back2 - Pnts_.back()).normalize();
+				auto vec2 = (CurrentPos_ - Pnts_.back()).normalize();
+				if ( vec1.dotProduct(vec2) > std::cos(irr::core::degToRad(15.f)) )
+				{
+					SimpleChecker_ = false;
+				}
+				else
+				{
+					SimpleChecker_ = true;
+				}
+			}
+
 			auto& lastPnt = Pnts_.back();
 
 			auto smeshBuf = static_cast<SMeshBuffer*>(TmpRect_);
-				
-			auto StoWline = smgr->getSceneCollisionManager()->getRayFromScreenCoordinates(CurrentPos_);
-			vector3df cursorPos;
-			s_PntPlane.getIntersectionWithLine(StoWline.start, StoWline.getVector(), cursorPos);
 
-			vector3df dirVec = cursorPos - lastPnt;
+			vector3df dirVec = CurrentPos_ - lastPnt;
 			auto thickDir = dirVec.normalize().crossProduct(s_PntNormal);
 			
 			{//TmpRect_
 				TmpRect_->getPosition(0) = lastPnt;
-				TmpRect_->getPosition(1) = cursorPos;
-				TmpRect_->getPosition(2) = cursorPos + thickDir * WallThickness_;
+				TmpRect_->getPosition(1) = CurrentPos_;
+				TmpRect_->getPosition(2) = CurrentPos_ + thickDir * WallThickness_;
 				TmpRect_->getPosition(3) = lastPnt + thickDir * WallThickness_;
 			}
 
@@ -241,9 +287,8 @@ bool DrawingLineWallCtrller::PreRender3D( const SRenderContext& rc )
 					BRepOffsetAPI_MakePipeShell pipeMaker(wallPath);
 					pipeMaker.SetTransitionMode(BRepBuilderAPI_RightCorner);	//延切线方向缝合
 					pipeMaker.Add(dirWire);
-					pipeMaker.Build();
 
-					assert(pipeMaker.IsDone());
+					pipeMaker.Build();
 
 					FaceShape_ = pipeMaker.Shape();
 					//StlAPI::Write(FaceShape_, "wallShell.stl");
@@ -258,6 +303,12 @@ bool DrawingLineWallCtrller::PreRender3D( const SRenderContext& rc )
 					MeshBuf_ = mesh->getMeshBuffer(0);
 					MeshBuf_->grab();
 					mesh->drop();
+
+					if ( wallPath.Closed() )
+					{
+						State_ = EDWLS_FINISH;
+						return false;
+					}
 				}
 
 				{//Line Mesh
@@ -289,6 +340,19 @@ bool DrawingLineWallCtrller::PreRender3D( const SRenderContext& rc )
 					LineMeshBuf_ = newSmesh;
 				}
 
+				{//Path Mesh
+					auto smeshBuf = static_cast<irr::scene::SMeshBuffer*>(PathMeshBuf_);
+					smeshBuf->Vertices.clear();
+					smeshBuf->Indices.clear();
+
+					auto curCount = PathMeshBuf_->getIndexCount();
+					for ( const auto& curPnt : Pnts_ )
+					{
+						smeshBuf->Vertices.push_back(irr::video::S3DVertex(curPnt, s_PntNormal, s_PathColor, s_PntCoord));
+						smeshBuf->Indices.push_back(curCount++);
+					}
+				}
+
 				NeedUpdateMesh_ = false;
 			}
 		}
@@ -301,7 +365,7 @@ bool DrawingLineWallCtrller::PreRender3D( const SRenderContext& rc )
 		break;
 	}
 
-	return true;
+	return false;
 }
 
 void DrawingLineWallCtrller::PostRender3D( const SRenderContext& rc )
@@ -311,13 +375,18 @@ void DrawingLineWallCtrller::PostRender3D( const SRenderContext& rc )
 	using namespace scene;
 	using namespace video;
 
+	if ( !IsEnable() )
+	{
+		return;
+	}
+
 	auto tmpRectSmesh = static_cast<irr::scene::SMeshBuffer*>(TmpRect_);
 
 	switch (State_)
 	{
 	case DrawingLineWallCtrller::EDWLS_BEGIN:
 		{
-
+			
 		}
 		break;
 	case DrawingLineWallCtrller::EDWLS_DRAWING:
@@ -348,6 +417,20 @@ void DrawingLineWallCtrller::PostRender3D( const SRenderContext& rc )
 				tmpRectSmesh->Vertices[index].Color.set(0xFF000000);
 			}
 			driver->drawVertexPrimitiveList(TmpRect_->getVertices(), TmpRect_->getVertexCount(), TmpRect_->getIndices(), TmpRect_->getIndexCount(), EVT_STANDARD, EPT_LINE_LOOP);
+
+			if ( PathMeshBuf_->getIndexCount() > 1 )
+			{
+				driver->drawVertexPrimitiveList(PathMeshBuf_->getVertices(), PathMeshBuf_->getVertexCount(), PathMeshBuf_->getIndices(), PathMeshBuf_->getIndexCount()-1, EVT_STANDARD, EPT_LINE_STRIP);
+			}
+
+			if ( SimpleChecker_ )
+			{
+				driver->draw3DLine(Pnts_.back(), CurrentPos_, s_PathColor);
+			}
+			else
+			{
+				driver->draw3DLine(Pnts_.back(), CurrentPos_, s_RedColor);
+			}
 		}
 		break;
 	case DrawingLineWallCtrller::EDWLS_FINISH:
@@ -375,9 +458,16 @@ void DrawingLineWallCtrller::Reset()
 		LineMeshBuf_->drop();
 		LineMeshBuf_ = nullptr;
 	}
+
+	if ( PathMeshBuf_ )
+	{
+		static_cast<irr::scene::SMeshBuffer*>(PathMeshBuf_)->Vertices.clear();
+		static_cast<irr::scene::SMeshBuffer*>(PathMeshBuf_)->Indices.clear();
+	}
 	
 	Pnts_.clear();
 
+	SimpleChecker_ = true;
 	State_ = EDWLS_BEGIN;
 }
 

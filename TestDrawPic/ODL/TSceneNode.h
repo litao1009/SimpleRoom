@@ -4,6 +4,7 @@
 #pragma once
 
 #include "irrEngine/IrrExtension/CombineSceneNode.h"
+#include "irrEngine/SRenderContextFwd.h"
 
 #include <memory>
 #include <vector>
@@ -30,6 +31,29 @@ public:
 		{
 			DataSceneNode_->drop();
 		}
+	}
+
+public:
+
+	template<typename subType>
+	typename TSceneNode<subType>::SceneNodeSPtr	CreateChild(SRenderContextWPtr renderContext)
+	{
+		auto newChild = std::make_shared<subType>();
+		auto datasceneNode = CCombineSceneNode::Create(renderContext, newChild);
+		newChild->SetDataSceneNode(datasceneNode);
+
+		AddChild(newChild);
+
+		return newChild;
+	}
+
+	static	SceneNodeSPtr	Create(SRenderContextWPtr renderContext)
+	{
+		auto newNode = std::make_shared<T>();
+		auto datasceneNode = CCombineSceneNode::Create(renderContext, newNode);
+		newNode->SetDataSceneNode(datasceneNode);
+
+		return newNode;
 	}
 
 public:
@@ -103,7 +127,7 @@ public:
 	//…Ë÷√∏∏Ω⁄µ„
 	void	SetParent(SceneNodeWPtr val)
 	{
-		if ( ParentWPtr_ == val )
+		if ( ParentWPtr_.lock() == val.lock() )
 		{
 			return;
 		}

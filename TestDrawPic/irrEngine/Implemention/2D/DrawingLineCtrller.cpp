@@ -136,7 +136,7 @@ void DrawingLineCtrller::OnResize( const SRenderContext& rc )
 
 bool DrawingLineCtrller::PreRender3D( const SRenderContext& rc )
 {
-	return true;
+	return false;
 }
 
 void DrawingLineCtrller::PostRender3D( const SRenderContext& rc )

@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "baseodl.h"
+#include "BaseODL.h"
 #include "irrEngine/SRenderContextFwd.h"
 
 class CDesignODL :	public CBaseODL
@@ -21,15 +21,14 @@ public://CBaseODL
 
 public:
 
-	void	Init();
+	virtual	void	Init();
 
-	SRenderContextSPtr GetRenderContext() const { return m_spRenderContext; }
+	SRenderContextSPtr GetRenderContext() const { return RenderContext_; }
 
 private:
-	
-	SRenderContextSPtr	m_spRenderContext;
 
 	HWND				Hwnd_;
+	SRenderContextSPtr	RenderContext_;
 };
 
 typedef	std::shared_ptr<CDesignODL> CDesignODLSPtr;

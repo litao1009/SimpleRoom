@@ -6,6 +6,8 @@
 #include "Irrlicht/os.h"
 #include "SRenderContext.h"
 
+#include <string>
+#include <boost/format.hpp>
 #include <boost/filesystem.hpp>
 
 class	IrrEngine::Imp
@@ -124,4 +126,28 @@ bool IrrEngine::WriteTextureToDisk( irr::video::ITexture* tex, const char* filen
 	tex->unlock();
 	img->drop();
 	return ret;
+}
+
+void IrrEngine::Dump( const irr::core::vector3df& vec, const char* name )
+{
+	boost::format fmt("%s (X: %f, Y: %f, Z: %f)");
+	fmt % name % vec.X % vec.Y % vec.Z;
+
+	irr::os::Printer::print(fmt.str().c_str());
+}
+
+void IrrEngine::Dump( const irr::core::vector2df& vec, const char* name )
+{
+	boost::format fmt("%s (X: %f, Y: %f)");
+	fmt % name % vec.X % vec.Y;
+
+	irr::os::Printer::print(fmt.str().c_str());
+}
+
+void IrrEngine::Dump( const irr::core::vector2di& vec, const char* name )
+{
+	boost::format fmt("%s (X: %d, Y: %d)");
+	fmt % name % vec.X % vec.Y;
+
+	irr::os::Printer::print(fmt.str().c_str());
 }

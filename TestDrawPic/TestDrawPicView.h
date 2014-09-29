@@ -27,17 +27,19 @@ protected: // 仅从序列化创建
 
 // 特性
 public:
+
 	CTestDrawPicDoc* GetDocument() const;
 	CMainFrame* GetMainFrame() const;
+
 // 操作
 public:
 
 	COleDropTarget* m_pDrop;
+
 private:
+
 	Gdiplus::Color m_clGrout;
-	
-	INT m_nGroutX;
-	INT m_nGroutY;
+
 // 重写
 public:
 	virtual void OnDraw(CDC* pDC);  // 重写以绘制该视图

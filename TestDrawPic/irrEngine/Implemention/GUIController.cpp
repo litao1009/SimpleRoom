@@ -114,9 +114,9 @@ bool GUIController::OnPreEvent( const irr::SEvent& event )
 			SEvent evt;
 			evt.EventType = EET_USER_EVENT;
 			evt.UserEvent.UserData1 = EUT_RESIZE_CHANGE_DURING;
-			auto spParent = GetParentSPtr();
-			assert(spParent);
-			spParent->OnPreEvent(evt);
+			auto rc = GetRenderContextSPtr();
+			assert(rc);
+			rc->PostEvent(evt);
 
 			return true;
 		}
@@ -160,9 +160,9 @@ bool GUIController::OnGUIEvent( const irr::SEvent& event )
 				SEvent evt;
 				evt.EventType = EET_USER_EVENT;
 				evt.UserEvent.UserData1 = EUT_RESIZE_CHANGE_BEGIN;
-				auto spParent = GetParentSPtr();
-				assert(spParent);
-				spParent->OnPreEvent(evt);
+				auto rc = GetRenderContextSPtr();
+				assert(rc);
+				rc->PostEvent(evt);
 
 				Icon_ = ECI_SIZENESW;
 
@@ -174,9 +174,9 @@ bool GUIController::OnGUIEvent( const irr::SEvent& event )
 				SEvent evt;
 				evt.EventType = EET_USER_EVENT;
 				evt.UserEvent.UserData1 = EUT_RESIZE_CHANGE_END;
-				auto spParent = GetParentSPtr();
-				assert(spParent);
-				spParent->OnPreEvent(evt);
+				auto rc = GetRenderContextSPtr();
+				assert(rc);
+				rc->PostEvent(evt);
 
 				Icon_ = ECI_SIZENESW;
 
@@ -196,9 +196,9 @@ bool GUIController::OnGUIEvent( const irr::SEvent& event )
 				SEvent evt;
 				evt.EventType = EET_USER_EVENT;
 				evt.UserEvent.UserData1 = EUT_RESIZE_MINIMUM;
-				auto spParent = GetParentSPtr();
-				assert(spParent);
-				spParent->OnPreEvent(evt);
+				auto rc = GetRenderContextSPtr();
+				assert(rc);
+				rc->PostEvent(evt);
 
 				ret = true;
 			}
@@ -215,9 +215,9 @@ bool GUIController::OnGUIEvent( const irr::SEvent& event )
 				SEvent evt;
 				evt.EventType = EET_USER_EVENT;
 				evt.UserEvent.UserData1 = EUT_RESIZE_RESTORE;
-				auto spParent = GetParentWPtr().lock();
-				assert(spParent);
-				spParent->OnPreEvent(evt);
+				auto rc = GetRenderContextSPtr();
+				assert(rc);
+				rc->PostEvent(evt);
 
 				ret = true;
 			}
@@ -328,7 +328,7 @@ void GUIController::OnResize(const SRenderContext& rc)
 
 bool GUIController::PreRender3D( const SRenderContext& rc )
 {
-	return !Minimum_;
+	return Minimum_;
 }
 
 void GUIController::PostRender3D( const SRenderContext& rc )
@@ -368,7 +368,7 @@ bool GUIController::PreRender2D( const SRenderContext& rc )
 		ShowCameraImage_->setImage(HideCameraTex_.get());
 	}
 
-	return true;
+	return false;
 }
 
 void GUIController::PostRender2D( const SRenderContext& rc )

@@ -126,8 +126,6 @@ void CSimpleOrthoAnimator::animateNode(irr::scene::ISceneNode* node, irr::u32 ti
 	auto target = camera->getTarget();
 	auto tarToPos = (camera->getAbsolutePosition() - camera->getTarget());
 
-	auto relativeRotation = tarToPos.getHorizontalAngle();
-
 	if ( firstUpdate )
 	{
 		target.Y = 0;
@@ -167,14 +165,23 @@ void CSimpleOrthoAnimator::animateNode(irr::scene::ISceneNode* node, irr::u32 ti
 		{
 			if (CursorPos != CenterCursor)
 			{
+				auto center = (smgr->getVideoDriver()->getViewPort().UpperLeftCorner + smgr->getVideoDriver()->getViewPort().LowerRightCorner)/2;
 				irr::core::plane3df zeroPlane(irr::core::vector3df(0,0,0), irr::core::vector3df(0,1,0));
-				auto line = smgr->getSceneCollisionManager()->getRayFromScreenCoordinates(CursorIPos, camera);
-				irr::core::vector3df mousePos;
-				auto ret = zeroPlane.getIntersectionWithLine(line.start, line.getVector(), mousePos);
-				
-				assert(ret);
 
-				auto ralationVec = -(mousePos - target);
+				irr::core::vector3df mousePos;
+				{
+					auto line = smgr->getSceneCollisionManager()->getRayFromScreenCoordinates(CursorIPos, camera);
+					auto ret = zeroPlane.getIntersectionWithLine(line.start, line.getVector(), mousePos);
+					assert(ret);
+				}
+				irr::core::vector3df centerPos;
+				{
+					auto line = smgr->getSceneCollisionManager()->getRayFromScreenCoordinates(center, camera);
+					auto ret = zeroPlane.getIntersectionWithLine(line.start, line.getVector(), centerPos);
+					assert(ret);
+				}			
+
+				auto ralationVec = centerPos - mousePos;
 				pos += ralationVec;
 				target += ralationVec;
 

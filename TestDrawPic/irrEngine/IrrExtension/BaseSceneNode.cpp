@@ -6,9 +6,8 @@
 using namespace irr;
 using namespace scene;
 
-CBaseSceneNode::CBaseSceneNode( SRenderContextWPtr rcWPtr, CBaseODLWPtr odlWPtr, std::string typeName/*=""*/ )
+CBaseSceneNode::CBaseSceneNode( SRenderContextWPtr rcWPtr, CBaseODLWPtr odlWPtr )
 	:IMeshSceneNode(0, rcWPtr.lock()->Smgr_.get(), -1),
-	TypeName_(typeName),
 	RenderContextWPtr_(rcWPtr),
 	BaseODLWPtr_(odlWPtr)
 {

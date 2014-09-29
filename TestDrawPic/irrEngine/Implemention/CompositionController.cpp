@@ -61,7 +61,7 @@ void CompositionController::PreInit( SRenderContextSPtr sprc )
 			animator->drop();
 
 			camera->setFOV(1.f/3.f*3.14f);
-			camera->setFarValue( 10000.0f );
+			camera->setFarValue( 15000.0f );
 			camera->setNearValue( 200.f );
 
 			imp_.MayaCamera_.reset(camera, [](irr::scene::ICameraSceneNode*){});
@@ -74,7 +74,7 @@ void CompositionController::PreInit( SRenderContextSPtr sprc )
 			animator->drop();
 
 			camera->setFOV(1.f/3.f*3.14f);
-			camera->setFarValue( 8000.0f );
+			camera->setFarValue( 15000.0f );
 			camera->setNearValue( 20.f );
 
 			imp_.FPSCamera_.reset(camera, [](irr::scene::ICameraSceneNode*){});
@@ -88,7 +88,7 @@ void CompositionController::PreInit( SRenderContextSPtr sprc )
 			animator->drop();
 
 			camera->setFOV(1.f/3.f*3.14f);
-			camera->setFarValue( 10000.0f );
+			camera->setFarValue( 15000.0f );
 			camera->setNearValue( 200.f );
 			camera->setUpVector(irr::core::vector3df(0,0,-1));
 			camera->SetBaseWidth(6000);
@@ -114,25 +114,7 @@ void CompositionController::PreInit( SRenderContextSPtr sprc )
 	sprc->PushController(std::static_pointer_cast<IRenderController>(imp_.FlyCameraController_));
 	sprc->PushController(std::static_pointer_cast<IRenderController>(imp_.GUIController_));
 
-	sprc->PushController(std::static_pointer_cast<IRenderController>(imp_.MayaCameraController_));
-}
-
-
-void CompositionController::PostInit( SRenderContextSPtr sprc )
-{
-	IRenderController::PostInit(sprc);
-}
-
-bool CompositionController::OnPreEvent( const irr::SEvent& event )
-{
-	auto& imp_ = *ImpUPtr_;
-
-	if ( imp_.FlyCameraController_->IsFlying() )
-	{
-		return true;
-	}
-
-	return false;
+	//sprc->PushController(std::static_pointer_cast<IRenderController>(imp_.MayaCameraController_));
 }
 
 void CompositionController::OnResize( const SRenderContext& rc )
@@ -355,7 +337,7 @@ bool CompositionController::PreRender3D( const SRenderContext& rc )
 		imp_.FlyCameraController_->SetFlying(toSwitchCamera, camera, animator);
 	}
 
-	return true;
+	return false;
 }
 
 void CompositionController::PostRender3D( const SRenderContext& rc )
@@ -365,7 +347,7 @@ void CompositionController::PostRender3D( const SRenderContext& rc )
 
 bool CompositionController::PreRender2D( const SRenderContext& rc )
 {
-	return true;
+	return false;
 }
 
 void CompositionController::PostRender2D( const SRenderContext& rc )

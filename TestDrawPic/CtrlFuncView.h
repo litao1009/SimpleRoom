@@ -15,32 +15,31 @@ class CCtrlFuncView : public CView
 	DECLARE_DYNCREATE(CCtrlFuncView)
 
 protected:
+
 	CCtrlFuncView();           // 动态创建所使用的受保护的构造函数
+
 	virtual ~CCtrlFuncView();
-public:
-	
-	//子窗口显示
-	CSubViewer m_vwSubViewPort;
 
 public:
 
-	CDesignODLSPtr	GetRootODL() const { return RootODL_; }
+	CDesignODLSPtr		GetRootODL() const { return RootODL_; }
 
-	void		SetRoot(CDesignODLSPtr root) { RootODL_ = root; }
+	void				SetRoot(CDesignODLSPtr root) { RootODL_ = root; }
+
+	CSubViewer&			GetSubView() { return SubViewPort_; }
+
+	const CSubViewer&	GetSubView() const { return SubViewPort_; }
 
 private:
 
 	CDesignODLSPtr	RootODL_;
 
-protected:
-	
+	//子窗口显示
+	CSubViewer		SubViewPort_;
 
-protected:
-	//开始建墙Line
-	//////////////////////////////////////////////////////////////////////////
-	
 public:
 	virtual void OnDraw(CDC* pDC);      // 重写以绘制该视图
+
 #ifdef _DEBUG
 	virtual void AssertValid() const;
 #ifndef _WIN32_WCE
