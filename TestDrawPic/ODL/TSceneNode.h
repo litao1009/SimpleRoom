@@ -47,9 +47,10 @@ public:
 		return newChild;
 	}
 
-	static	SceneNodeSPtr	Create(SRenderContextWPtr renderContext)
+	template<typename subType>
+	static	typename TSceneNode<subType>::SceneNodeSPtr	Create(SRenderContextWPtr renderContext)
 	{
-		auto newNode = std::make_shared<T>();
+		auto newNode = std::make_shared<subType>();
 		auto datasceneNode = CCombineSceneNode::Create(renderContext, newNode);
 		newNode->SetDataSceneNode(datasceneNode);
 

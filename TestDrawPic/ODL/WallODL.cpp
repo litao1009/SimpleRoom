@@ -14,6 +14,8 @@
 #include "IVideoDriver.h"
 #include "ISceneManager.h"
 
+#include "IrrEngine/IrrEngine.h"
+
 CWallODL::CWallODL()
 {
 	
@@ -38,7 +40,7 @@ CWallODL::ChildrenList CWallODL::CreateWallByBottomFace( SRenderContextWPtr rend
 	auto wallIndex = 0;
 	for ( TopExp_Explorer exp(wallCompSolids, TopAbs_SOLID); exp.More(); exp.Next(),++wallIndex )
 	{
-		auto newWall = CWallODL::Create(renderContext);
+		auto newWall = CWallODL::Create<CWallODL>(renderContext);
 		auto curSolid = exp.Current();
 
 		auto& pnt0 = pntList[wallIndex];
@@ -142,4 +144,17 @@ void CWallODL::SetDefaultTexture()
 	texMat.setScale(irr::core::vector3df(1/uLen, 1/vLen, 1));
 	auto meshBufferPtr = GetDataSceneNode()->getMesh()->getMeshBuffer(0);
 	meshBufferPtr->getMaterial().setTextureMatrix(0, texMat);
+}
+
+void CWallODL::UpdateSweeping()
+{
+	if ( IsSwept() )
+	{
+		GetDataSceneNode()->GetSceneNode3D()->SaveMaterialType();
+		GetDataSceneNode()->GetSceneNode3D()->SetMaterialType(IrrEngine::GetInstance()->GetShaderType(EST_SELECTION));
+	}
+	else
+	{
+		GetDataSceneNode()->GetSceneNode3D()->ResetMaterialType();
+	}
 }

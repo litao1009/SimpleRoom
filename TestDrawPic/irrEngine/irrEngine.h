@@ -77,6 +77,7 @@ public:
 	static	void				Dump(const irr::core::vector3df& vec, const char* name);
 	static	void				Dump(const irr::core::vector2df& vec, const char* name);
 	static	void				Dump(const irr::core::vector2di& vec, const char* name);
+	static	void				Dump(const char* simpleString);
 
 public:
 

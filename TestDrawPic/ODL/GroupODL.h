@@ -14,7 +14,7 @@ public:
 
 public:
 
-	virtual	ENUM_OBOJECT_TYPE	GetType() const { return EOBT_OBJ_Group; }
+	virtual	EObjectDisplayLayerType	GetType() const { return EODLT_GROUP; }
 };
 
 typedef	std::shared_ptr<CGroupODL>	CGroupODLSPtr;

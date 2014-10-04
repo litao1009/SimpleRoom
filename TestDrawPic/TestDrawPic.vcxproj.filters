@@ -160,9 +160,6 @@
     <ClCompile Include="irrEngine\Implemention\CompositionController.cpp">
       <Filter>IrrEngine\Implemention</Filter>
     </ClCompile>
-    <ClCompile Include="irrEngine\Implemention\MayaCameraController.cpp">
-      <Filter>IrrEngine\Implemention</Filter>
-    </ClCompile>
     <ClCompile Include="irrEngine\Implemention\ResizeController.cpp">
       <Filter>IrrEngine\Implemention</Filter>
     </ClCompile>
@@ -207,6 +204,12 @@
     </ClCompile>
     <ClCompile Include="irrEngine\Implemention\GridController.cpp">
       <Filter>IrrEngine\Implemention</Filter>
+    </ClCompile>
+    <ClCompile Include="irrEngine\Implemention\SweepingController.cpp">
+      <Filter>IrrEngine\Implemention</Filter>
+    </ClCompile>
+    <ClCompile Include="irrEngine\IrrExtension\ExtShaders.cpp">
+      <Filter>IrrEngine\IrrExtension</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -408,9 +411,6 @@
     <ClInclude Include="irrEngine\Implemention\CompositionController.h">
       <Filter>IrrEngine\Implemention</Filter>
     </ClInclude>
-    <ClInclude Include="irrEngine\Implemention\MayaCameraController.h">
-      <Filter>IrrEngine\Implemention</Filter>
-    </ClInclude>
     <ClInclude Include="irrEngine\Implemention\EventUserType.h">
       <Filter>IrrEngine\Implemention</Filter>
     </ClInclude>
@@ -467,6 +467,12 @@
     </ClInclude>
     <ClInclude Include="StatusMgr.h">
       <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="irrEngine\Implemention\SweepingController.h">
+      <Filter>IrrEngine\Implemention</Filter>
+    </ClInclude>
+    <ClInclude Include="irrEngine\IrrExtension\ExtShaders.h">
+      <Filter>IrrEngine\IrrExtension</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -575,6 +581,9 @@
     </Filter>
     <Filter Include="IrrEngine\Implemention\2D">
       <UniqueIdentifier>{dbc41202-3f09-48fd-9c99-b5c777984c6e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RenderController">
+      <UniqueIdentifier>{95520caa-429e-41dc-990e-0add94df28fe}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

@@ -17,7 +17,7 @@ public:
 
 public://CBaseODL
 
-	virtual	ENUM_OBOJECT_TYPE	GetType() { return EOBT_Design; }
+	virtual	EObjectDisplayLayerType	GetType() const { return EODLT_DESIGN; }
 
 public:
 

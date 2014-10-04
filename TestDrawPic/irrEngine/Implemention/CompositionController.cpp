@@ -9,7 +9,6 @@
 #include "irrEngine/IrrExtension/OrthoCameraRH.h"
 #include "irrEngine/IrrExtension/CameraFollowSplineAnimator.h"
 #include "GUIController.h"
-#include "MayaCameraController.h"
 #include "FlyCameraController.h"
 
 class	CompositionController::Imp
@@ -27,7 +26,6 @@ public:
 	ICameraSceneNodeSPtr		TopCamera_;
 
 	GUIControllerSPtr			GUIController_;
-	MayaCameraControllerSPtr	MayaCameraController_;
 	FlyCameraControllerSPtr		FlyCameraController_;
 };
 
@@ -36,7 +34,6 @@ CompositionController::CompositionController():ImpUPtr_(new Imp)
 	auto& imp_ = *ImpUPtr_;
 
 	imp_.GUIController_ = std::make_shared<GUIController>();
-	imp_.MayaCameraController_ = std::make_shared<MayaCameraController>();
 	imp_.FlyCameraController_ = std::make_shared<FlyCameraController>();
 
 	SetName("CompositionController");
@@ -97,7 +94,7 @@ void CompositionController::PreInit( SRenderContextSPtr sprc )
 			rc.Smgr_->setActiveCamera(imp_.TopCamera_.get());			
 		}
 	}
-
+	/*
 	{//Skybox
 		auto skyNode = rc.Smgr_->addSkyBoxSceneNode(
 			driver->getTexture("../Data/Resource/3D/sky_up_.jpg"),
@@ -107,14 +104,10 @@ void CompositionController::PreInit( SRenderContextSPtr sprc )
 			driver->getTexture("../Data/Resource/3D/sky_ft_.jpg"),
 			driver->getTexture("../Data/Resource/3D/sky_bk_.jpg"));
 		skyNode->setMaterialFlag(irr::video::EMF_BACK_FACE_CULLING, false);
-	}
-
-	imp_.MayaCameraController_->SetMayaCamera(imp_.MayaCamera_);
+	}*/
 
 	sprc->PushController(std::static_pointer_cast<IRenderController>(imp_.FlyCameraController_));
 	sprc->PushController(std::static_pointer_cast<IRenderController>(imp_.GUIController_));
-
-	//sprc->PushController(std::static_pointer_cast<IRenderController>(imp_.MayaCameraController_));
 }
 
 void CompositionController::OnResize( const SRenderContext& rc )

@@ -26,7 +26,9 @@ public:
 
 public:
 	
-	virtual	ENUM_OBOJECT_TYPE	GetType() const { return EOBT_Wall; }
+	virtual	EObjectDisplayLayerType	GetType() const { return EODLT_WALL; }
+
+	virtual void	UpdateSweeping();
 
 public:
 

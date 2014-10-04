@@ -14,6 +14,7 @@
 #include "irrEngine/Implemention/GridController.h"
 #include "irrEngine/Implemention/2D/DrawingLineWallCtrller.h"
 #include "irrEngine/Implemention/2D/DrawingRectWallCtrller.h"
+#include "irrEngine/Implemention/SweepingController.h"
 
 #include "ISceneManager.h"
 
@@ -34,6 +35,7 @@ public:
 	{
 		DrawLineWallCtrller_ = std::make_shared<DrawingLineWallCtrller>();
 		DrawRectWallCtrller_ = std::make_shared<DrawingRectWallCtrller>();
+		SweepingController_ = std::make_shared<SweepingController>();
 	}
 
 public://IRenderController
@@ -47,85 +49,64 @@ public://IRenderController
 	{
 		auto design = GetDesignSPtr();
 
-		//新建墙
-		if ( DrawLineWallCtrller_->GetState() == DrawingLineWallCtrller::EDWLS_FINISH )
+		if ( StatusMgr::GetInstance().DrawingState_ != StatusMgr::EDS_NONE )
 		{
-			auto wallret = DrawLineWallCtrller_->GetResult();
-			if ( wallret.Pnts_.size() <= 1 )
+			DrawLineWallCtrller_->SetEnable(StatusMgr::GetInstance().DrawingState_ == StatusMgr::EDS_LINE_WALL);
+			DrawRectWallCtrller_->SetEnable(StatusMgr::GetInstance().DrawingState_ == StatusMgr::EDS_RECT_WALL);
+
+			//新建墙
+			if ( DrawLineWallCtrller_->GetState() == DrawingLineWallCtrller::EDWLS_FINISH )
 			{
-				wallret.Shape_.Nullify();
-			}
-			DrawLineWallCtrller_->Reset();
-			StatusMgr::GetInstance().DrawingState_ = StatusMgr::EDS_NONE;
+				auto wallret = DrawLineWallCtrller_->GetResult();
+				if ( wallret.Pnts_.size() <= 1 )
+				{
+					wallret.Shape_.Nullify();
+				}
+				DrawLineWallCtrller_->Reset();
+				StatusMgr::GetInstance().DrawingState_ = StatusMgr::EDS_NONE;
 
 #pragma message("TODO:墙高配置")
-			if ( !wallret.Shape_.IsNull() )
-			{
-				auto newWalls = CWallODL::CreateWallByBottomFace(design->RenderContext_, wallret.Shape_, wallret.Pnts_, 2600);
-
-				auto newGroup = design->CreateChild<CGroupODL>(design->RenderContext_);
-				for ( auto& wall : newWalls )
+				if ( !wallret.Shape_.IsNull() )
 				{
-					newGroup->AddChild(wall);
-				}
-			}
-		}
+					auto newWalls = CWallODL::CreateWallByBottomFace(design->RenderContext_, wallret.Shape_, wallret.Pnts_, 2600);
 
-		//新建墙
-		if ( DrawRectWallCtrller_->GetState() == DrawingRectWallCtrller::EDWRS_FINISH )
-		{
-			auto wallret = DrawRectWallCtrller_->GetResult();
-			DrawRectWallCtrller_->Reset();
-			StatusMgr::GetInstance().DrawingState_ = StatusMgr::EDS_NONE;
+					auto newGroup = design->CreateChild<CGroupODL>(design->RenderContext_);
+					for ( auto& wall : newWalls )
+					{
+						newGroup->AddChild(wall);
+					}
+				}
+
+				StatusMgr::GetInstance().DrawingState_ = StatusMgr::EDS_NONE;
+				DrawLineWallCtrller_->SetEnable(StatusMgr::GetInstance().DrawingState_ == StatusMgr::EDS_LINE_WALL);
+			}
+
+			//新建墙
+			if ( DrawRectWallCtrller_->GetState() == DrawingRectWallCtrller::EDWRS_FINISH )
+			{
+				auto wallret = DrawRectWallCtrller_->GetResult();
+				DrawRectWallCtrller_->Reset();
+				StatusMgr::GetInstance().DrawingState_ = StatusMgr::EDS_NONE;
 #pragma message("TODO:墙高配置")
-			if ( std::get<4>(wallret) )
-			{
-				auto newWalls = CWallODL::CreateWallByRectRange(design->RenderContext_, std::get<0>(wallret), std::get<1>(wallret), std::get<2>(wallret), 2600);
-
-				auto newGroup = design->CreateChild<CGroupODL>(design->RenderContext_);
-				for ( auto& wall : newWalls )
+				if ( std::get<4>(wallret) )
 				{
-					newGroup->AddChild(wall);
+					auto newWalls = CWallODL::CreateWallByRectRange(design->RenderContext_, std::get<0>(wallret), std::get<1>(wallret), std::get<2>(wallret), 2600);
+
+					auto newGroup = design->CreateChild<CGroupODL>(design->RenderContext_);
+					for ( auto& wall : newWalls )
+					{
+						newGroup->AddChild(wall);
+					}
 				}
+
+				StatusMgr::GetInstance().DrawingState_ = StatusMgr::EDS_NONE;
+				DrawRectWallCtrller_->SetEnable(StatusMgr::GetInstance().DrawingState_ == StatusMgr::EDS_RECT_WALL);
 			}
 		}
-
-		//拣选
+		else
 		{
-			auto curSmgr = GetDesignSPtr()->GetRenderContext()->Smgr_.get();
-			assert(curSmgr && curSmgr->getActiveCamera());
-			auto curScreenPos = GetDesignSPtr()->GetRenderContext()->CursorControl_->getPosition();
-			auto curLine = GetDesignSPtr()->GetRenderContext()->Smgr_->getSceneCollisionManager()->getRayFromScreenCoordinates(curScreenPos, curSmgr->getActiveCamera());
-			auto curDir = curLine.getVector().normalize();
-			
-			gce_MakeLin ml(gp_Pnt(curLine.start.X, curLine.start.Y, curLine.start.Z), gp_Dir(curDir.X, curDir.Y, curDir.Z));
-			BRepBuilderAPI_MakeEdge me(ml.Value());
-			TopoDS_Edge e = me.Edge();
-			BRepExtrema_DistShapeShape selector;
-			selector.LoadS1(e);
 
-			for ( auto& curChild : GetDesignSPtr()->GetChildrenList() )
-			{
-				const auto& curShape = curChild->GetBaseShape();
-				if ( curShape.IsNull() )
-				{
-					continue;
-				}
-
-				selector.LoadS2(curShape);
-				selector.Perform();
-				if ( 0 == selector.NbSolution() )
-				{
-					continue;
-				}
-
-				if ( selector.Value() < 50.f )
-				{
-
-				}
-			}
 		}
-		
 
 		return true;
 	}
@@ -137,6 +118,7 @@ public:
 	CBaseODLWPtr						DesignODL_;
 	DrawingLineWallCtrllerSPtr			DrawLineWallCtrller_;
 	DrawingRectWallCtrllerSPtr			DrawRectWallCtrller_;
+	SweepingControllerSPtr				SweepingController_;
 };
 
 CDesignODL::CDesignODL(HWND Hwnd):ImpSPtr_(new Imp)
@@ -154,6 +136,8 @@ void CDesignODL::Init()
 {
 	{//Imp
 		ImpSPtr_->DesignODL_ = shared_from_this();
+		ImpSPtr_->DrawLineWallCtrller_->SetRootODL(shared_from_this());
+		ImpSPtr_->SweepingController_->SetRootODL(shared_from_this());
 	}
 	
 	{//RC
@@ -166,8 +150,12 @@ void CDesignODL::Init()
 		RenderContext_->PushController(std::make_shared<GridController>());						//网格吸附
 		RenderContext_->PushController(ImpSPtr_->DrawLineWallCtrller_);							//画线生成墙
 		RenderContext_->PushController(ImpSPtr_->DrawRectWallCtrller_);							//画框生成墙
+		RenderContext_->PushController(ImpSPtr_->SweepingController_);							//扫略
 		RenderContext_->PushController(std::static_pointer_cast<IRenderController>(ImpSPtr_));	//与三维交互数据
 		RenderContext_->PushController(std::make_shared<CompositionController>());				//三维自己的管理器
+
+		ImpSPtr_->DrawLineWallCtrller_->SetEnable(false);
+		ImpSPtr_->DrawRectWallCtrller_->SetEnable(false);
 	}
 	
 	{//DataSceneNode

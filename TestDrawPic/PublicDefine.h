@@ -1,122 +1,64 @@
 #ifndef PublicDefine_h__
 #define PublicDefine_h__
 
-
-#define DOUBLE_ZERO 0.00000000001f
-
-enum ENUM_ViewType
-{
-	//俯视图：正对顶面的全景视图
-	EVT_TOP=1,
-	//编辑面视图
-	EVT_FACE = 3,
-	
-	//
-	//立面图：针对某个方向的全景视图,左视、右视、后视图、前视图，都称作立面图，通过视觉位置确定
-	
-	//三维图
-	
-};
-
-enum ENUM_RECT_SELECTED_POS
-{
-	ERSP_None = 0,
-	ERSP_LeftTop = 1,
-	ERSP_Top = 2,
-	ERSP_RightTop = 3,
-	ERSP_Right = 4,
-	ERSP_RightBottom = 5,
-	ERSP_Bottom = 6,
-	ERSP_LeftBottom = 7,
-	ERSP_Left = 8,
-	ERSP_All = 10,
-};
-
-struct StObjInfo
-{
-	INT GTypeID;		//1、
-	INT ValueID;
-	BOOL IsSkin;		//是皮肤修改
-	float XLen;
-	float YLen;
-	float ZLen;
-	TCHAR ObjName[256];
-	TCHAR ShowPicPath[256];
-	TCHAR SkinPath[256];
-	TCHAR ModelPath[256];
-	StObjInfo()
-	{
-		ZeroMemory(this, sizeof(StObjInfo));
-	}
-};
-struct StCoverInfo
-{
-	int SkinWidth;
-	int SkinHeight;
-	int XGrout;
-	int YGrout;
-	DWORD GroutColor;			//缝隙颜色:ARGB
-	TCHAR SkinPath[256];
-	StCoverInfo()
-	{
-		ZeroMemory(this, sizeof(StCoverInfo));
-	}
-};
-enum ENUM_CreateStep
-{
-	ECS_STANDBY=0,
-	//开始
-	ECS_BEGIN=1,
-	//进行中
-	ECS_MOVING=2,
-	//已结束
-	ECS_END=3,
-};
-
-enum ENUM_OBOJECT_TYPE
+enum EObjectDisplayLayerType
 {
 	//基类
-	EOBT_Base = 0,
+	EODLT_BASE = 0,
+
 	//对象组
-	EOBT_OBJ_Group= 1,
-	//绘制线
-	EOBT_GuideLine=2,
+	EODLT_GROUP= 1,
+
 	//绘制矩形
-	EOBT_GuideRect = 3,
+	EOBT_GUIDE_RECT = 3,
+
 	//户型图
-	EOBT_Guide_Room_Style = 4,
+	EODLT_ROOM_STYLE = 4,
+
 	//户型 墙线
-	EOBT_Guide_Room_Style_Line = 5,
+	EODLT_ROOM_STYLE_LINE = 5,
+
 	//设计方案
-	EOBT_Design = 8,
+	EODLT_DESIGN = 8,
+
 	//墙
-	EOBT_Wall= 11,
+	EODLT_WALL= 11,
+
 	//墙面
-	EOBT_Wall_Face = 12,
+	EODLT_WALLFACE = 12,
+
 	//墙面分区
-	EOBT_Wall_Face_Zone = 13,
+	EODLT_WALLFACE_ZONE = 13,
+
 	//梁
-	EOBT_Beam = 14,
+	EODLT_BEAM = 14,
+
 	/*EOBT_Beam_Face = 15,
 	EOBT_Beam_Face_Zone = 16,*/
+
 	//柱
-	EOBT_Pillar = 17,
+	EODLT_PILLAR = 17,
+
 	/*EOBT_Pillar_Face = 18,
 	EOBT_Pillar_Face_Zone = 19,*/
+
 	//地
-	EOBT_Floor=21,
+	EODLT_FLOOR=21,
+
 	//地皮
-	EOBT_Floor_Zone=23,
+	EODLT_FLOOR_ZONE=23,
+
 	//天花板
-	EOBT_Sky=31,
+	EODLT_SKY=31,
+
 	//天花板皮
-	EOBT_Sky_Zone=32,
+	EODLT_SKY_ZONE=32,
 
 	//房间装饰
-	EOBT_Decor = 41,
+	EODLT_DECOR = 41,
 
 	//相机
-	EOBT_Camera=50
+	EODLT_CAMERA=50
 };
 
 enum ENUM_OPERAT_TYPE
@@ -135,14 +77,6 @@ enum ENUM_OPERAT_TYPE
 	EOT_Create_Wall_Face = 21,
 	//创建地板砖
 	EOT_Create_Floor_Zone=32,
-};
-
-//墙面的位置
-enum ENUM_SIDE_POS
-{
-	ESP_Up=1,
-	ESP_Down =2,
-	ESP_Other=3,
 };
 
 enum ENUM_Group_Type

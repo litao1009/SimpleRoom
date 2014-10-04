@@ -38,8 +38,8 @@ public:
 	SRenderContextWPtr	GetRenderContextWPtr() const { return RenderContextWPtr_; }
 	SRenderContextSPtr	GetRenderContextSPtr() const { return RenderContextWPtr_.lock(); }
 
-	void				SaveID() { m_SaveID = getID(); }
-	void				ResetID() { setID(m_SaveID); }
+	void				SaveID() { SaveID_ = getID(); }
+	void				ResetID() { setID(SaveID_); }
 
 protected:
 
@@ -47,7 +47,7 @@ protected:
 
 private:
 
-	irr::s32				m_SaveID;
+	irr::s32				SaveID_;
 
 	irr::video::SColor		DbgColor_;
 

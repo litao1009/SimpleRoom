@@ -120,6 +120,7 @@ void CSceneNode3D::setMesh( irr::scene::IMesh* mesh )
 	}
 
 	Mesh_ = mesh;
+	SaveMaterialType_.clear();
 }
 
 irr::scene::ISceneNode* CSceneNode3D::clone( irr::scene::ISceneNode* newParent, irr::scene::ISceneManager* newManager )
@@ -210,5 +211,48 @@ void CSceneNode3D::setVisible( bool visible )
 		{
 			GetRenderContextSPtr()->RemoveShadowFromNode(this);
 		}
+	}
+}
+
+void CSceneNode3D::SaveMaterialType()
+{
+	if ( !Mesh_ )
+	{
+		return;
+	}
+
+	SaveMaterialType_.clear();
+	SaveMaterialType_.reallocate(Mesh_->getMeshBufferCount());
+	for (unsigned index=0; index<Mesh_->getMeshBufferCount(); ++index )
+	{
+		SaveMaterialType_.push_back(Mesh_->getMeshBuffer(index)->getMaterial().MaterialType);
+	}
+}
+
+void CSceneNode3D::ResetMaterialType()
+{
+	if ( !Mesh_ || SaveMaterialType_.empty() )
+	{
+		return;
+	}
+
+	assert(Mesh_->getMeshBufferCount()==SaveMaterialType_.size());
+
+	for ( unsigned index=0; index<SaveMaterialType_.size(); ++index )
+	{
+		Mesh_->getMeshBuffer(index)->getMaterial().MaterialType = SaveMaterialType_[index];
+	}
+}
+
+void CSceneNode3D::SetMaterialType( irr::video::E_MATERIAL_TYPE mt )
+{
+	if ( !Mesh_ )
+	{
+		return;
+	}
+
+	for ( unsigned index=0; index<Mesh_->getMeshBufferCount(); ++index )
+	{
+		Mesh_->getMeshBuffer(index)->getMaterial().MaterialType = mt;
 	}
 }

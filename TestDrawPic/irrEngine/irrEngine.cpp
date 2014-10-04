@@ -6,6 +6,9 @@
 #include "Irrlicht/os.h"
 #include "SRenderContext.h"
 
+#include "irrEngine/IrrExtension/ExtShaders.h"
+
+#include <map>
 #include <string>
 #include <boost/format.hpp>
 #include <boost/filesystem.hpp>
@@ -17,6 +20,7 @@ public:
 	boost::filesystem::path					ResPath_;
 	irr::SIrrlichtCreationParameters		Params_;
 	std::shared_ptr<irr::CIrrDeviceWin32>	DeviceSPtr_;
+	std::map<EShaderType,int>				ShaderMap_;
 };
 
 
@@ -79,6 +83,12 @@ IrrEngine::IrrEngine(const irr::SIrrlichtCreationParameters& params):ImpUPtr_(ne
 
 	auto rawDevice = irr::createDeviceEx(imp_.Params_);
 	imp_.DeviceSPtr_.reset(static_cast<irr::CIrrDeviceWin32*>(rawDevice), std::bind(&irr::IrrlichtDevice::drop, std::placeholders::_1));
+
+	auto selectionCB = new SelectionCB;
+	auto material = rawDevice->getVideoDriver()->getGPUProgrammingServices()->addHighLevelShaderMaterial(SelectionCB::GetVertexShader(), SelectionCB::GetPixelShader(), selectionCB);
+	selectionCB->drop();
+
+	imp_.ShaderMap_[EST_SELECTION] = material;
 }
 
 IrrEngine::~IrrEngine()
@@ -93,7 +103,7 @@ irr::IrrlichtDevice* IrrEngine::GetDevice()
 
 irr::video::E_MATERIAL_TYPE IrrEngine::GetShaderType( EShaderType enm )
 {
-	return static_cast<irr::video::E_MATERIAL_TYPE>(0);
+	return static_cast<irr::video::E_MATERIAL_TYPE>(ImpUPtr_->ShaderMap_.at(enm));
 }
 
 bool IrrEngine::SetResPath( boost::filesystem::path dirPath )
@@ -150,4 +160,9 @@ void IrrEngine::Dump( const irr::core::vector2di& vec, const char* name )
 	fmt % name % vec.X % vec.Y;
 
 	irr::os::Printer::print(fmt.str().c_str());
+}
+
+void IrrEngine::Dump( const char* simpleString )
+{
+	irr::os::Printer::print(simpleString);
 }

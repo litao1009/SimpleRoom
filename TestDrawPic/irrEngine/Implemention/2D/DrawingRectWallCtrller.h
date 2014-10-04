@@ -66,7 +66,9 @@ private:
 
 	irr::video::SMaterial		Material_;
 
-	irr::core::vector2di		CurrentPos_;
+	irr::core::vector2di		CursolIPos_;
+	irr::core::vector3df		CurrentPos_;
+	bool						Checker_;
 
 	EDrawingWallRectState		State_;
 

@@ -136,11 +136,12 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClInclude Include="irrEngine\Implemention\FlyCameraController.h" />
     <ClInclude Include="irrEngine\Implemention\GridController.h" />
     <ClInclude Include="irrEngine\Implemention\GUIController.h" />
-    <ClInclude Include="irrEngine\Implemention\MayaCameraController.h" />
+    <ClInclude Include="irrEngine\Implemention\SweepingController.h" />
     <ClInclude Include="irrEngine\Implemention\ResizeController.h" />
     <ClInclude Include="irrEngine\IrrExtension\BaseSceneNode.h" />
     <ClInclude Include="irrEngine\IrrExtension\CameraFollowSplineAnimator.h" />
     <ClInclude Include="irrEngine\IrrExtension\CombineSceneNode.h" />
+    <ClInclude Include="irrEngine\IrrExtension\ExtShaders.h" />
     <ClInclude Include="irrEngine\IrrExtension\GUIImageButton.h" />
     <ClInclude Include="irrEngine\IrrExtension\OrthoCameraRH.h" />
     <ClInclude Include="irrEngine\IrrExtension\SceneNode2D.h" />
@@ -225,11 +226,12 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClCompile Include="irrEngine\Implemention\FlyCameraController.cpp" />
     <ClCompile Include="irrEngine\Implemention\GridController.cpp" />
     <ClCompile Include="irrEngine\Implemention\GUIController.cpp" />
-    <ClCompile Include="irrEngine\Implemention\MayaCameraController.cpp" />
+    <ClCompile Include="irrEngine\Implemention\SweepingController.cpp" />
     <ClCompile Include="irrEngine\Implemention\ResizeController.cpp" />
     <ClCompile Include="irrEngine\IrrExtension\BaseSceneNode.cpp" />
     <ClCompile Include="irrEngine\IrrExtension\CameraFollowSplineAnimator.cpp" />
     <ClCompile Include="irrEngine\IrrExtension\CombineSceneNode.cpp" />
+    <ClCompile Include="irrEngine\IrrExtension\ExtShaders.cpp" />
     <ClCompile Include="irrEngine\IrrExtension\GUIImageButton.cpp" />
     <ClCompile Include="irrEngine\IrrExtension\OrthoCameraRH.cpp" />
     <ClCompile Include="irrEngine\IrrExtension\SceneNode2D.cpp" />

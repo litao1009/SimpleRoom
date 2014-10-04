@@ -26,6 +26,7 @@ static	irr::core::plane3df	 s_PntPlane(0,0,0,0,1,0);
 static	irr::video::SColor	 s_PntColor(~0);
 static	irr::video::SColor	 s_LineColor(0xFF000000);
 static	irr::video::SColor	 s_PathColor(0xFF0000FF);
+static	irr::video::SColor	 s_RedColor(0xFFFF0000);
 
 using namespace irr;
 using namespace scene;
@@ -146,6 +147,7 @@ DrawingRectWallCtrller::DrawingRectWallCtrller()
 	Material_.Lighting = false;
 	Material_.ZWriteEnable = false;
 	Material_.BackfaceCulling = false;
+	Checker_ = true;
 	Material_.Thickness = 3;
 
 	WallThickness_ = 200;
@@ -184,8 +186,8 @@ bool DrawingRectWallCtrller::OnPostEvent( const irr::SEvent& event )
 	{
 		if ( event.MouseInput.Event == irr::EMIE_MOUSE_MOVED )
 		{
-			CurrentPos_.X = event.MouseInput.X;
-			CurrentPos_.Y = event.MouseInput.Y;
+			CursolIPos_.X = event.MouseInput.X;
+			CursolIPos_.Y = event.MouseInput.Y;
 
 			return false;
 		}
@@ -199,15 +201,11 @@ bool DrawingRectWallCtrller::OnPostEvent( const irr::SEvent& event )
 			{
 				if ( event.MouseInput.Event == irr::EMIE_LMOUSE_PRESSED_DOWN )
 				{
-					State_ = EDWRS_DRAWING;
-
-					auto smgr = GetRenderContextSPtr()->Smgr_.get();
-
-					auto line = smgr->getSceneCollisionManager()->getRayFromScreenCoordinates(CurrentPos_);
-					irr::core::vector3df position;
-					s_PntPlane.getIntersectionWithLine(line.start, line.getVector(), position);
-
-					FirstPnt_ = position;
+					if ( Checker_ )
+					{
+						FirstPnt_ = CurrentPos_;
+						State_ = EDWRS_DRAWING;
+					}
 
 					return true;
 				}
@@ -220,16 +218,11 @@ bool DrawingRectWallCtrller::OnPostEvent( const irr::SEvent& event )
 			{
 				if ( event.MouseInput.Event == irr::EMIE_LMOUSE_PRESSED_DOWN )
 				{
-					auto smgr = GetRenderContextSPtr()->Smgr_.get();
-
-					auto line = smgr->getSceneCollisionManager()->getRayFromScreenCoordinates(CurrentPos_);
-
-					irr::core::vector3df position;
-					s_PntPlane.getIntersectionWithLine(line.start, line.getVector(), position);
-
-					LastPnt_ = position;
-
-					State_ = EDWRS_FINISH;
+					if ( Checker_ )
+					{
+						LastPnt_ = CurrentPos_;
+						State_ = EDWRS_FINISH;
+					}
 
 					return true;
 				}
@@ -245,36 +238,48 @@ bool DrawingRectWallCtrller::OnPostEvent( const irr::SEvent& event )
 
 bool DrawingRectWallCtrller::PreRender3D( const SRenderContext& rc )
 {
-	using namespace irr;
-	using namespace core;
-	using namespace scene;
-	using namespace video;
-
-	SetEnable(StatusMgr::GetInstance().DrawingState_ == StatusMgr::EDS_RECT_WALL);
 	if ( !IsEnable() )
 	{
 		Reset();
+		return false;
 	}
 
-	if ( !IsEnable() )
-	{
-		return true;
-	}
+	auto smgr = GetRenderContextSPtr()->Smgr_.get();
+
+	Checker_ = true;
 
 	switch (State_)
 	{
 	case DrawingRectWallCtrller::EDWRS_BEGIN:
+		{
+			if ( StatusMgr::GetInstance().GridAlign_ )
+			{
+				CurrentPos_ = *StatusMgr::GetInstance().GridAlign_;
+			}
+			else
+			{
+				auto line = smgr->getSceneCollisionManager()->getRayFromScreenCoordinates(CursolIPos_);
+				s_PntPlane.getIntersectionWithLine(line.start, line.getVector(), CurrentPos_);
+			}
+		}
 		break;
 	case DrawingRectWallCtrller::EDWRS_DRAWING:
 		{
-			auto smgr = GetRenderContextSPtr()->Smgr_.get();
+			if ( StatusMgr::GetInstance().GridAlign_ )
+			{
+				CurrentPos_ = *StatusMgr::GetInstance().GridAlign_;
+			}
+			else
+			{
+				auto line = smgr->getSceneCollisionManager()->getRayFromScreenCoordinates(CursolIPos_);
+				s_PntPlane.getIntersectionWithLine(line.start, line.getVector(), CurrentPos_);
+			}
 
-			auto line = smgr->getSceneCollisionManager()->getRayFromScreenCoordinates(CurrentPos_);
+			auto vec = CurrentPos_ - FirstPnt_;
 
-			irr::core::vector3df position;
-			s_PntPlane.getIntersectionWithLine(line.start, line.getVector(), position);
-
-			auto vec = position - FirstPnt_;
+			Checker_ = vec.getLengthSQ() >= WallThickness_ * WallThickness_;
+			Checker_ &= vec.X * vec.X >= WallThickness_ * WallThickness_;
+			Checker_ &= vec.Z * vec.Z >= WallThickness_ * WallThickness_;
 
 			MeshBuf_->getPosition(0)		= FirstPnt_;
 			LineMeshBuf_->getPosition(0)	= FirstPnt_;
@@ -282,9 +287,9 @@ bool DrawingRectWallCtrller::PreRender3D( const SRenderContext& rc )
 			MeshBuf_->getPosition(1)		= FirstPnt_ + vector3df(vec.X, 0, 0);
 			LineMeshBuf_->getPosition(1)	= FirstPnt_ + vector3df(vec.X, 0, 0);
 			PathMeshBuf_->getPosition(1)	= FirstPnt_ + vector3df(vec.X, 0, 0);
-			MeshBuf_->getPosition(2)		= position;
-			LineMeshBuf_->getPosition(2)	= position;
-			PathMeshBuf_->getPosition(2)	= position;
+			MeshBuf_->getPosition(2)		= CurrentPos_;
+			LineMeshBuf_->getPosition(2)	= CurrentPos_;
+			PathMeshBuf_->getPosition(2)	= CurrentPos_;
 			MeshBuf_->getPosition(3)		= FirstPnt_ + vector3df(0, 0, vec.Z);
 			LineMeshBuf_->getPosition(3)	= FirstPnt_ + vector3df(0, 0, vec.Z);
 			PathMeshBuf_->getPosition(3)	= FirstPnt_ + vector3df(0, 0, vec.Z);
@@ -311,11 +316,6 @@ bool DrawingRectWallCtrller::PreRender3D( const SRenderContext& rc )
 
 void DrawingRectWallCtrller::PostRender3D( const SRenderContext& rc )
 {
-	using namespace irr;
-	using namespace core;
-	using namespace scene;
-	using namespace video;
-
 	if ( !IsEnable() )
 	{
 		return;
@@ -347,6 +347,11 @@ void DrawingRectWallCtrller::PostRender3D( const SRenderContext& rc )
 
 			if ( PathMeshBuf_ )
 			{
+				auto smeshBuf = static_cast<SMeshBuffer*>(PathMeshBuf_);
+				for ( unsigned index=0; index<smeshBuf->getVertexCount(); ++index )
+				{
+					smeshBuf->Vertices[index].Color = Checker_ ? s_PathColor : s_RedColor;
+				}
 				driver->drawVertexPrimitiveList(PathMeshBuf_->getVertices(), PathMeshBuf_->getVertexCount(), PathMeshBuf_->getIndices(), PathMeshBuf_->getIndexCount(), EVT_STANDARD, EPT_LINE_LOOP);
 			}
 		}

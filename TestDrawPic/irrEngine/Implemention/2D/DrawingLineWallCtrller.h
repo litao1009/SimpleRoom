@@ -6,6 +6,8 @@
 #include "irrEngine/Implemention/EventUserType.h"
 #include "irrEngine/IRenderController.h"
 
+#include "ODL/BaseODLFwd.h"
+
 #include "IMeshBuffer.h"
 
 #include "TopoDS_Shape.hxx"
@@ -51,8 +53,6 @@ public:
 
 	void						Reset();
 
-	irr::scene::IMeshBuffer*	GetMeshBuffer() const;
-
 	void						SetWallThickness(float val) { WallThickness_ = val; }
 
 	SResult						GetResult() const
@@ -63,23 +63,30 @@ public:
 		return s;
 	}
 
+	bool						UpdateMesh();
+
+	void						SetRootODL(const CBaseODLWPtr& rootODL) { CurrentRoot_ = rootODL; }
+
 private:
 
 	bool						NeedUpdateMesh_;
+	bool						Checker_;
 	float						WallThickness_;
-	PointList					Pnts_;
+	float						PolarAngle_;
+	float						PolarAngleRange_;
+	float						LastAngle_;
 	irr::scene::IMeshBuffer*	TmpRect_;
 	irr::scene::IMeshBuffer*	MeshBuf_;
 	irr::scene::IMeshBuffer*	LineMeshBuf_;
 	irr::scene::IMeshBuffer*	PathMeshBuf_;
-	irr::video::SMaterial		Material_;
-	TopoDS_Shape				FaceShape_;
+	irr::scene::IMeshBuffer*	CircleMeshBuf_;
 	irr::core::vector2di		CursorIPos_;
 	irr::core::vector3df		CurrentPos_;
+	irr::video::SMaterial		Material_;
 	EDrawingWallLineState		State_;
-	float						PolarAngle_;
-	float						LastAngle_;
-	bool						SimpleChecker_;
+	TopoDS_Shape				FaceShape_;
+	PointList					Pnts_;
+	CBaseODLWPtr				CurrentRoot_;
 };
 
 typedef	std::shared_ptr<DrawingLineWallCtrller>	DrawingLineWallCtrllerSPtr;

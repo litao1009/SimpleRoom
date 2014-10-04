@@ -67,8 +67,8 @@ public:
 
 	void	Init();
 
-	CSceneNode3D*	GetSceneNode2D() const { return Node3D_; }
-	CSceneNode2D*	GetSceneNode3D() const { return Node2D_; }
+	CSceneNode2D*	GetSceneNode2D() const { return Node2D_; }
+	CSceneNode3D*	GetSceneNode3D() const { return Node3D_; }
 
 private:
 

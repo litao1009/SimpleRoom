@@ -56,6 +56,9 @@ public:
 
 	void	CreateTriSelector();
 
+	void	SaveMaterialType();
+	void	ResetMaterialType();
+	void	SetMaterialType(irr::video::E_MATERIAL_TYPE mt);
 
 private:
 
@@ -63,7 +66,7 @@ private:
 	bool					InDepthPass_;
 
 	irr::scene::IMesh*		Mesh_;
-
+	irr::core::array<irr::video::E_MATERIAL_TYPE>	SaveMaterialType_;
 	irr::core::aabbox3df	Box_;
 };
 

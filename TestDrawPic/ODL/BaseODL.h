@@ -24,24 +24,40 @@ public:
 
 public:
 
-	virtual	ENUM_OBOJECT_TYPE	GetType() const { return EOBT_Base; }
+	virtual	EObjectDisplayLayerType	GetType() const = 0;
 
 	virtual	void				Init() {}
 
+protected:
+
+	virtual void	UpdateSelection() {}
+
+	virtual	void	UpdateSweeping() {}
+
 public:
+
+	void				UpdateShape() { BaseSelector_.LoadS1(BaseShape_); }
 
 	TopoDS_Shape&		GetBaseShape() { return BaseShape_; }
 
 	const TopoDS_Shape&	GetBaseShape() const { return BaseShape_; }
 
-	void				SetBaseShape(const TopoDS_Shape& shape) { BaseShape_ = shape; }
+	void				SetBaseShape(const TopoDS_Shape& shape) { BaseShape_ = shape; UpdateShape(); }
 
 	BRepExtrema_DistShapeShape&	GetSelector() { return BaseSelector_; }
 
 	const BRepExtrema_DistShapeShape&	GetSelector() const { return BaseSelector_; }
 
+	void				SetSelected(bool val) { Selected_ = val; UpdateSelection(); }
+	bool				IsSelected() const { return Selected_; }
+
+	void				SetSwept(bool val) { Swept_ = val; UpdateSweeping(); }
+	bool				IsSwept() const { return Swept_; }
+
 private:
 
+	bool						Selected_;
+	bool						Swept_;
 	TopoDS_Shape				BaseShape_;
 	BRepExtrema_DistShapeShape	BaseSelector_;
 };

@@ -59,7 +59,7 @@ const char* SHADOW_PASS_1V[ESE_COUNT] =
 	"	gl_Position = tPos;\n"
 	"	gl_TexCoord[0] = vec4(MaxD, tPos.y, tPos.z, tPos.w);\n"
 	""
-	"	gl_TexCoord[1].xy = gl_MultiTexCoord0.xy;\n"
+	"	gl_TexCoord[1].xy = (gl_TextureMatrix[0]*gl_MultiTexCoord0).xy;\n"
 	"}"
 };
 
