@@ -20,15 +20,15 @@ public://IRenderController
 
 	virtual	bool	OnGUIEvent(const irr::SEvent& event);
 
-	virtual	void	OnResize(const SRenderContext& rc);
+	virtual	void	OnResize();
 
-	virtual bool	PreRender3D(const SRenderContext& rc);
+	virtual bool	PreRender3D();
 
-	virtual void	PostRender3D(const SRenderContext& rc);
+	virtual void	PostRender3D();
 
-	virtual bool	PreRender2D(const SRenderContext& rc);
+	virtual bool	PreRender2D();
 
-	virtual void	PostRender2D(const SRenderContext& rc);
+	virtual void	PostRender2D();
 
 public:
 
