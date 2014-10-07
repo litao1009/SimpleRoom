@@ -6,7 +6,7 @@
 #include "SubViewer.h"
 
 #include "irrEngine/SRenderContext.h"
-#include "irrEngine/Implemention/EventUserType.h"
+#include "RenderController/EventUserType.h"
 #include "TestDrawPicView.h"
 
 #include <string>

@@ -10,23 +10,18 @@
 #include "BLL/BaseBLL.h"
 
 #include "TSceneNode.h"
+#include "ShapeSceneNode.h"
 
 #include "TopoDS_Shape.hxx"
 #include "BRepExtrema_DistShapeShape.hxx"
 
-class CBaseODL : public TSceneNode<CBaseODL>
+class CBaseODL : public TSceneNode<CBaseODL>, public ShapeSceneNode
 {
 public:
 
 	CBaseODL(void);
 	
 	virtual ~CBaseODL(void);
-
-public:
-
-	virtual	EObjectDisplayLayerType	GetType() const = 0;
-
-	virtual	void				Init() {}
 
 protected:
 
@@ -36,17 +31,16 @@ protected:
 
 public:
 
-	void				UpdateShape() { BaseSelector_.LoadS1(BaseShape_); }
+	virtual	EObjectDisplayLayerType	GetType() const = 0;
 
-	TopoDS_Shape&		GetBaseShape() { return BaseShape_; }
+	virtual	void				Init() {}
 
-	const TopoDS_Shape&	GetBaseShape() const { return BaseShape_; }
+public:
 
-	void				SetBaseShape(const TopoDS_Shape& shape) { BaseShape_ = shape; UpdateShape(); }
+	void				UpdateShapeAndDataSceneNode();
 
-	BRepExtrema_DistShapeShape&	GetSelector() { return BaseSelector_; }
-
-	const BRepExtrema_DistShapeShape&	GetSelector() const { return BaseSelector_; }
+	void				UpdateAbsoluteTransform();
+	const gp_Trsf&		GetAbsoluteTransform() const { return AbsoluteTransform_; }
 
 	void				SetSelected(bool val) { Selected_ = val; UpdateSelection(); }
 	bool				IsSelected() const { return Selected_; }
@@ -56,10 +50,9 @@ public:
 
 private:
 
-	bool						Selected_;
-	bool						Swept_;
-	TopoDS_Shape				BaseShape_;
-	BRepExtrema_DistShapeShape	BaseSelector_;
+	gp_Trsf				AbsoluteTransform_;
+	bool				Selected_;
+	bool				Swept_;
 };
 
 #endif // BaseODL_h__

@@ -151,20 +151,8 @@
     <ClCompile Include="irrEngine\MetaRenderController.cpp">
       <Filter>IrrEngine</Filter>
     </ClCompile>
-    <ClCompile Include="irrEngine\Implemention\GUIController.cpp">
-      <Filter>IrrEngine\Implemention</Filter>
-    </ClCompile>
     <ClCompile Include="irrEngine\IrrExtension\GUIImageButton.cpp">
       <Filter>IrrEngine\IrrExtension</Filter>
-    </ClCompile>
-    <ClCompile Include="irrEngine\Implemention\CompositionController.cpp">
-      <Filter>IrrEngine\Implemention</Filter>
-    </ClCompile>
-    <ClCompile Include="irrEngine\Implemention\ResizeController.cpp">
-      <Filter>IrrEngine\Implemention</Filter>
-    </ClCompile>
-    <ClCompile Include="irrEngine\Implemention\FlyCameraController.cpp">
-      <Filter>IrrEngine\Implemention</Filter>
     </ClCompile>
     <ClCompile Include="irrEngine\IrrExtension\SceneNode2D.cpp">
       <Filter>IrrEngine\IrrExtension</Filter>
@@ -177,12 +165,6 @@
     </ClCompile>
     <ClCompile Include="irrEngine\IrrExtension\CombineSceneNode.cpp">
       <Filter>IrrEngine\IrrExtension</Filter>
-    </ClCompile>
-    <ClCompile Include="irrEngine\Implemention\2D\DrawingLineCtrller.cpp">
-      <Filter>IrrEngine\Implemention\2D</Filter>
-    </ClCompile>
-    <ClCompile Include="irrEngine\Implemention\2D\DrawingLineWallCtrller.cpp">
-      <Filter>IrrEngine\Implemention\2D</Filter>
     </ClCompile>
     <ClCompile Include="ODL\ODLTools.cpp">
       <Filter>ODL</Filter>
@@ -199,17 +181,47 @@
     <ClCompile Include="ODL\WallFaceODL.cpp">
       <Filter>ODL</Filter>
     </ClCompile>
-    <ClCompile Include="irrEngine\Implemention\2D\DrawingRectWallCtrller.cpp">
-      <Filter>IrrEngine\Implemention\2D</Filter>
-    </ClCompile>
-    <ClCompile Include="irrEngine\Implemention\GridController.cpp">
-      <Filter>IrrEngine\Implemention</Filter>
-    </ClCompile>
-    <ClCompile Include="irrEngine\Implemention\SweepingController.cpp">
-      <Filter>IrrEngine\Implemention</Filter>
-    </ClCompile>
     <ClCompile Include="irrEngine\IrrExtension\ExtShaders.cpp">
       <Filter>IrrEngine\IrrExtension</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderController\StatesController.cpp">
+      <Filter>RenderController</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderController\CameraController.cpp">
+      <Filter>RenderController</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderController\FlyCameraController.cpp">
+      <Filter>RenderController</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderController\GridController.cpp">
+      <Filter>RenderController</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderController\GUIController.cpp">
+      <Filter>RenderController</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderController\ResizeController.cpp">
+      <Filter>RenderController</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderController\2D\DrawingLineCtrller.cpp">
+      <Filter>RenderController\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderController\2D\DrawingLineWallCtrller.cpp">
+      <Filter>RenderController\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderController\2D\DrawingRectWallCtrller.cpp">
+      <Filter>RenderController\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="ODL\FloorODL.cpp">
+      <Filter>ODL</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderController\TopPickingController.cpp">
+      <Filter>RenderController</Filter>
+    </ClCompile>
+    <ClCompile Include="ODL\ShapeSceneNode.cpp">
+      <Filter>ODL</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderController\UpdateTransformingCtrller.cpp">
+      <Filter>RenderController</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -402,23 +414,8 @@
     <ClInclude Include="irrEngine\MetaRenderController.h">
       <Filter>IrrEngine</Filter>
     </ClInclude>
-    <ClInclude Include="irrEngine\Implemention\GUIController.h">
-      <Filter>IrrEngine\Implemention</Filter>
-    </ClInclude>
     <ClInclude Include="irrEngine\IrrExtension\GUIImageButton.h">
       <Filter>IrrEngine\IrrExtension</Filter>
-    </ClInclude>
-    <ClInclude Include="irrEngine\Implemention\CompositionController.h">
-      <Filter>IrrEngine\Implemention</Filter>
-    </ClInclude>
-    <ClInclude Include="irrEngine\Implemention\EventUserType.h">
-      <Filter>IrrEngine\Implemention</Filter>
-    </ClInclude>
-    <ClInclude Include="irrEngine\Implemention\ResizeController.h">
-      <Filter>IrrEngine\Implemention</Filter>
-    </ClInclude>
-    <ClInclude Include="irrEngine\Implemention\FlyCameraController.h">
-      <Filter>IrrEngine\Implemention</Filter>
     </ClInclude>
     <ClInclude Include="irrEngine\IrrExtension\SceneNode2D.h">
       <Filter>IrrEngine\IrrExtension</Filter>
@@ -431,12 +428,6 @@
     </ClInclude>
     <ClInclude Include="irrEngine\IrrExtension\CombineSceneNode.h">
       <Filter>IrrEngine\IrrExtension</Filter>
-    </ClInclude>
-    <ClInclude Include="irrEngine\Implemention\2D\DrawingLineCtrller.h">
-      <Filter>IrrEngine\Implemention\2D</Filter>
-    </ClInclude>
-    <ClInclude Include="irrEngine\Implemention\2D\DrawingLineWallCtrller.h">
-      <Filter>IrrEngine\Implemention\2D</Filter>
     </ClInclude>
     <ClInclude Include="ODL\ODLTools.h">
       <Filter>ODL</Filter>
@@ -459,20 +450,56 @@
     <ClInclude Include="ODL\WallFaceODL.h">
       <Filter>ODL</Filter>
     </ClInclude>
-    <ClInclude Include="irrEngine\Implemention\2D\DrawingRectWallCtrller.h">
-      <Filter>IrrEngine\Implemention\2D</Filter>
-    </ClInclude>
-    <ClInclude Include="irrEngine\Implemention\GridController.h">
-      <Filter>IrrEngine\Implemention</Filter>
-    </ClInclude>
     <ClInclude Include="StatusMgr.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="irrEngine\Implemention\SweepingController.h">
-      <Filter>IrrEngine\Implemention</Filter>
-    </ClInclude>
     <ClInclude Include="irrEngine\IrrExtension\ExtShaders.h">
       <Filter>IrrEngine\IrrExtension</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderController\StatesController.h">
+      <Filter>RenderController</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderController\TopViewController.h">
+      <Filter>RenderController</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderController\CameraController.h">
+      <Filter>RenderController</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderController\EventUserType.h">
+      <Filter>RenderController</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderController\FlyCameraController.h">
+      <Filter>RenderController</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderController\GridController.h">
+      <Filter>RenderController</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderController\GUIController.h">
+      <Filter>RenderController</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderController\ResizeController.h">
+      <Filter>RenderController</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderController\2D\DrawingLineCtrller.h">
+      <Filter>RenderController\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderController\2D\DrawingLineWallCtrller.h">
+      <Filter>RenderController\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderController\2D\DrawingRectWallCtrller.h">
+      <Filter>RenderController\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="ODL\FloorODL.h">
+      <Filter>ODL</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderController\TopPickingController.h">
+      <Filter>RenderController</Filter>
+    </ClInclude>
+    <ClInclude Include="ODL\ShapeSceneNode.h">
+      <Filter>ODL</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderController\UpdateTransformingCtrller.h">
+      <Filter>RenderController</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -576,14 +603,11 @@
     <Filter Include="IrrEngine\IrrExtension">
       <UniqueIdentifier>{b6c0d666-cc56-4fa8-889e-606ab5f1b56a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="IrrEngine\Implemention">
-      <UniqueIdentifier>{394676ec-7277-4071-a270-d716c9b036a1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="IrrEngine\Implemention\2D">
-      <UniqueIdentifier>{dbc41202-3f09-48fd-9c99-b5c777984c6e}</UniqueIdentifier>
-    </Filter>
     <Filter Include="RenderController">
       <UniqueIdentifier>{95520caa-429e-41dc-990e-0add94df28fe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RenderController\2D">
+      <UniqueIdentifier>{d6a5c821-3f0d-43fb-986c-4afee75709b9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

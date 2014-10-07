@@ -26,19 +26,17 @@ public:
 
 public://IRenderController
 
-	virtual	void	PreInit(SRenderContextSPtr sprc);
-
-	virtual	void	PostInit(SRenderContextSPtr sprc);
+	virtual	void	Init();
 
 	virtual bool	OnPostEvent(const irr::SEvent& event);
 
-	virtual	void	OnResize(const SRenderContext& rc);
+	virtual	void	OnResize();
 
-	virtual bool	PreRender3D(const SRenderContext& rc);
-	virtual void	PostRender3D(const SRenderContext& rc);
+	virtual bool	PreRender3D();
+	virtual void	PostRender3D();
 
-	virtual bool	PreRender2D(const SRenderContext& rc);
-	virtual void	PostRender2D(const SRenderContext& rc);
+	virtual bool	PreRender2D();
+	virtual void	PostRender2D();
 
 public:
 

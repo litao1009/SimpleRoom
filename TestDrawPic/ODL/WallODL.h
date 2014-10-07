@@ -20,7 +20,7 @@ public:
 
 public:
 
-	static	ChildrenList	CreateWallByBottomFace(SRenderContextWPtr renderContext, const TopoDS_Shape& bottomFace, const PointList& pntList, float wallHeight);
+	static	ChildrenList	CreateWallByBottomFace(SRenderContextWPtr renderContext, const TopoDS_Shape& bottomFace, const PointList& pntList, float wallHeight, const gp_Pnt& center);
 
 	static	ChildrenList	CreateWallByRectRange(SRenderContextWPtr renderContext, const irr::core::vector3df& first, const irr::core::vector3df& last, const irr::core::vector3df& thickVec, float wallHeight);
 

@@ -24,7 +24,7 @@ void FlyCameraController::SetFlying( irr::scene::ICameraSceneNode* toSwitchCamer
 	Animator_ = animator;
 }
 
-bool FlyCameraController::PreRender3D( const SRenderContext& rc )
+bool FlyCameraController::PreRender3D()
 {
 	if ( IsFlying() )
 	{

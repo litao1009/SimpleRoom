@@ -29,15 +29,11 @@ DrawingLineCtrller::~DrawingLineCtrller()
 	Pnts_->drop();
 }
 
-void DrawingLineCtrller::PreInit( SRenderContextSPtr sprc )
+void DrawingLineCtrller::Init()
 {
 
 }
 
-void DrawingLineCtrller::PostInit( SRenderContextSPtr sprc )
-{
-	IRenderController::PostInit(sprc);
-}
 
 bool DrawingLineCtrller::OnPostEvent( const irr::SEvent& event )
 {
@@ -129,17 +125,17 @@ bool DrawingLineCtrller::OnPostEvent( const irr::SEvent& event )
 	return false;
 }
 
-void DrawingLineCtrller::OnResize( const SRenderContext& rc )
+void DrawingLineCtrller::OnResize()
 {
 
 }
 
-bool DrawingLineCtrller::PreRender3D( const SRenderContext& rc )
+bool DrawingLineCtrller::PreRender3D()
 {
 	return false;
 }
 
-void DrawingLineCtrller::PostRender3D( const SRenderContext& rc )
+void DrawingLineCtrller::PostRender3D()
 {
 	switch (State_)
 	{
@@ -150,18 +146,18 @@ void DrawingLineCtrller::PostRender3D( const SRenderContext& rc )
 		break;
 	case DrawingLineCtrller::EDLS_DRAWING:
 		{
-			auto driver = rc.Smgr_->getVideoDriver();
+			auto driver = GetRenderContextSPtr()->Smgr_->getVideoDriver();
 
 			driver->setTransform(irr::video::ETS_WORLD, irr::core::matrix4());
-			rc.Smgr_->getVideoDriver()->setMaterial(Pnts_->getMaterial());
+			GetRenderContextSPtr()->Smgr_->getVideoDriver()->setMaterial(Pnts_->getMaterial());
 
 			if ( Pnts_->getVertexCount() > 1 )
 			{
-				rc.Smgr_->getVideoDriver()->drawVertexPrimitiveList(Pnts_->getVertices(), Pnts_->getVertexCount(), Pnts_->getIndices(), Pnts_->getIndexCount()-1, irr::video::EVT_STANDARD, irr::scene::EPT_LINE_STRIP);
+				GetRenderContextSPtr()->Smgr_->getVideoDriver()->drawVertexPrimitiveList(Pnts_->getVertices(), Pnts_->getVertexCount(), Pnts_->getIndices(), Pnts_->getIndexCount()-1, irr::video::EVT_STANDARD, irr::scene::EPT_LINE_STRIP);
 			}
 
 			{
-				auto line = rc.Smgr_->getSceneCollisionManager()->getRayFromScreenCoordinates(CurrentPos_);
+				auto line = GetRenderContextSPtr()->Smgr_->getSceneCollisionManager()->getRayFromScreenCoordinates(CurrentPos_);
 				irr::core::vector3df position;
 				s_PntPlane.getIntersectionWithLine(line.start, line.getVector(), position);
 				driver->draw3DLine(Pnts_->getPosition(Pnts_->getVertexCount()-1), position, PntColor_);
@@ -180,12 +176,12 @@ void DrawingLineCtrller::PostRender3D( const SRenderContext& rc )
 	}
 }
 
-bool DrawingLineCtrller::PreRender2D( const SRenderContext& rc )
+bool DrawingLineCtrller::PreRender2D()
 {
 	return true;
 }
 
-void DrawingLineCtrller::PostRender2D( const SRenderContext& rc )
+void DrawingLineCtrller::PostRender2D()
 {
 
 }

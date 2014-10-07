@@ -40,9 +40,9 @@ GUIController::GUIController()
 }
 
 
-void GUIController::PostInit( SRenderContextSPtr sprc )
+void GUIController::Init()
 {
-	IRenderController::PostInit(sprc);
+	auto sprc = GetRenderContextSPtr();
 
 	auto driver = sprc->Smgr_->getVideoDriver();
 
@@ -291,9 +291,9 @@ bool GUIController::OnGUIEvent( const irr::SEvent& event )
 	return ret;
 }
 
-void GUIController::OnResize(const SRenderContext& rc)
+void GUIController::OnResize()
 {
-	auto renderSize = rc.Smgr_->getVideoDriver()->getScreenSize();
+	auto renderSize = GetRenderContextSPtr()->Smgr_->getVideoDriver()->getScreenSize();
 
 	{
 		auto texSize = ResizeImage_->getImage()->getSize();
@@ -326,17 +326,17 @@ void GUIController::OnResize(const SRenderContext& rc)
 	}
 }
 
-bool GUIController::PreRender3D( const SRenderContext& rc )
+bool GUIController::PreRender3D()
 {
 	return Minimum_;
 }
 
-void GUIController::PostRender3D( const SRenderContext& rc )
+void GUIController::PostRender3D()
 {
 
 }
 
-bool GUIController::PreRender2D( const SRenderContext& rc )
+bool GUIController::PreRender2D()
 {
 	if ( Minimum_ )
 	{
@@ -371,7 +371,7 @@ bool GUIController::PreRender2D( const SRenderContext& rc )
 	return false;
 }
 
-void GUIController::PostRender2D( const SRenderContext& rc )
+void GUIController::PostRender2D()
 {
 
 }

@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "irrEngine/Implemention/EventUserType.h"
+#include "RenderController/EventUserType.h"
 #include "irrEngine/IRenderController.h"
 
 #include "IMeshBuffer.h"
@@ -35,8 +35,8 @@ public://IRenderController
 
 	virtual bool	OnPostEvent(const irr::SEvent& event);
 
-	virtual bool	PreRender3D(const SRenderContext& rc);
-	virtual void	PostRender3D(const SRenderContext& rc);
+	virtual bool	PreRender3D();
+	virtual void	PostRender3D();
 
 public:
 

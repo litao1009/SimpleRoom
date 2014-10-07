@@ -3,27 +3,30 @@
 #include "DesignODL.h"
 #include "ODL/GroupODL.h"
 #include "ODL/WallODL.h"
+#include "ODL/FloorODL.h"
 
 #include "irrEngine/irrEngine.h"
 #include "irrEngine/SRenderContext.h"
 
+#include "ISceneManager.h"
+#include "irrEngine/IrrExtension/CameraFollowSplineAnimator.h"
 #include "irrEngine/IrrExtension/CombineSceneNode.h"
 
-#include "irrEngine/Implemention/CompositionController.h"
-#include "irrEngine/Implemention/ResizeController.h"
-#include "irrEngine/Implemention/GridController.h"
-#include "irrEngine/Implemention/2D/DrawingLineWallCtrller.h"
-#include "irrEngine/Implemention/2D/DrawingRectWallCtrller.h"
-#include "irrEngine/Implemention/SweepingController.h"
-
-#include "ISceneManager.h"
+#include "RenderController/ResizeController.h"
+#include "RenderController/GridController.h"
+#include "RenderController/TopPickingController.h"
+#include "RenderController/GUIController.h"
+#include "RenderController/StatesController.h"
+#include "RenderController/CameraController.h"
+#include "RenderController/FlyCameraController.h"
+#include "RenderController/UpdateTransformingCtrller.h"
+#include "RenderController/2D/DrawingLineWallCtrller.h"
+#include "RenderController/2D/DrawingRectWallCtrller.h"
 
 #include "BRepBuilderAPI_MakeEdge.hxx"
 #include "TopoDS_Edge.hxx"
 #include "gce_MakeLin.hxx"
-
-#include "ODL/GroupODL.h"
-#include "ODL/WallODL.h"
+#include "BRepBndLib.hxx"
 
 #include "StatusMgr.h"
 
@@ -31,11 +34,28 @@ class	CDesignODL::Imp : public IRenderController
 {
 public:
 
+	CBaseODLWPtr						DesignODL_;
+	DrawingLineWallCtrllerSPtr			DrawLineWallCtrller_;
+	DrawingRectWallCtrllerSPtr			DrawRectWallCtrller_;
+	TopPickingControllerSPtr			TopPickingController_;
+	StatesControllerSPtr				StatesController_;
+	GUIControllerSPtr					GUIController_;
+	CameraControllerSPtr				CameraController_;
+	FlyCameraControllerSPtr				FlyCameraController_;
+	UpdateTransformingCtrllerSPtr		UpdateTransformingCtrller_;
+
+public:
+
 	Imp()
 	{
 		DrawLineWallCtrller_ = std::make_shared<DrawingLineWallCtrller>();
 		DrawRectWallCtrller_ = std::make_shared<DrawingRectWallCtrller>();
-		SweepingController_ = std::make_shared<SweepingController>();
+		TopPickingController_ = std::make_shared<TopPickingController>();
+		StatesController_ = std::make_shared<StatesController>();
+		GUIController_ = std::make_shared<GUIController>();
+		CameraController_ = std::make_shared<CameraController>();
+		FlyCameraController_ = std::make_shared<FlyCameraController>();
+		UpdateTransformingCtrller_ = std::make_shared<UpdateTransformingCtrller>();
 	}
 
 public://IRenderController
@@ -45,80 +65,375 @@ public://IRenderController
 		return false;
 	}
 
-	virtual	bool	PreRender3D(const SRenderContext& rc)
+	virtual	bool	PreRender3D()
+	{
+		if ( StatesController_->GetRenderState() == ERS_ANIMATION )
+		{
+			if ( !FlyCameraController_->IsFlying() )
+			{
+				if ( GetRenderContextSPtr()->Smgr_->getActiveCamera() == CameraController_->GetTopCamera().get() )
+				{
+					StatesController_->SetRenderState(ERS_TOP_VIEW);
+				}
+				else if ( GetRenderContextSPtr()->Smgr_->getActiveCamera() == CameraController_->GetMayaCamera().get() )
+				{
+					StatesController_->SetRenderState(ERS_MAYA_VIEW);
+				}
+				else if ( GetRenderContextSPtr()->Smgr_->getActiveCamera() == CameraController_->GetFPSCamera().get() )
+				{
+					StatesController_->SetRenderState(ERS_FPS_VIEW);
+				}
+			}
+			return true;
+		}
+
+		SwitchCameraIfNeed();
+
+		if ( StatesController_->GetRenderState() == ERS_TOP_VIEW )
+		{
+			if ( StatusMgr::GetInstance().DrawingState_ != StatusMgr::EDS_NONE )
+			{
+				BuildWall();
+			}
+		}
+		
+
+		return true;
+	}
+
+public:
+
+	void BuildWall()
 	{
 		auto design = GetDesignSPtr();
 
-		if ( StatusMgr::GetInstance().DrawingState_ != StatusMgr::EDS_NONE )
+		DrawLineWallCtrller_->SetEnable(StatusMgr::GetInstance().DrawingState_ == StatusMgr::EDS_LINE_WALL);
+		DrawRectWallCtrller_->SetEnable(StatusMgr::GetInstance().DrawingState_ == StatusMgr::EDS_RECT_WALL);
+
+		//新建墙
+		if ( DrawLineWallCtrller_->GetState() == DrawingLineWallCtrller::EDWLS_FINISH )
 		{
+			auto wallret = DrawLineWallCtrller_->GetResult();
+			if ( wallret.Pnts_.size() <= 1 )
+			{
+				wallret.Shape_.Nullify();
+			}
+			DrawLineWallCtrller_->Reset();
+			StatusMgr::GetInstance().DrawingState_ = StatusMgr::EDS_NONE;
+
+#pragma message("TODO:墙高配置")
+			if ( !wallret.Shape_.IsNull() )
+			{
+				Bnd_Box groupBox;
+				BRepBndLib::Add(wallret.Shape_, groupBox);
+				const auto& samplePnt = wallret.Pnts_.back();
+				groupBox.Add(gp_Pnt(samplePnt.X, StatusMgr::GetInstance().CreateWallHeight_, samplePnt.Y));
+				gp_Pnt boxCenter;
+				{
+					Standard_Real xMin,yMin,zMin,xMax,yMax,zMax;
+					groupBox.Get(xMin, yMin, zMin, xMax, yMax, zMax);
+					boxCenter.SetX((xMin+xMax)/2);
+					boxCenter.SetY((yMin+yMax)/2);
+					boxCenter.SetZ((zMin+zMax)/2);
+					gp_Trsf t;
+					t.SetTranslationPart(boxCenter.XYZ().Reversed());
+					groupBox = groupBox.Transformed(t);
+				}
+				
+				auto newGroup = design->CreateChild<CGroupODL>(design->RenderContext_);
+
+				newGroup->SetTranslation(boxCenter.XYZ());
+				newGroup->GetDataSceneNode()->setPosition(irr::core::vector3df(static_cast<float>(boxCenter.X()), static_cast<float>(boxCenter.Y()), static_cast<float>(boxCenter.Z())));
+
+				newGroup->SetBaseBndBox(groupBox);
+
+				auto newWalls = CWallODL::CreateWallByBottomFace(design->RenderContext_, wallret.Shape_, wallret.Pnts_, StatusMgr::GetInstance().CreateWallHeight_, boxCenter);
+				
+				for ( auto& wall : newWalls )
+				{
+					newGroup->AddChild(wall);
+				}
+
+				if ( wallret.Pnts_.size() > 2 )
+				{
+					auto newFloor = CFloorODL::CreateFloorByPath(design->RenderContext_, wallret.Shape_, wallret.Pnts_, boxCenter);
+					newGroup->AddChild(newFloor);
+				}
+			}
+
+			StatusMgr::GetInstance().DrawingState_ = StatusMgr::EDS_NONE;
 			DrawLineWallCtrller_->SetEnable(StatusMgr::GetInstance().DrawingState_ == StatusMgr::EDS_LINE_WALL);
-			DrawRectWallCtrller_->SetEnable(StatusMgr::GetInstance().DrawingState_ == StatusMgr::EDS_RECT_WALL);
-
-			//新建墙
-			if ( DrawLineWallCtrller_->GetState() == DrawingLineWallCtrller::EDWLS_FINISH )
-			{
-				auto wallret = DrawLineWallCtrller_->GetResult();
-				if ( wallret.Pnts_.size() <= 1 )
-				{
-					wallret.Shape_.Nullify();
-				}
-				DrawLineWallCtrller_->Reset();
-				StatusMgr::GetInstance().DrawingState_ = StatusMgr::EDS_NONE;
-
-#pragma message("TODO:墙高配置")
-				if ( !wallret.Shape_.IsNull() )
-				{
-					auto newWalls = CWallODL::CreateWallByBottomFace(design->RenderContext_, wallret.Shape_, wallret.Pnts_, 2600);
-
-					auto newGroup = design->CreateChild<CGroupODL>(design->RenderContext_);
-					for ( auto& wall : newWalls )
-					{
-						newGroup->AddChild(wall);
-					}
-				}
-
-				StatusMgr::GetInstance().DrawingState_ = StatusMgr::EDS_NONE;
-				DrawLineWallCtrller_->SetEnable(StatusMgr::GetInstance().DrawingState_ == StatusMgr::EDS_LINE_WALL);
-			}
-
-			//新建墙
-			if ( DrawRectWallCtrller_->GetState() == DrawingRectWallCtrller::EDWRS_FINISH )
-			{
-				auto wallret = DrawRectWallCtrller_->GetResult();
-				DrawRectWallCtrller_->Reset();
-				StatusMgr::GetInstance().DrawingState_ = StatusMgr::EDS_NONE;
-#pragma message("TODO:墙高配置")
-				if ( std::get<4>(wallret) )
-				{
-					auto newWalls = CWallODL::CreateWallByRectRange(design->RenderContext_, std::get<0>(wallret), std::get<1>(wallret), std::get<2>(wallret), 2600);
-
-					auto newGroup = design->CreateChild<CGroupODL>(design->RenderContext_);
-					for ( auto& wall : newWalls )
-					{
-						newGroup->AddChild(wall);
-					}
-				}
-
-				StatusMgr::GetInstance().DrawingState_ = StatusMgr::EDS_NONE;
-				DrawRectWallCtrller_->SetEnable(StatusMgr::GetInstance().DrawingState_ == StatusMgr::EDS_RECT_WALL);
-			}
 		}
-		else
+
+		//新建墙
+		if ( DrawRectWallCtrller_->GetState() == DrawingRectWallCtrller::EDWRS_FINISH )
 		{
+			irr::core::vector3df firstPnt,LastPnt, Dir;
+			float thickness;
+			bool valid;
+			std::tie(firstPnt,LastPnt,Dir,thickness,valid) = DrawRectWallCtrller_->GetResult();
+			DrawRectWallCtrller_->Reset();
+			StatusMgr::GetInstance().DrawingState_ = StatusMgr::EDS_NONE;
+#pragma message("TODO:墙高配置")
+			if ( valid )
+			{
+				auto firstToLast = LastPnt - firstPnt;
+				auto center = (firstPnt+LastPnt)/2;
+				center.Y = StatusMgr::GetInstance().CreateWallHeight_;
 
+				Bnd_Box groupBox;
+				groupBox.Add(gp_Pnt(firstPnt.X, firstPnt.Y, firstPnt.Z));
+				groupBox.Add(gp_Pnt(firstPnt.X+firstToLast.X, firstPnt.Y, firstPnt.Z));
+				groupBox.Add(gp_Pnt(LastPnt.X, LastPnt.Y, LastPnt.Z));
+				groupBox.Add(gp_Pnt(firstPnt.X, firstPnt.Y, firstPnt.Z+LastPnt.Z));
+				groupBox.Add(gp_Pnt(firstPnt.X+Dir.Z, firstPnt.Y, firstPnt.Z+Dir.Z));
+				groupBox.Add(gp_Pnt(firstPnt.X+firstToLast.X-Dir.Z, firstPnt.Y, firstPnt.Z+Dir.Z));
+				groupBox.Add(gp_Pnt(LastPnt.X-Dir.Z, LastPnt.Y, LastPnt.Z-Dir.Z));
+				groupBox.Add(gp_Pnt(firstPnt.X+Dir.Z, firstPnt.Y, firstPnt.Z+LastPnt.Z-Dir.Z));
+				groupBox.Add(gp_Pnt(center.X, center.Y, center.Z));
+
+				gp_Pnt groupCenter;
+				{
+					Standard_Real xMin,yMin,zMin,xMax,yMax,zMax;
+					groupBox.Get(xMin, yMin, zMin, xMax, yMax, zMax);
+					groupCenter.SetX((xMin+xMax)/2);
+					groupCenter.SetY((yMin+yMax)/2);
+					groupCenter.SetZ((zMin+zMax)/2);
+					gp_Trsf t;
+					t.SetTranslationPart(groupCenter.XYZ().Reversed());
+					groupBox = groupBox.Transformed(t);
+				}
+
+				auto newGroup = design->CreateChild<CGroupODL>(design->RenderContext_);
+
+				newGroup->SetTranslation(groupCenter.XYZ());
+				newGroup->GetDataSceneNode()->setPosition(irr::core::vector3df(static_cast<float>(groupCenter.X()), static_cast<float>(groupCenter.Y()), static_cast<float>(groupCenter.Z())));
+
+				newGroup->SetBaseBndBox(groupBox);
+
+				auto newWalls = CWallODL::CreateWallByRectRange(design->RenderContext_, firstPnt, LastPnt, Dir, StatusMgr::GetInstance().CreateWallHeight_);
+
+				for ( auto& wall : newWalls )
+				{
+					newGroup->AddChild(wall);
+				}
+
+				auto newFloor = CFloorODL::CreateFloorByRect(design->RenderContext_, firstPnt, LastPnt, Dir, groupCenter);
+				newGroup->AddChild(newFloor);
+			}
+
+			StatusMgr::GetInstance().DrawingState_ = StatusMgr::EDS_NONE;
+			DrawRectWallCtrller_->SetEnable(StatusMgr::GetInstance().DrawingState_ == StatusMgr::EDS_RECT_WALL);
 		}
+	}
+
+	bool SwitchCameraIfNeed()
+	{
+		irr::scene::ISceneNodeAnimatorFinishing* animator = nullptr;
+		auto activeCamera = GetRenderContextSPtr()->Smgr_->getActiveCamera();
+		decltype(activeCamera) toSwitchCamera = nullptr;
+		if ( GUIController_->IsFPSCameraActive() && activeCamera != CameraController_->GetFPSCamera().get() )
+		{
+			toSwitchCamera = CameraController_->GetFPSCamera().get();
+		}
+		if ( GUIController_->IsMayaCameraActive() && activeCamera != CameraController_->GetMayaCamera().get() )
+		{
+			toSwitchCamera = CameraController_->GetMayaCamera().get();
+		}
+		if ( GUIController_->IsTopCameraActive() && activeCamera != CameraController_->GetTopCamera().get() )
+		{
+			toSwitchCamera = CameraController_->GetTopCamera().get();
+		}
+
+		if ( !toSwitchCamera )
+		{
+			return false;
+		}
+
+		auto camera = GetRenderContextSPtr()->Smgr_->addCameraSceneNodeRH();
+		camera->setPosition(activeCamera->getPosition());
+		camera->setTarget(activeCamera->getTarget());
+
+		auto posToTarget = activeCamera->getTarget()-activeCamera->getPosition();
+		auto xDir = activeCamera->getUpVector().crossProduct(posToTarget);
+		xDir.normalize();
+
+		auto zDir = posToTarget;
+		zDir.normalize();
+
+		if ( toSwitchCamera == CameraController_->GetFPSCamera().get() )
+		{
+			camera->setNearValue(toSwitchCamera->getNearValue());
+			camera->setFarValue(toSwitchCamera->getFarValue());
+			camera->setFOV(toSwitchCamera->getFOV());
+			camera->setAspectRatio(toSwitchCamera->getAspectRatio());
+
+			irr::core::plane3df zeroPlane(0,1600,0,0,1,0);
+			irr::core::line3df line(activeCamera->getPosition(), activeCamera->getTarget());
+			irr::core::vector3df section;
+			zeroPlane.getIntersectionWithLine(line.start, line.getVector(), section);
+
+			if ( CameraController_->GetTopCamera().get() == activeCamera )
+			{
+				camera->setUpVector(activeCamera->getUpVector());
+
+				irr::core::array<irr::core::vector3df> posPoints;
+				irr::core::array<irr::core::vector3df> tarPoints;
+				irr::core::array<irr::core::vector3df> upVectors;
+				posPoints.push_back(camera->getPosition());
+				posPoints.push_back(section);			
+				tarPoints.push_back(activeCamera->getTarget());
+				tarPoints.push_back(activeCamera->getUpVector()*1000+section);
+				upVectors.push_back(activeCamera->getUpVector());
+				upVectors.push_back(toSwitchCamera->getUpVector());
+
+				animator = new CCameraFollowSplineAnimator(GetRenderContextSPtr()->Timer_->getTime(), posPoints, tarPoints, upVectors, 1.5f, 1.5f, 1.5f);
+				camera->addAnimator(animator);
+				animator->drop();
+
+				toSwitchCamera->setPosition(section);
+				toSwitchCamera->setTarget(activeCamera->getUpVector()*1000+section);
+				toSwitchCamera->updateAbsolutePosition();
+			}
+
+			if ( CameraController_->GetMayaCamera().get() == activeCamera )
+			{
+				auto newTarget = posToTarget;
+				newTarget.Y = 0;
+				newTarget.normalize();
+
+				irr::core::array<irr::core::vector3df> points;
+				points.push_back(activeCamera->getPosition());
+				points.push_back(section);
+				irr::core::array<irr::core::vector3df> tarPoints;
+				tarPoints.push_back(activeCamera->getTarget());
+				tarPoints.push_back(newTarget*1000+section);
+				irr::core::array<irr::core::vector3df> upVectors;
+				animator = new CCameraFollowSplineAnimator(GetRenderContextSPtr()->Timer_->getTime(), points, tarPoints, upVectors, 1.5f, 1.5f, 1.5f);
+				camera->addAnimator(animator);
+				animator->drop();
+
+				toSwitchCamera->setPosition(section);
+				toSwitchCamera->setTarget(newTarget*1000+section);
+				toSwitchCamera->updateAbsolutePosition();
+			}
+		}
+
+		if ( toSwitchCamera == CameraController_->GetMayaCamera().get() )
+		{
+			if ( CameraController_->GetTopCamera().get() == activeCamera )
+			{
+				irr::core::matrix4 mat;
+				mat.setRotationAxisRadians(irr::core::degToRad(-30.f), xDir);
+
+				auto tarToPos = -posToTarget;
+				mat.transformVect(tarToPos);
+				auto newPos = camera->getTarget() + tarToPos.normalize()*4000;
+
+				irr::core::array<irr::core::vector3df> points;
+				points.push_back(camera->getPosition()+irr::core::vector3df(0,2000,0));
+				points.push_back(newPos);
+				irr::core::array<irr::core::vector3df> tarPoints;
+				irr::core::array<irr::core::vector3df> upVectors;
+				upVectors.push_back(activeCamera->getUpVector());
+				upVectors.push_back(toSwitchCamera->getUpVector());
+
+				animator = new CCameraFollowSplineAnimator(GetRenderContextSPtr()->Timer_->getTime(), points, tarPoints, upVectors, 1.5f, 1.5f, 1.5f);
+				camera->addAnimator(animator);
+				animator->drop();
+
+				toSwitchCamera->setPosition(newPos);
+				toSwitchCamera->setTarget(activeCamera->getTarget());
+				toSwitchCamera->updateAbsolutePosition();
+			}
+
+			if ( CameraController_->GetFPSCamera().get() == activeCamera )
+			{
+				irr::core::matrix4 mat;
+				mat.setRotationAxisRadians(irr::core::degToRad(60.f), xDir);
+				auto tarToPos = -posToTarget;
+				tarToPos.normalize();
+				mat.transformVect(tarToPos);
+				auto newPos = camera->getTarget() + tarToPos * 4000;
+
+				irr::core::array<irr::core::vector3df> points;
+				points.push_back(activeCamera->getPosition());
+				points.push_back(newPos);
+				irr::core::array<irr::core::vector3df> tarPoints;
+				tarPoints.push_back(activeCamera->getTarget());
+				tarPoints.push_back(activeCamera->getPosition());
+				irr::core::array<irr::core::vector3df> upVectors;
+
+				animator = new CCameraFollowSplineAnimator(GetRenderContextSPtr()->Timer_->getTime(), points, tarPoints, upVectors, 1.5f, 1.5f, 1.5f);
+				camera->addAnimator(animator);
+				animator->drop();
+
+				toSwitchCamera->setPosition(newPos);
+				toSwitchCamera->setTarget(activeCamera->getPosition());
+				toSwitchCamera->updateAbsolutePosition();
+			}
+		}
+
+		if ( toSwitchCamera == CameraController_->GetTopCamera().get() )
+		{
+			if ( CameraController_->GetFPSCamera().get() == activeCamera )
+			{
+				auto newPos = activeCamera->getPosition();
+				newPos.Y = 5000;
+				auto newTarget = newPos;
+				newTarget.Y = 0;
+				irr::core::array<irr::core::vector3df> points;
+				points.push_back(activeCamera->getPosition());
+				points.push_back(newPos);
+				irr::core::array<irr::core::vector3df> tarPoints;
+				tarPoints.push_back(activeCamera->getTarget());
+				tarPoints.push_back(newTarget);
+				irr::core::array<irr::core::vector3df> upVectors;
+				upVectors.push_back(activeCamera->getUpVector());
+				upVectors.push_back(toSwitchCamera->getUpVector());
+
+				animator = new CCameraFollowSplineAnimator(GetRenderContextSPtr()->Timer_->getTime(), points, tarPoints, upVectors, 1.5f, 1.5f, 1.5f);
+				camera->addAnimator(animator);
+				animator->drop();
+
+				toSwitchCamera->setPosition(newPos);
+				toSwitchCamera->setTarget(newTarget);
+				toSwitchCamera->updateAbsolutePosition();
+			}
+
+			if ( CameraController_->GetMayaCamera().get() == activeCamera )
+			{
+				auto newPos = activeCamera->getTarget();
+				newPos.Y = 5000;
+				auto newTarget = newPos;
+				newTarget.Y = 0;
+				irr::core::array<irr::core::vector3df> points;
+				points.push_back(activeCamera->getPosition());
+				points.push_back(newPos);
+				irr::core::array<irr::core::vector3df> tarPoints;
+				tarPoints.push_back(activeCamera->getTarget());
+				tarPoints.push_back(newTarget);
+				irr::core::array<irr::core::vector3df> upVectors;
+				upVectors.push_back(activeCamera->getUpVector());
+				upVectors.push_back(toSwitchCamera->getUpVector());
+
+				animator = new CCameraFollowSplineAnimator(GetRenderContextSPtr()->Timer_->getTime(), points, tarPoints, upVectors, 1.5f, 1.5f, 1.5f);
+				camera->addAnimator(animator);
+				animator->drop();
+
+				toSwitchCamera->setPosition(newPos);
+				toSwitchCamera->setTarget(newTarget);
+				toSwitchCamera->updateAbsolutePosition();
+			}
+		}
+
+		FlyCameraController_->SetFlying(toSwitchCamera, camera, animator);
+		StatesController_->SetRenderState(ERS_ANIMATION);
 
 		return true;
 	}
 
 	CDesignODLSPtr	GetDesignSPtr() const { return std::static_pointer_cast<CDesignODL>(DesignODL_.lock()); }
-
-public:
-
-	CBaseODLWPtr						DesignODL_;
-	DrawingLineWallCtrllerSPtr			DrawLineWallCtrller_;
-	DrawingRectWallCtrllerSPtr			DrawRectWallCtrller_;
-	SweepingControllerSPtr				SweepingController_;
 };
 
 CDesignODL::CDesignODL(HWND Hwnd):ImpSPtr_(new Imp)
@@ -137,7 +452,8 @@ void CDesignODL::Init()
 	{//Imp
 		ImpSPtr_->DesignODL_ = shared_from_this();
 		ImpSPtr_->DrawLineWallCtrller_->SetRootODL(shared_from_this());
-		ImpSPtr_->SweepingController_->SetRootODL(shared_from_this());
+		ImpSPtr_->TopPickingController_->SetRootODL(shared_from_this());
+		ImpSPtr_->UpdateTransformingCtrller_->SetRootODL(shared_from_this());
 	}
 	
 	{//RC
@@ -146,16 +462,45 @@ void CDesignODL::Init()
 	}
 
 	{//Controller
-		RenderContext_->PushController(std::make_shared<ResizeController>(Hwnd_));				//Resize
-		RenderContext_->PushController(std::make_shared<GridController>());						//网格吸附
-		RenderContext_->PushController(ImpSPtr_->DrawLineWallCtrller_);							//画线生成墙
-		RenderContext_->PushController(ImpSPtr_->DrawRectWallCtrller_);							//画框生成墙
-		RenderContext_->PushController(ImpSPtr_->SweepingController_);							//扫略
-		RenderContext_->PushController(std::static_pointer_cast<IRenderController>(ImpSPtr_));	//与三维交互数据
-		RenderContext_->PushController(std::make_shared<CompositionController>());				//三维自己的管理器
-
+		ImpSPtr_->StatesController_->SetRenderState(ERS_TOP_VIEW);
 		ImpSPtr_->DrawLineWallCtrller_->SetEnable(false);
 		ImpSPtr_->DrawRectWallCtrller_->SetEnable(false);
+
+		RenderContext_->PushController(ImpSPtr_->StatesController_);
+		RenderContext_->PushController(std::static_pointer_cast<IRenderController>(ImpSPtr_));
+
+		auto resizeCtrller = std::make_shared<ResizeController>(Hwnd_);
+		auto gridCtrller = std::make_shared<GridController>();
+
+		{//TopView
+			ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, resizeCtrller);
+			ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->GUIController_);
+			ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->UpdateTransformingCtrller_);
+			ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->CameraController_);
+			ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, gridCtrller);
+			ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->DrawLineWallCtrller_);
+			ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->DrawRectWallCtrller_);
+			ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->TopPickingController_);
+		}
+
+		{//MayaView
+			ImpSPtr_->StatesController_->AddController(ERS_MAYA_VIEW, resizeCtrller);
+			ImpSPtr_->StatesController_->AddController(ERS_MAYA_VIEW, ImpSPtr_->GUIController_);
+			ImpSPtr_->StatesController_->AddController(ERS_MAYA_VIEW, ImpSPtr_->UpdateTransformingCtrller_);
+			ImpSPtr_->StatesController_->AddController(ERS_MAYA_VIEW, ImpSPtr_->CameraController_);
+		}
+
+		{//FPSView
+			ImpSPtr_->StatesController_->AddController(ERS_FPS_VIEW, resizeCtrller);
+			ImpSPtr_->StatesController_->AddController(ERS_FPS_VIEW, ImpSPtr_->GUIController_);
+			ImpSPtr_->StatesController_->AddController(ERS_FPS_VIEW, ImpSPtr_->UpdateTransformingCtrller_);
+			ImpSPtr_->StatesController_->AddController(ERS_FPS_VIEW, ImpSPtr_->CameraController_);
+		}
+
+		{//Animator
+			ImpSPtr_->StatesController_->AddController(ERS_ANIMATION, ImpSPtr_->FlyCameraController_);
+			ImpSPtr_->StatesController_->AddController(ERS_ANIMATION, ImpSPtr_->UpdateTransformingCtrller_);
+		}
 	}
 	
 	{//DataSceneNode

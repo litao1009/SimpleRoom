@@ -33,9 +33,7 @@ public://IEventReceiver
 
 public:
 
-	virtual	void	PreInit(SRenderContextSPtr sprc) {}
-
-	virtual	void	PostInit(SRenderContextSPtr sprc) { assert(sprc); RC_ = sprc; }
+	virtual	void	Init() {}
 
 	virtual	bool	OnGUIEvent(const irr::SEvent& evt) { return false; }
 
@@ -43,29 +41,25 @@ public:
 
 	virtual	bool	OnPostEvent(const irr::SEvent& evt) { return false; }
 
-	virtual	void	OnResize(const SRenderContext& rc) {}
+	virtual	void	OnResize() {}
 
-	virtual bool	PreRender3D(const SRenderContext& rc) { return false; }
+	virtual bool	PreRender3D() { return false; }
 
-	virtual void	PostRender3D(const SRenderContext& rc) {}
+	virtual void	PostRender3D() {}
 
-	virtual bool	PreRender2D(const SRenderContext& rc) { return false; }
+	virtual bool	PreRender2D() { return false; }
 
-	virtual void	PostRender2D(const SRenderContext& rc) {}
+	virtual void	PostRender2D() {}
 
 public:
 
 	bool					IsEnable() const { return Enable_; }
 
 	void					SetEnable(bool val) { Enable_ = val; }
-
-	IRenderControllerWPtr	GetParentWPtr() const { return Parent_; }
-
-	IRenderControllerSPtr	GetParentSPtr() const { return Parent_.lock(); }
-
-	void					SetParent(IRenderControllerWPtr parent) { Parent_ = parent; }
 	
 	SRenderContextSPtr		GetRenderContextSPtr() const { return RC_.lock(); }
+
+	void					SetRenderContextWPtr(const SRenderContextWPtr& rc) { RC_ = rc; }
 
 	void					SetName(std::string str) { Name_ = str; }
 
@@ -75,7 +69,6 @@ private:
 
 	std::string				Name_;
 	bool					Enable_;
-	IRenderControllerWPtr	Parent_;
 	SRenderContextWPtr		RC_;
 };
 

@@ -5,19 +5,19 @@
 
 const char*	Selection[2] = 
 {
-	"varying	vec4		vertexColor;"
+	//"varying	vec4		vertexColor;"
 
 	"void main(void)"
 	"{"
 	"	gl_Position = ftransform();"
-	"	vertexColor = gl_Color;"
+	//"	vertexColor = gl_Color;"
 	"	gl_TexCoord[0] = gl_TextureMatrix[0]*gl_MultiTexCoord0;"
 	"}"
 	,
 	"uniform	int			hasTexture;"
 	"uniform	sampler2D	colorMap;"
 
-	"varying	vec4 vertexColor;"
+	//"varying	vec4 vertexColor;"
 
 	"void main(void)"
 	"{"
@@ -26,12 +26,13 @@ const char*	Selection[2] =
 	"	if ( hasTexture == 1 )"
 	"	{"
 	"		color = texture2D(colorMap, vec2(gl_TexCoord[0]));"
-	"		color.r = 1;"
+	"		float lum = color.r*0.3 + color.g*0.59 + color.b*0.11;"
+	"		color = vec4(lum,lum,lum,1);"
 	"		gl_FragColor = color;"
 	"	}"
 	"	else"
 	"	{"
-	"		color = vertexColor;"
+	"		color = gl_Color;"
 	"		color.r = 1;"
 	"		gl_FragColor = color;"
 	"	}"

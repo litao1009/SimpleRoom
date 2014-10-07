@@ -236,7 +236,7 @@ bool DrawingRectWallCtrller::OnPostEvent( const irr::SEvent& event )
 	return false;
 }
 
-bool DrawingRectWallCtrller::PreRender3D( const SRenderContext& rc )
+bool DrawingRectWallCtrller::PreRender3D()
 {
 	if ( !IsEnable() )
 	{
@@ -314,7 +314,7 @@ bool DrawingRectWallCtrller::PreRender3D( const SRenderContext& rc )
 	return false;
 }
 
-void DrawingRectWallCtrller::PostRender3D( const SRenderContext& rc )
+void DrawingRectWallCtrller::PostRender3D()
 {
 	if ( !IsEnable() )
 	{
@@ -330,7 +330,7 @@ void DrawingRectWallCtrller::PostRender3D( const SRenderContext& rc )
 		break;
 	case DrawingRectWallCtrller::EDWRS_DRAWING:
 		{
-			auto driver = rc.Smgr_->getVideoDriver();
+			auto driver = GetRenderContextSPtr()->Smgr_->getVideoDriver();
 
 			driver->setTransform(irr::video::ETS_WORLD, irr::core::matrix4());
 			driver->setMaterial(Material_);

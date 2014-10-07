@@ -140,7 +140,7 @@ void SRenderContext::OnResize(bool force)
 		Smgr_->getVideoDriver()->OnResize(irr::core::dimension2du((irr::u32)r.right, (irr::u32)r.bottom));
 		CursorControl_->OnResize(Smgr_->getVideoDriver()->getScreenSize());
 
-		imp_.RenderController_->OnResize(*this);
+		imp_.RenderController_->OnResize();
 
 		auto renderSize = Smgr_->getVideoDriver()->getScreenSize();
 		imp_.Effect_->setScreenRenderTargetResolution(renderSize);
@@ -195,21 +195,21 @@ void SRenderContext::Render()
 
 	driver->beginScene(true, true, BackGroundClr_, VideoData_);	
 
-	auto absorbed3D = imp_.RenderController_->PreRender3D(*this);
+	auto absorbed3D = imp_.RenderController_->PreRender3D();
 	if ( !absorbed3D )
 	{
 		//smgr->drawAll();
 		imp_.Effect_->update();
 
-		imp_.RenderController_->PostRender3D(*this);
+		imp_.RenderController_->PostRender3D();
 	}
 
-	auto absorbed2D = imp_.RenderController_->PreRender2D(*this);
+	auto absorbed2D = imp_.RenderController_->PreRender2D();
 	if ( !absorbed2D )
 	{
 		guimgr->drawAll();
 
-		imp_.RenderController_->PostRender2D(*this);
+		imp_.RenderController_->PostRender2D();
 	}
 
 	driver->endScene();
@@ -247,5 +247,5 @@ void SRenderContext::RemoveNodeFromDepthPass( irr::scene::ISceneNode* node )
 
 void SRenderContext::Init()
 {
-	ImpUPtr_->RenderController_->PostInit(shared_from_this());
+	ImpUPtr_->RenderController_->SetRenderContextWPtr(shared_from_this());
 }

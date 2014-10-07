@@ -16,11 +16,11 @@ public:
 
 public:
 
-	virtual	void	PostInit(SRenderContextSPtr sprc);
+	virtual	void	Init();
 
 	virtual bool	OnPreEvent(const irr::SEvent& evt);
 
-	virtual bool	PreRender3D(const SRenderContext& rc);
+	virtual bool	PreRender3D();
 
 public:
 
@@ -37,6 +37,7 @@ private:
 	float						GridSize_;
 	irr::scene::ISceneNode*		Node_;
 	irr::core::vector3df		GridPos_;
+	irr::core::vector2di		CursorIPos_;
 	bool						Ignore_;
 };
 #endif // GridController_h__

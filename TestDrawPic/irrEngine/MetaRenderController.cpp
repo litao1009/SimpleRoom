@@ -71,62 +71,65 @@ bool MetaRenderController::OnGUIEvent( const irr::SEvent& event )
 	return false;
 }
 
-void MetaRenderController::OnResize(const SRenderContext& rc)
+void MetaRenderController::OnResize()
 {
 	for ( auto& controller : ControllerList_ )
 	{
-		controller->OnResize(rc);
+		controller->OnResize();
 	}
 }
 
-bool MetaRenderController::PreRender3D( const SRenderContext& rc )
+bool MetaRenderController::PreRender3D()
 {
 	auto ret = false;
 
 	for ( auto& controller : ControllerList_ )
 	{
-		ret &= controller->PreRender3D(rc);
+		ret &= controller->PreRender3D();
 	}
 
 	return ret;
 }
 
-void MetaRenderController::PostRender3D( const SRenderContext& rc )
+void MetaRenderController::PostRender3D()
 {
 	for ( auto& controller : ControllerList_ )
 	{
-		controller->PostRender3D(rc);
+		controller->PostRender3D();
 	}
 }
 
-bool MetaRenderController::PreRender2D( const SRenderContext& rc )
+bool MetaRenderController::PreRender2D()
 {
 	auto ret = false;
 
 	for ( auto& controller : ControllerList_ )
 	{
-		ret &= controller->PreRender2D(rc);
+		ret &= controller->PreRender2D();
 	}
 
 	return ret;
 }
 
-void MetaRenderController::PostRender2D( const SRenderContext& rc )
+void MetaRenderController::PostRender2D()
 {
 	for ( auto& controller : ControllerList_ )
 	{
-		controller->PostRender2D(rc);
+		controller->PostRender2D();
 	}
 }
 
 void MetaRenderController::PushController( IRenderControllerSPtr controller )
 {
+#ifdef _DEBUG
+	assert(ControllerList_.end() == std::find(ControllerList_.begin(), ControllerList_.end(), controller));
+#endif
+
 	if ( controller )
 	{
 		auto rc = GetRenderContextSPtr();
-		controller->PreInit(rc);
+		controller->SetRenderContextWPtr(rc);
 		ControllerList_.push_back(controller);
-		controller->SetParent(shared_from_this());
-		controller->PostInit(rc);
+		controller->Init();
 	}
 }

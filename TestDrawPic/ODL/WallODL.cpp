@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
 #include "WallODL.h"
+#include "WallFaceODL.h"
 
 #include "BRepPrimAPI_MakePrism.hxx"
 #include "BRepBuilderAPI_MakePolygon.hxx"
@@ -9,7 +10,8 @@
 #include "BRepOffsetAPI_MakePipeShell.hxx"
 #include "TopExp_Explorer.hxx"
 #include "TopoDS.hxx"
-#include "WallFaceODL.h"
+#include "BRepBndLib.hxx"
+
 
 #include "IVideoDriver.h"
 #include "ISceneManager.h"
@@ -26,13 +28,20 @@ CWallODL::~CWallODL(void)
 {
 }
 
-CWallODL::ChildrenList CWallODL::CreateWallByBottomFace( SRenderContextWPtr renderContext, const TopoDS_Shape& bottomFace, const PointList& pntList, float wallHeight )
+CWallODL::ChildrenList CWallODL::CreateWallByBottomFace( SRenderContextWPtr renderContext, const TopoDS_Shape& bottomFace, const PointList& pntList, float wallHeight, const gp_Pnt& center )
 {
 	static irr::core::vector3df s_YDir(0,1,0);
 
+	TopoDS_Shape transformedFace;
+	{
+		gp_Trsf t;
+		t.SetTranslationPart(center.XYZ().Reversed());
+		transformedFace = bottomFace.Moved(t);
+	}
+
 	ChildrenList ret;
 
-	BRepPrimAPI_MakePrism mp(bottomFace, gp_Vec(0,wallHeight, 0));
+	BRepPrimAPI_MakePrism mp(transformedFace, gp_Vec(0,wallHeight, 0));
 	assert(mp.IsDone());
 
 	auto wallCompSolids = mp.Shape();
@@ -42,6 +51,14 @@ CWallODL::ChildrenList CWallODL::CreateWallByBottomFace( SRenderContextWPtr rend
 	{
 		auto newWall = CWallODL::Create<CWallODL>(renderContext);
 		auto curSolid = exp.Current();
+		Bnd_Box wallBox;
+		BRepBndLib::Add(curSolid, wallBox);
+		gp_Pnt wallCenter;
+		{
+			Standard_Real xMin,yMin,zMin,xMax,yMax,zMax;
+			wallBox.Get(xMin, yMin, zMin, xMax, yMax, zMax);
+			wallCenter.SetXYZ(gp_XYZ((xMin+xMax)/2, (yMin+yMax)/2, (zMin+zMax)/2));
+		}
 
 		auto& pnt0 = pntList[wallIndex];
 		auto& pnt1 = pntList[wallIndex+1];
@@ -53,15 +70,26 @@ CWallODL::ChildrenList CWallODL::CreateWallByBottomFace( SRenderContextWPtr rend
 		assert(mesh.RawMesh_);
 		assert(!mesh.Faces_.empty());
 
+		gp_Quaternion rotation;
+		rotation.SetEulerAngles(gp_Extrinsic_XYZ, irr::core::degToRad(mesh.RawMesh_->Rotation_.X), irr::core::degToRad(mesh.RawMesh_->Rotation_.Y), irr::core::degToRad(mesh.RawMesh_->Rotation_.Z));
+		gp_XYZ translation(mesh.RawMesh_->Translation_.X, mesh.RawMesh_->Translation_.Y, mesh.RawMesh_->Translation_.Z);
+		{
+			gp_Trsf t,r;
+			t.SetTranslationPart(translation);
+			r.SetRotation(rotation);
+			curSolid.Move((t*r).Inverted());
+		}
 		newWall->SetBaseShape(curSolid);
 
 		newWall->GetDataSceneNode()->setMesh(mesh.RawMesh_->Mesh_);
 		newWall->GetDataSceneNode()->setPosition(mesh.RawMesh_->Translation_);
+		newWall->SetTranslation(translation);
 		newWall->GetDataSceneNode()->setRotation(mesh.RawMesh_->Rotation_);
+		newWall->SetRoration(rotation);
 
 		newWall->GetDataSceneNode()->setMaterialFlag(irr::video::EMF_LIGHTING, false);
 		newWall->GetDataSceneNode()->AddToDepthPass();
-		std::static_pointer_cast<CWallODL>(newWall)->SetDefaultTexture();
+		newWall->SetDefaultTexture();
 
 		for ( auto& curFace : mesh.Faces_ )
 		{
@@ -120,6 +148,7 @@ CWallODL::ChildrenList CWallODL::CreateWallByRectRange( SRenderContextWPtr rende
 	assert(pipeMaker.IsDone());
 
 	auto bottomFace = pipeMaker.Shape();
+
 	PointList pntList;
 	pntList.push_back(p1);
 	pntList.push_back(p2);
@@ -127,7 +156,10 @@ CWallODL::ChildrenList CWallODL::CreateWallByRectRange( SRenderContextWPtr rende
 	pntList.push_back(p4);
 	pntList.push_back(p1);
 
-	return CreateWallByBottomFace(renderContext, bottomFace, pntList, wallHeight);
+	auto p5 = (first+last)/2;
+	p5.Y = wallHeight/2;
+
+	return CreateWallByBottomFace(renderContext, bottomFace, pntList, wallHeight, gp_Pnt(p5.X, p5.Y, p5.Z));
 }
 
 

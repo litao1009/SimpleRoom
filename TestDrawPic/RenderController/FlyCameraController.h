@@ -14,7 +14,7 @@ public:
 
 public://IRenderController
 
-	virtual	bool	PreRender3D(const SRenderContext& rc);
+	virtual	bool	PreRender3D();
 
 	virtual bool	OnPreEvent(const irr::SEvent& event);
 

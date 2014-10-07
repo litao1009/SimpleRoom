@@ -3,6 +3,7 @@
 #include "GridController.h"
 
 #include "irrEngine/SRenderContext.h"
+#include "irrEngine/irrEngine.h"
 
 #include "ISceneManager.h"
 #include "SMeshBuffer.h"
@@ -51,7 +52,8 @@ public:
 		newMesh->addMeshBuffer(meshbuf);
 		newMesh->recalculateBoundingBox();
 		meshbuf->drop();
-
+		meshbuf->getMaterial().PolygonOffsetDirection = irr::video::EPO_BACK;
+		meshbuf->getMaterial().PolygonOffsetFactor = 7;
 		Mesh_ = newMesh;
 	}
 
@@ -149,7 +151,10 @@ bool GridController::OnPreEvent( const irr::SEvent& evt )
 
 	if ( evt.EventType == irr::EET_MOUSE_INPUT_EVENT && evt.MouseInput.Event == irr::EMIE_MOUSE_MOVED )
 	{
-		auto line = GetRenderContextSPtr()->Smgr_->getSceneCollisionManager()->getRayFromScreenCoordinates(irr::core::position2di(evt.MouseInput.X, evt.MouseInput.Y));
+		CursorIPos_.X = evt.MouseInput.X;
+		CursorIPos_.Y = evt.MouseInput.Y;
+
+		auto line = GetRenderContextSPtr()->Smgr_->getSceneCollisionManager()->getRayFromScreenCoordinates(CursorIPos_);
 
 		if ( IsEnable() && !Ignore_ )
 		{
@@ -182,7 +187,7 @@ bool GridController::OnPreEvent( const irr::SEvent& evt )
 	return false;
 }
 
-bool GridController::PreRender3D( const SRenderContext& rc )
+bool GridController::PreRender3D()
 {
 	Node_->setVisible(IsEnable());
 	
@@ -218,10 +223,8 @@ bool GridController::PreRender3D( const SRenderContext& rc )
 	return false;
 }
 
-void GridController::PostInit( SRenderContextSPtr sprc )
+void GridController::Init()
 {
-	IRenderController::PostInit(sprc);
-
 	auto smgr = GetRenderContextSPtr()->Smgr_.get();
 
 	Node_ = new GridMeshSceneNode(smgr->getRootSceneNode(), smgr, -1);

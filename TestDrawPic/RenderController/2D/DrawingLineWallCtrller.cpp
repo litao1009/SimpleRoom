@@ -239,7 +239,7 @@ bool DrawingLineWallCtrller::OnPostEvent( const irr::SEvent& event )
 	return false;
 }
 
-bool DrawingLineWallCtrller::PreRender3D( const SRenderContext& rc )
+bool DrawingLineWallCtrller::PreRender3D()
 {
 	if ( !IsEnable() )
 	{
@@ -502,7 +502,7 @@ bool DrawingLineWallCtrller::PreRender3D( const SRenderContext& rc )
 	return false;
 }
 
-void DrawingLineWallCtrller::PostRender3D( const SRenderContext& rc )
+void DrawingLineWallCtrller::PostRender3D()
 {
 	if ( !IsEnable() )
 	{
@@ -520,7 +520,7 @@ void DrawingLineWallCtrller::PostRender3D( const SRenderContext& rc )
 		break;
 	case DrawingLineWallCtrller::EDWLS_DRAWING:
 		{
-			auto driver = rc.Smgr_->getVideoDriver();
+			auto driver = GetRenderContextSPtr()->Smgr_->getVideoDriver();
 
 			driver->setTransform(irr::video::ETS_WORLD, irr::core::matrix4());
 			driver->setMaterial(Material_);

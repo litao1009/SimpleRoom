@@ -13,6 +13,7 @@ class	StatusMgr
 	StatusMgr()
 	{
 		DrawingState_ = EDS_NONE;
+		CreateWallHeight_ = 2600;
 	}
 
 	~StatusMgr() {}
@@ -40,5 +41,7 @@ public:
 	boost::optional<irr::core::vector3df>	GridAlign_;
 
 	EDrawingState							DrawingState_;
+
+	float									CreateWallHeight_;
 };
 #endif // StatusMgr_h__

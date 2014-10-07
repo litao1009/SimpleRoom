@@ -384,7 +384,11 @@ ODLTools::SMeshSet ODLTools::CreateMesh( const TopoDS_Shape& shape, const boost:
 
 				gp_Trsf tranToOriginal, roateToDZ;
 				tranToOriginal.SetTranslation(gp_Pnt((xMax+xMin)/2, (yMax+yMin)/2, (zMax+zMin)/2), gp::Origin());
-				roateToDZ.SetRotation(gp_Quaternion(*refDir, gp::DZ()));
+
+				if ( refDir )
+				{
+					roateToDZ.SetRotation(gp_Quaternion(*refDir, gp::DZ()));
+				}
 
 				faceTrans = roateToDZ * tranToOriginal;				
 			}

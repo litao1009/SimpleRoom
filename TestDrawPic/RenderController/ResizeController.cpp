@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
 #include "ResizeController.h"
-#include "irrEngine/Implemention/EventUserType.h"
+#include "RenderController/EventUserType.h"
 
 
 ResizeController::ResizeController(HWND h)
