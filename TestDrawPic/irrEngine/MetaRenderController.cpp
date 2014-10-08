@@ -85,7 +85,7 @@ bool MetaRenderController::PreRender3D()
 
 	for ( auto& controller : ControllerList_ )
 	{
-		ret &= controller->PreRender3D();
+		ret |= controller->PreRender3D();
 	}
 
 	return ret;
@@ -105,7 +105,7 @@ bool MetaRenderController::PreRender2D()
 
 	for ( auto& controller : ControllerList_ )
 	{
-		ret &= controller->PreRender2D();
+		ret |= controller->PreRender2D();
 	}
 
 	return ret;
@@ -130,6 +130,12 @@ void MetaRenderController::PushController( IRenderControllerSPtr controller )
 		auto rc = GetRenderContextSPtr();
 		controller->SetRenderContextWPtr(rc);
 		ControllerList_.push_back(controller);
-		controller->Init();
+
+		if ( !controller->HasInit() )
+		{
+			controller->Init();
+			controller->SetHasInit(true);
+		}
+		
 	}
 }

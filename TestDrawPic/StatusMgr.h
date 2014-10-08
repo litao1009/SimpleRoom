@@ -14,6 +14,11 @@ class	StatusMgr
 	{
 		DrawingState_ = EDS_NONE;
 		CreateWallHeight_ = 2600;
+
+		Test_CreateDoor_ = false;
+		Test_CreateWindow_ = false;
+		Test_CreateBayWindow_ = false;
+		RealWorld_ = false;
 	}
 
 	~StatusMgr() {}
@@ -43,5 +48,13 @@ public:
 	EDrawingState							DrawingState_;
 
 	float									CreateWallHeight_;
+
+	bool									RealWorld_;
+
+	//--for test
+	bool									Test_CreateDoor_;
+	bool									Test_CreateWindow_;
+	bool									Test_CreateBayWindow_;
+	//--for test
 };
 #endif // StatusMgr_h__

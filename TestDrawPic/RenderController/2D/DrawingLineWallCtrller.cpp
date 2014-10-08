@@ -523,12 +523,14 @@ void DrawingLineWallCtrller::PostRender3D()
 			auto driver = GetRenderContextSPtr()->Smgr_->getVideoDriver();
 
 			driver->setTransform(irr::video::ETS_WORLD, irr::core::matrix4());
-			driver->setMaterial(Material_);
 
 			if ( MeshBuf_ )
 			{
+				driver->setMaterial(MeshBuf_->getMaterial());
 				driver->drawMeshBuffer(MeshBuf_);
 			}
+
+			driver->setMaterial(Material_);
 
 			if ( LineMeshBuf_ )
 			{
@@ -674,6 +676,18 @@ bool DrawingLineWallCtrller::UpdateMesh()
 			assert(mesh);
 			MeshBuf_ = mesh->getMeshBuffer(0);
 			MeshBuf_->grab();
+
+			auto tex = GetRenderContextSPtr()->Smgr_->getVideoDriver()->getTexture("../Data/Resource/3D/wallLine.png");
+			MeshBuf_->getMaterial().setTexture(0, tex);
+			float uLen = 200;
+			float vLen = 200;
+			irr::core::matrix4 scaleMat,rotateMat;
+			scaleMat.setScale(irr::core::vector3df(1/uLen, 1/vLen, 1));
+			rotateMat.setTextureRotationCenter(M_PI/4);
+			MeshBuf_->getMaterial().setTextureMatrix(0, rotateMat*scaleMat);
+			MeshBuf_->getMaterial().Lighting = false;
+			MeshBuf_->getMaterial().ZWriteEnable = false;
+			MeshBuf_->getMaterial().BackfaceCulling = false;
 			mesh->drop();
 		}
 

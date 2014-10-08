@@ -117,6 +117,7 @@ void CSceneNode2D::setMesh( irr::scene::IMesh* mesh )
 	}
 
 	Mesh_ = mesh;
+	Mesh_->setMaterialFlag(irr::video::EMF_ZBUFFER, false);
 }
 
 irr::scene::ISceneNode* CSceneNode2D::clone( irr::scene::ISceneNode* newParent, irr::scene::ISceneManager* newManager )

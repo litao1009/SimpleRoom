@@ -23,6 +23,10 @@
 #include "RenderController/2D/DrawingLineWallCtrller.h"
 #include "RenderController/2D/DrawingRectWallCtrller.h"
 
+//--test
+#include "RenderController/TestDecorGUIBoard.h"
+//--test
+
 #include "BRepBuilderAPI_MakeEdge.hxx"
 #include "TopoDS_Edge.hxx"
 #include "gce_MakeLin.hxx"
@@ -84,7 +88,8 @@ public://IRenderController
 					StatesController_->SetRenderState(ERS_FPS_VIEW);
 				}
 			}
-			return true;
+
+			return false;
 		}
 
 		SwitchCameraIfNeed();
@@ -96,9 +101,8 @@ public://IRenderController
 				BuildWall();
 			}
 		}
-		
 
-		return true;
+		return false;
 	}
 
 public:
@@ -481,6 +485,7 @@ void CDesignODL::Init()
 			ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->DrawLineWallCtrller_);
 			ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->DrawRectWallCtrller_);
 			ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->TopPickingController_);
+			ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, std::make_shared<TestDecorGUIBoard>());
 		}
 
 		{//MayaView

@@ -46,6 +46,8 @@ public:
 
 	bool	IsFPSCameraActive() const { return FPSCameraActive_; }
 
+	bool	IsRealWorldActive() const { return RealWorld_; }
+
 private:
 
 	//鼠标光标
@@ -80,6 +82,11 @@ private:
 	ITextureSPtr			TopActiveTex_;
 	ITextureSPtr			TopDActiveTex_;
 
+	//Real图标
+	IGUIImageSPtr			RealImage_;
+	ITextureSPtr			RealActiveTex_;
+	ITextureSPtr			RealDActiveTex_;
+
 	bool					Minimum_;
 	bool					CameraVisible_;
 	bool					CameraRestore_;
@@ -87,6 +94,8 @@ private:
 	bool					TopCameraActive_;
 	bool					MayaCameraActive_;
 	bool					FPSCameraActive_;
+	
+	bool					RealWorld_;
 };
 
 typedef	std::shared_ptr<GUIController>	GUIControllerSPtr;

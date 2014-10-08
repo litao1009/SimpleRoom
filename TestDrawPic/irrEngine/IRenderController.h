@@ -24,6 +24,7 @@ public:
 	IRenderController()
 	{
 		Enable_ = true;
+		HasInit_ = false;
 	}
 
 public://IEventReceiver 
@@ -65,11 +66,16 @@ public:
 
 	const std::string&		GetName() const { return Name_; }
 
+	bool					HasInit() const { return HasInit_; }
+
+	void					SetHasInit(bool val) { HasInit_ = val; }
+
 private:
 
 	std::string				Name_;
 	bool					Enable_;
 	SRenderContextWPtr		RC_;
+	bool					HasInit_;
 };
 
 #endif // SRenderController_h__

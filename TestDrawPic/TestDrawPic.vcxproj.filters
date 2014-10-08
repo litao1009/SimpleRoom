@@ -223,6 +223,12 @@
     <ClCompile Include="RenderController\UpdateTransformingCtrller.cpp">
       <Filter>RenderController</Filter>
     </ClCompile>
+    <ClCompile Include="RenderController\TestDecorGUIBoard.cpp">
+      <Filter>RenderController</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderController\CreatingDoorController.cpp">
+      <Filter>RenderController</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BLL\BaseBLL.h">
@@ -499,6 +505,12 @@
       <Filter>ODL</Filter>
     </ClInclude>
     <ClInclude Include="RenderController\UpdateTransformingCtrller.h">
+      <Filter>RenderController</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderController\TestDecorGUIBoard.h">
+      <Filter>RenderController</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderController\CreatingDoorController.h">
       <Filter>RenderController</Filter>
     </ClInclude>
   </ItemGroup>

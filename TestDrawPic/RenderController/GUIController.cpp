@@ -13,11 +13,11 @@ static const auto ImageBorderY = 3;
 using namespace irr;
 using namespace gui;
 
-CGUIImageButton*	AddImage( IGUIEnvironment* env, video::ITexture* tex, core::position2di pos, bool useAlphaChannel=true, IGUIElement* parent=0, irr::s32 id=-1 )
+static	CGUIImageButton*	AddImage( IGUIEnvironment* env, video::ITexture* tex, core::position2di pos = core::position2di(0,0), IGUIElement* parent=0, irr::s32 id=-1, bool useAlphaChannel=true )
 {
-	auto sz = core::dimension2di(tex->getOriginalSize());
+	auto sz = tex->getOriginalSize();
 
-	auto img = new CGUIImageButton(env, env->getRootGUIElement(), -1, core::recti(irr::core::vector2di(0,1), sz));
+	auto img = new CGUIImageButton(env, parent ? parent : env->getRootGUIElement(), -1, core::recti(pos, sz));
 	img->setUseAlphaChannel(true);
 	img->setImage(tex);
 	img->drop();
@@ -35,6 +35,7 @@ GUIController::GUIController()
 	TopCameraActive_ = true;
 	MayaCameraActive_ = false;
 	FPSCameraActive_ = false;
+	RealWorld_ = false;
 
 	SetName("GUIController");
 }
@@ -50,20 +51,20 @@ void GUIController::Init()
 
 	{//resize
 		auto tex = driver->getTexture("../Data/Resource/3D/resize.png");
-		auto guiImage = AddImage(sprc->GUIEnv_.get(), tex, core::vector2di(0,1));
+		auto guiImage = AddImage(sprc->GUIEnv_.get(), tex);
 		ResizeImage_.reset(guiImage, std::bind([](IGUIElement*){}, std::placeholders::_1));
 		ResizeImage_->SetHoldPressed(true);
 	}
 
 	{//minimum
 		auto tex = driver->getTexture("../Data/Resource/3D/minimum.png");
-		auto guiImage = AddImage(sprc->GUIEnv_.get(), tex, core::vector2di(0,1));
+		auto guiImage = AddImage(sprc->GUIEnv_.get(), tex);
 		MinimumImage_.reset(guiImage, std::bind([](IGUIElement*){}, std::placeholders::_1));
 	}
 
 	{//restore
 		auto tex = driver->getTexture("../Data/Resource/3D/restore.png");
-		auto guiImage = AddImage(sprc->GUIEnv_.get(), tex, core::vector2di(0,1));
+		auto guiImage = AddImage(sprc->GUIEnv_.get(), tex);
 		RestoreImage_.reset(guiImage, std::bind([](IGUIElement*){}, std::placeholders::_1));
 		RestoreImage_->setVisible(false);
 	}
@@ -72,7 +73,7 @@ void GUIController::Init()
 		auto showTex = driver->getTexture("../Data/Resource/3D/camera.png");
 		auto hideTex = driver->getTexture("../Data/Resource/3D/camera_d.png");
 
-		auto guiImage = AddImage(sprc->GUIEnv_.get(), showTex, core::vector2di(0,1));
+		auto guiImage = AddImage(sprc->GUIEnv_.get(), showTex);
 
 		ShowCameraImage_.reset(guiImage, std::bind([](IGUIElement*){}, std::placeholders::_1));
 
@@ -88,9 +89,9 @@ void GUIController::Init()
 		auto topActTex = driver->getTexture("../Data/Resource/3D/top_cam_a.png");
 		auto topDActTex = driver->getTexture("../Data/Resource/3D/top_cam_d.png");
 
-		auto fpsImage = AddImage(sprc->GUIEnv_.get(), fpsDActTex, core::vector2di(0,1));
-		auto mayaImage = AddImage(sprc->GUIEnv_.get(), mayaDActTex, core::vector2di(0,1));
-		auto topImage = AddImage(sprc->GUIEnv_.get(), topActTex, core::vector2di(0,1));
+		auto fpsImage = AddImage(sprc->GUIEnv_.get(), fpsDActTex);
+		auto mayaImage = AddImage(sprc->GUIEnv_.get(), mayaDActTex);
+		auto topImage = AddImage(sprc->GUIEnv_.get(), topActTex);
 
 		FPSCameraImage_.reset(fpsImage, [](IGUIImage*){});
 		MayaCameraImage_.reset(mayaImage, [](IGUIImage*){});
@@ -102,6 +103,15 @@ void GUIController::Init()
 		FPSDActiveTex_.reset(fpsDActTex, [](video::ITexture*){});
 		TopActiveTex_.reset(topActTex, [](video::ITexture*){});
 		TopDActiveTex_.reset(topDActTex, [](video::ITexture*){});
+	}
+
+	{//restore
+		auto realTex = driver->getTexture("../Data/Resource/3D/real_a.png");
+		auto realDTex = driver->getTexture("../Data/Resource/3D/real_d.png");
+		auto guiImage = AddImage(sprc->GUIEnv_.get(), realDTex);
+		RealActiveTex_.reset(realTex, [](video::ITexture*){});
+		RealDActiveTex_.reset(realDTex, [](video::ITexture*){});
+		RealImage_.reset(guiImage, std::bind([](IGUIElement*){}, std::placeholders::_1));
 	}
 }
 
@@ -280,6 +290,18 @@ bool GUIController::OnGUIEvent( const irr::SEvent& event )
 				ret = true;
 			}
 		}
+
+		//Real
+		if ( event.GUIEvent.Caller == this->RealImage_.get() )
+		{
+			if ( event.GUIEvent.EventType == (EGUI_EVENT_TYPE)CGUIImageButton::EIS_PRESSED )
+			{
+				RealWorld_ = !RealWorld_;
+				RealImage_->setImage(RealWorld_ ? RealActiveTex_.get() : RealDActiveTex_.get());
+
+				ret = true;
+			}
+		}
 	}
 
 	auto sprc = GetRenderContextSPtr();
@@ -323,6 +345,7 @@ void GUIController::OnResize()
 		FPSCameraImage_->setRelativePosition(irr::core::vector2di(renderSize.Width-texSize.Width-ImageBorderX,renderSize.Height-texSize.Height-ImageBorderY));
 		MayaCameraImage_->setRelativePosition(irr::core::vector2di(renderSize.Width-texSize.Width-ImageBorderX,renderSize.Height-texSize.Height*2-ImageBorderY));
 		TopCameraImage_->setRelativePosition(irr::core::vector2di(renderSize.Width-texSize.Width-ImageBorderX,renderSize.Height-texSize.Height*3-ImageBorderY));
+		RealImage_->setRelativePosition(irr::core::vector2di(renderSize.Width-texSize.Width-ImageBorderX,renderSize.Height-texSize.Height*5-ImageBorderY));
 	}
 }
 
@@ -347,6 +370,7 @@ bool GUIController::PreRender2D()
 		FPSCameraImage_->setVisible(false);
 		MayaCameraImage_->setVisible(false);
 		TopCameraImage_->setVisible(false);
+		RealImage_->setVisible(false);
 	}
 	else
 	{
@@ -357,6 +381,7 @@ bool GUIController::PreRender2D()
 		FPSCameraImage_->setVisible(true);
 		MayaCameraImage_->setVisible(true);
 		TopCameraImage_->setVisible(true);
+		RealImage_->setVisible(IsTopCameraActive());
 	}
 
 	if ( CameraVisible_ )
