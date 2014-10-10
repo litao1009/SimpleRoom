@@ -168,7 +168,7 @@ GridController::~GridController()
 
 bool GridController::OnPreEvent( const irr::SEvent& evt )
 {
-	if ( evt.EventType == irr::EET_KEY_INPUT_EVENT && evt.KeyInput.Key == irr::KEY_SHIFT )
+	if ( evt.EventType == irr::EET_KEY_INPUT_EVENT && evt.KeyInput.Key == irr::KEY_LSHIFT )
 	{
 		if ( !evt.KeyInput.PressedDown )
 		{

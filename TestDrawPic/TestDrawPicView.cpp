@@ -551,83 +551,59 @@ BOOL CTestDrawPicView::PreTranslateMessage(MSG* pMsg)
 
 	auto rc = GetRootODL()->GetRenderContext();
 
-	if (pMsg->message ==WM_KEYDOWN)
+	if ( pMsg->message == WM_KEYDOWN || pMsg->message == WM_KEYUP )
 	{
+		irr::SEvent event;
 
-		irr::SEvent evt;
-		evt.EventType = irr::EET_KEY_INPUT_EVENT;
-		evt.KeyInput.PressedDown = true;
-		switch (pMsg->wParam)
+		BYTE allKeys[256];
+
+		event.EventType = irr::EET_KEY_INPUT_EVENT;
+		event.KeyInput.Key = (irr::EKEY_CODE)pMsg->wParam;
+		event.KeyInput.PressedDown = (pMsg->message==WM_KEYDOWN || pMsg->message == WM_SYSKEYDOWN);
+
+		const UINT MY_MAPVK_VSC_TO_VK_EX = 3;
+		if ( event.KeyInput.Key == irr::KEY_SHIFT )
 		{
-		case 'w':
-		case 'W':
-			evt.KeyInput.Key = irr::KEY_KEY_W;
-			break;
-		case 'a':
-		case 'A':
-			evt.KeyInput.Key = irr::KEY_KEY_A;
-			break;
-		case 's':
-		case 'S':
-			evt.KeyInput.Key = irr::KEY_KEY_S;
-			break;
-		case 'd':
-		case 'D':
-			evt.KeyInput.Key = irr::KEY_KEY_D;
-			break;
-		case VK_ESCAPE:
-			evt.KeyInput.Key = irr::KEY_ESCAPE;
-			break;
-		case VK_SHIFT:
-			evt.KeyInput.Key = irr::KEY_SHIFT;
-			break;
-		case VK_CONTROL:
-			evt.KeyInput.Key = irr::KEY_CONTROL;
-			break;
-		default:
-			break;
+			event.KeyInput.Key = (irr::EKEY_CODE)MapVirtualKey( ((pMsg->lParam>>16) & 255), MY_MAPVK_VSC_TO_VK_EX );
+		}
+		if ( event.KeyInput.Key == irr::KEY_CONTROL )
+		{
+			event.KeyInput.Key = (irr::EKEY_CODE)MapVirtualKey( ((pMsg->lParam>>16) & 255), MY_MAPVK_VSC_TO_VK_EX );
+			if (pMsg->lParam & 0x1000000)
+				event.KeyInput.Key = irr::KEY_RCONTROL;
+		}
+		if ( event.KeyInput.Key == irr::KEY_MENU )
+		{
+			event.KeyInput.Key = (irr::EKEY_CODE)MapVirtualKey( ((pMsg->lParam>>16) & 255), MY_MAPVK_VSC_TO_VK_EX );
+			if (pMsg->lParam & 0x1000000)
+				event.KeyInput.Key = irr::KEY_RMENU;
 		}
 
-		rc->PostEvent(evt);
+		GetKeyboardState(allKeys);
+
+		event.KeyInput.Shift = ((allKeys[VK_SHIFT] & 0x80)!=0);
+		event.KeyInput.Control = ((allKeys[VK_CONTROL] & 0x80)!=0);
+
+		if ((allKeys[VK_MENU] & 0x80) != 0)
+			event.KeyInput.Control = 0;
+
+		rc->PostEvent(event);
 	}
 
-	if (pMsg->message==WM_KEYUP)
+	if ( pMsg->message == WM_MOUSEWHEEL )
 	{
-		irr::SEvent evt;
-		evt.EventType = irr::EET_KEY_INPUT_EVENT;
-		evt.KeyInput.PressedDown = false;
-		switch (pMsg->wParam)
-		{
-		case 'w':
-		case 'W':
-			evt.KeyInput.Key = irr::KEY_KEY_W;
-			break;
-		case 'a':
-		case 'A':
-			evt.KeyInput.Key = irr::KEY_KEY_A;
-			break;
-		case 's':
-		case 'S':
-			evt.KeyInput.Key = irr::KEY_KEY_S;
-			break;
-		case 'd':
-		case 'D':
-			evt.KeyInput.Key = irr::KEY_KEY_D;
-			break;
-		case VK_ESCAPE:
-			evt.KeyInput.Key = irr::KEY_ESCAPE;
-			break;
-		case VK_SHIFT:
-			evt.KeyInput.Key = irr::KEY_SHIFT;
-			break;
-		case VK_CONTROL:
-			evt.KeyInput.Key = irr::KEY_CONTROL;
-			break;
-		default:
-			break;
-		}
+		POINT p; // fixed by jox
+		p.x = 0; p.y = 0;
+		::ClientToScreen(GetSubView().GetSafeHwnd(), &p);
 
+		irr::SEvent evt;
+		evt.EventType = irr::EET_MOUSE_INPUT_EVENT;
+		evt.MouseInput.Event = irr::EMIE_MOUSE_WHEEL;
+		evt.MouseInput.X = (short)LOWORD(pMsg->lParam) - p.x;
+		evt.MouseInput.Y = (short)HIWORD(pMsg->lParam) - p.y;
+		evt.MouseInput.Wheel = ((irr::f32)((short)HIWORD(pMsg->wParam))) / (irr::f32)WHEEL_DELTA;
 		rc->PostEvent(evt);
+		TRACE(L"Wheel:%f\n", evt.MouseInput.Wheel);
 	}
 
 	return CView::PreTranslateMessage(pMsg);

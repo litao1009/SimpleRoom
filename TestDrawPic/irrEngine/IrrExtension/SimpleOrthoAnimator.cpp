@@ -9,14 +9,14 @@
 #include "ICameraSceneNode.h"
 #include "ISceneNodeAnimatorCollisionResponse.h"
 #include "ISceneCollisionManager.h"
-
-static auto MouseWheel = 0.f;
+#include "OrthoCameraRH.h"
 
 //! constructor
 CSimpleOrthoAnimator::CSimpleOrthoAnimator(irr::gui::ICursorControl* cursorControl,irr::f32 rotateSpeed, irr::f32 moveSpeed)
 	: CursorControl(cursorControl), MaxVerticalAngle(88.0f),
 	MoveSpeed(moveSpeed), RotateSpeed(rotateSpeed),
 	MouseYDirection(-1.0f),
+	MouseWheel(0),
 	LastAnimationTime(0), firstUpdate(true), firstInput(true), ResetMouse(false)
 {
 #ifdef _DEBUG
@@ -94,7 +94,18 @@ bool CSimpleOrthoAnimator::OnEvent(const irr::SEvent& evt)
 			CursorIPos.Y = CursorControl->getPosition().Y;
 			break;
 		case irr::EMIE_MOUSE_WHEEL:
-			MouseWheel = evt.MouseInput.Wheel;
+			{
+				CursorControl->getRelativePosition();
+				if ( std::abs(evt.MouseInput.Wheel) < 0.001 )
+				{
+					MouseWheel = 0;
+				}
+				else
+				{
+					MouseWheel = evt.MouseInput.Wheel < 0 ? -1 : 1;
+				}
+				
+			}
 		case irr::EMIE_LMOUSE_DOUBLE_CLICK:
 		case irr::EMIE_RMOUSE_DOUBLE_CLICK:
 		case irr::EMIE_MMOUSE_DOUBLE_CLICK:
@@ -120,7 +131,8 @@ void CSimpleOrthoAnimator::animateNode(irr::scene::ISceneNode* node, irr::u32 ti
 		return;
 	}
 
-	auto camera = static_cast<irr::scene::ICameraSceneNode*>(node);
+	auto camera = static_cast<COrthoCameraRH*>(node);
+	auto smgr = camera->getSceneManager();
 
 	auto pos = camera->getPosition();
 	auto target = camera->getTarget();
@@ -155,7 +167,6 @@ void CSimpleOrthoAnimator::animateNode(irr::scene::ISceneNode* node, irr::u32 ti
 
 	if ( MouseKeys[1] )
 	{
-		auto smgr = camera->getSceneManager();
 		if(smgr && smgr->getActiveCamera() != camera)
 		{
 			return;
@@ -179,7 +190,7 @@ void CSimpleOrthoAnimator::animateNode(irr::scene::ISceneNode* node, irr::u32 ti
 					auto line = smgr->getSceneCollisionManager()->getRayFromScreenCoordinates(center, camera);
 					auto ret = zeroPlane.getIntersectionWithLine(line.start, line.getVector(), centerPos);
 					assert(ret);
-				}			
+				}
 
 				auto ralationVec = centerPos - mousePos;
 				pos += ralationVec;
@@ -227,8 +238,63 @@ void CSimpleOrthoAnimator::animateNode(irr::scene::ISceneNode* node, irr::u32 ti
 		pos -= movedir * timeDiff * MoveSpeed;
 	}
 
-	pos += movedir * timeDiff * MouseWheel;
-	MouseWheel = 0.f;
+	if ( MouseWheel != 0 )
+	{
+		static auto smallFactor = 0.5f;
+		static auto bigFactor = 2.f;
+
+		auto curWidth = camera->GetBaseWidth();
+		auto smaller = curWidth * smallFactor;
+		auto bigger = curWidth * bigFactor;
+
+		smaller = max(smaller, 1000);
+		bigger = min(bigger, 50000);
+
+		if ( MouseWheel > 0.f )
+		{
+			camera->SetBaseWidth(smaller);
+		}
+
+		if ( MouseWheel < 0.f )
+		{
+			camera->SetBaseWidth(bigger);
+		}
+
+		{
+			irr::core::plane3df zeroPlane(irr::core::vector3df(0,0,0), irr::core::vector3df(0,1,0));
+
+			irr::core::vector3df mousePos;
+			{
+				auto line = smgr->getSceneCollisionManager()->getRayFromScreenCoordinates(CursorIPos, camera);
+				auto ret = zeroPlane.getIntersectionWithLine(line.start, line.getVector(), mousePos);
+				assert(ret);
+			}
+			irr::core::vector3df newPos;
+			{
+				auto curFactor = static_cast<float>(camera->GetBaseWidth()) / static_cast<float>(curWidth);
+				auto cursorRelatvie = CursorPos;
+				
+				auto cursorXLength = static_cast<float>(CursorIPos.X) / cursorRelatvie.X;
+				auto cursorYLength = static_cast<float>(CursorIPos.Y) / cursorRelatvie.Y;
+
+				cursorRelatvie -= 0.5f;
+				cursorRelatvie *= curFactor;
+				cursorRelatvie += 0.5f;
+
+				auto newIPosX = static_cast<int>(cursorRelatvie.X * cursorXLength);
+				auto newIPosY = static_cast<int>(cursorRelatvie.Y * cursorYLength);
+				auto line = smgr->getSceneCollisionManager()->getRayFromScreenCoordinates(irr::core::position2di(newIPosX,newIPosY), camera);
+				auto ret = zeroPlane.getIntersectionWithLine(line.start, line.getVector(), newPos);
+				assert(ret);
+			}
+
+			auto ralationVec = newPos - mousePos;
+			pos -= ralationVec;
+			target -= ralationVec;
+		}
+
+		MouseWheel = 0;
+	}
 
 	// strafing
 

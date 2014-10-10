@@ -148,102 +148,85 @@ LRESULT CSubViewer::DefWindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 		return CStatic::DefWindowProc(message, wParam, lParam);
 	}
 
-	
-	irr::SEvent evt;
-	evt.EventType = irr::EET_MOUSE_INPUT_EVENT;
-	evt.MouseInput.X = (short)LOWORD(lParam);
-	evt.MouseInput.Y = (short)HIWORD(lParam);
-	bool bNeedRedraw=false;
-	switch (message)
-	{
-	case WM_PAINT:
-		{
-			bNeedRedraw=true;
-		}
-		break;
-	case WM_MOUSEMOVE:
-		{
-			bNeedRedraw=true;
-			evt.MouseInput.Event = irr::EMIE_MOUSE_MOVED;
-			m_spRenderContext->PostEvent(evt);
-		}
-		break;
-	case WM_MOUSEWHEEL:
-		{
-			return TRUE;
-		}
-		break;
-	case WM_MBUTTONDOWN:
-		{
-			bNeedRedraw=true;
-			m_bMButtonDown = true;
-			ClipCursor(rtMain);
-			evt.MouseInput.Event = irr::EMIE_MMOUSE_PRESSED_DOWN;
-			m_spRenderContext->PostEvent(evt);
-		}
-		break;
-	case WM_MBUTTONUP:
-		{
-			bNeedRedraw=true;
-			m_bMButtonDown = false;
-			ClipCursor(NULL);
-			evt.MouseInput.Event = irr::EMIE_MMOUSE_LEFT_UP;
-			m_spRenderContext->PostEvent(evt);
-			this->GetParent()->Invalidate();
-		}
-		break;
-	case WM_LBUTTONDOWN:
-		{
-			bNeedRedraw=true;
-			m_bLButtonDown = true;
-			evt.MouseInput.Event = irr::EMIE_LMOUSE_PRESSED_DOWN;
-			SetCapture();
-			GetCapture();
-			m_spRenderContext->PostEvent(evt);
-		}
-		break;
-	case WM_LBUTTONDBLCLK:
-		{
-			bNeedRedraw=true;
+	static irr::s32 ClickCount=0;
+	if (::GetCapture() != GetSafeHwnd() && ClickCount > 0)
+		ClickCount = 0;
 
-			evt.MouseInput.Event = irr::EMIE_LMOUSE_DOUBLE_CLICK;
-			m_spRenderContext->PostEvent(evt);
-		}
-		break;
-	case WM_LBUTTONUP:
-		{
-			bNeedRedraw=true;
-			m_bLButtonDown = false;
-			evt.MouseInput.Event = irr::EMIE_LMOUSE_LEFT_UP;
-			ReleaseCapture();
-			m_spRenderContext->PostEvent(evt);
-			this->GetParent()->Invalidate();
-		}
-		break;
-	case WM_RBUTTONDOWN:
-		{
-			bNeedRedraw=true;
-			m_bRButtonDown = true;
-			evt.MouseInput.Event = irr::EMIE_RMOUSE_PRESSED_DOWN;
-			m_spRenderContext->PostEvent(evt);
-		}
-		break;
-	case WM_RBUTTONUP:
-		{
-			bNeedRedraw=true;
-			m_bRButtonDown = false;
-			evt.MouseInput.Event = irr::EMIE_RMOUSE_LEFT_UP;
-			m_spRenderContext->PostEvent(evt);
-			this->GetParent()->Invalidate();
-		}
-		break;
-	default:
-		break;
-	}
-	if (bNeedRedraw)
+	struct messageMap
 	{
-		Invalidate();
+		irr::s32 group;
+		UINT winMessage;
+		irr::s32 irrMessage;
+	};
+
+	static messageMap mouseMap[] =
+	{
+		{0, WM_LBUTTONDOWN, irr::EMIE_LMOUSE_PRESSED_DOWN},
+		{0, WM_LBUTTONDBLCLK, irr::EMIE_LMOUSE_DOUBLE_CLICK},
+		{1, WM_LBUTTONUP,   irr::EMIE_LMOUSE_LEFT_UP},
+		{0, WM_RBUTTONDOWN, irr::EMIE_RMOUSE_PRESSED_DOWN},
+		{1, WM_RBUTTONUP,   irr::EMIE_RMOUSE_LEFT_UP},
+		{0, WM_MBUTTONDOWN, irr::EMIE_MMOUSE_PRESSED_DOWN},
+		{1, WM_MBUTTONUP,   irr::EMIE_MMOUSE_LEFT_UP},
+		{2, WM_MOUSEMOVE,   irr::EMIE_MOUSE_MOVED},
+		{3, WM_MOUSEWHEEL,  irr::EMIE_MOUSE_WHEEL},
+		{-1, 0, 0}
+	};
+
+	messageMap * m = mouseMap;
+	while ( m->group >=0 && m->winMessage != message )
+		m += 1;
+
+	if ( m->group >= 0 )
+	{
+		irr::SEvent event;
+
+		if ( m->group == 0 )	// down
+		{
+			ClickCount++;
+			::SetCapture(GetSafeHwnd());
+		}
+		else if ( m->group == 1 )	// up
+		{
+			ClickCount--;
+			if (ClickCount<1)
+			{
+				ClickCount=0;
+				::ReleaseCapture();
+			}
+		}
+
+		event.EventType = irr::EET_MOUSE_INPUT_EVENT;
+		event.MouseInput.Event = (irr::EMOUSE_INPUT_EVENT) m->irrMessage;
+		event.MouseInput.X = (short)LOWORD(lParam);
+		event.MouseInput.Y = (short)HIWORD(lParam);
+		event.MouseInput.Shift = ((LOWORD(wParam) & MK_SHIFT) != 0);
+		event.MouseInput.Control = ((LOWORD(wParam) & MK_CONTROL) != 0);
+		// left and right mouse buttons
+		event.MouseInput.ButtonStates = wParam & ( MK_LBUTTON | MK_RBUTTON);
+		// middle and extra buttons
+		if (wParam & MK_MBUTTON)
+			event.MouseInput.ButtonStates |= irr::EMBSM_MIDDLE;
+		if (wParam & MK_XBUTTON1)
+			event.MouseInput.ButtonStates |= irr::EMBSM_EXTRA1;
+		if (wParam & MK_XBUTTON2)
+			event.MouseInput.ButtonStates |= irr::EMBSM_EXTRA2;
+		event.MouseInput.Wheel = 0.f;
+
+		// wheel
+		if ( m->group == 3 )
+		{
+			POINT p; // fixed by jox
+			p.x = 0; p.y = 0;
+			::ClientToScreen(GetSafeHwnd(), &p);
+			event.MouseInput.X -= p.x;
+			event.MouseInput.Y -= p.y;
+			event.MouseInput.Wheel = ((irr::f32)((short)HIWORD(wParam))) / (irr::f32)WHEEL_DELTA;
+		}
+
+		m_spRenderContext->PostEvent(event);
 	}
+	
 	return CStatic::DefWindowProc(message, wParam, lParam);
 }
 
@@ -252,40 +235,6 @@ BOOL CSubViewer::PreTranslateMessage(MSG* pMsg)
 {
 	// TODO: 在此添加专用代码和/或调用基类
 
-	if (pMsg->message==WM_KEYDOWN)
-	{
-
-	}
-
-	if (pMsg->message==WM_KEYUP)
-	{
-		irr::SEvent evt;
-		evt.EventType = irr::EET_KEY_INPUT_EVENT;
-		evt.KeyInput.PressedDown = false;
-		switch (pMsg->wParam)
-		{
-		case 'w':
-		case 'W':
-			evt.KeyInput.Key = irr::KEY_KEY_W;
-			break;
-		case 'a':
-		case 'A':
-			evt.KeyInput.Key = irr::KEY_KEY_A;
-			break;
-		case 's':
-		case 'S':
-			evt.KeyInput.Key = irr::KEY_KEY_S;
-			break;
-		case 'd':
-		case 'D':
-			evt.KeyInput.Key = irr::KEY_KEY_D;
-			break;
-		default:
-			break;
-		}
-
-		m_spRenderContext->PostEvent(evt);
-	}
 	return CStatic::PreTranslateMessage(pMsg);
 }
 

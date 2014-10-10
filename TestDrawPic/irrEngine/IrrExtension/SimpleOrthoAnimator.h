@@ -98,7 +98,7 @@ private:
 	irr::f32 MouseYDirection;
 
 	irr::s32 LastAnimationTime;
-
+	irr::s32 MouseWheel;
 	irr::core::array<irr::SKeyMap> KeyMap;
 	irr::core::position2df CenterCursor, CursorPos;
 	irr::core::position2di CursorIPos;
