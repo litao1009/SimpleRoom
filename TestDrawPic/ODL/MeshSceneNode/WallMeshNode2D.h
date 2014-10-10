@@ -1,20 +1,19 @@
-#ifndef SceneNode2D_h__
-#define SceneNode2D_h__
+#ifndef WallMeshNode2D_h__
+#define WallMeshNode2D_h__
 
 #pragma once
 
-#include "BaseSceneNode.h"
+#include "IMeshSceneNode.h"
+#include "SMeshBuffer.h"
 
-class	CSceneNode2D : public CBaseSceneNode
+#include "TopoDS_Shape.hxx"
+
+class	WallMeshNode2D : public irr::scene::IMeshSceneNode
 {
 public:
 
-	CSceneNode2D(SRenderContextWPtr rcWPtr, CBaseODLWPtr odlWPtr);
-	~CSceneNode2D();
-
-public://CBaseSceneNode
-
-	virtual	ESceneNodeType	GetSceneNodeType() const { return CBaseSceneNode::ESNT_2D; }
+	WallMeshNode2D(irr::scene::ISceneNode* parent, irr::s32 id = -1);
+	~WallMeshNode2D();
 
 public://ISceneNode
 
@@ -28,13 +27,11 @@ public://ISceneNode
 
 	virtual const irr::core::aabbox3df& getBoundingBox() const;
 
-	virtual irr::scene::ISceneNode* clone(irr::scene::ISceneNode* newParent, irr::scene::ISceneManager* newManager);
-
 public://IMeshSceneNode
 
-	virtual void setMesh(irr::scene::IMesh* mesh);
+	virtual void setMesh(irr::scene::IMesh* mesh) {}
 
-	virtual irr::scene::IMesh* getMesh();
+	virtual irr::scene::IMesh* getMesh() { return nullptr; }
 
 	virtual irr::scene::IShadowVolumeSceneNode* addShadowVolumeSceneNode(const irr::scene::IMesh*, irr::s32, bool, irr::f32) { return nullptr; }
 
@@ -42,9 +39,14 @@ public://IMeshSceneNode
 
 	virtual bool isReadOnlyMaterials() const { return false; }
 
+public:
+
+	void	UpdateMesh(const TopoDS_Shape& wallBottomFace);
+
 private:
 
-	irr::core::aabbox3df	Box_;
+	irr::scene::IMeshBuffer*	FaceBuffer_;
+	irr::scene::SMeshBuffer*	LineBuffer_;
 };
 
-#endif // SceneNode2D_h__
+#endif // WallMeshNode2D_h__

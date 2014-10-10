@@ -16,13 +16,7 @@ public:
 
 public:
 
-	typedef	std::vector<irr::core::vector3df>	PointList;
-
-public:
-
-	static	ChildrenList	CreateWallByBottomFace(SRenderContextWPtr renderContext, const TopoDS_Shape& bottomFace, const PointList& pntList, float wallHeight, const gp_Pnt& center);
-
-	static	ChildrenList	CreateWallByRectRange(SRenderContextWPtr renderContext, const irr::core::vector3df& first, const irr::core::vector3df& last, const irr::core::vector3df& thickVec, float wallHeight);
+	static	CBaseODLSPtr	CreateByBottomFace(SRenderContextWPtr renderContext, const TopoDS_Shape& bottomFace, const gp_Dir& wallPathDir, float wallHeight);
 
 public:
 	

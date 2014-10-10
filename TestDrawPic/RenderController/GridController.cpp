@@ -8,58 +8,77 @@
 #include "ISceneManager.h"
 #include "SMeshBuffer.h"
 #include "SMesh.h"
-#include "IMeshSceneNode.h"
 
 #include "StatusMgr.h"
 
 class GridMeshSceneNode : public irr::scene::ISceneNode
 {
-	irr::scene::IMesh*		Mesh_;
-	irr::core::vector3df	CameraCenter_;
-	int						GridCount_;
+	irr::scene::SMeshBuffer*	MeshBuf_;
+	irr::scene::SMeshBuffer*	AxisMeshBuf_;
+	irr::core::vector3df		CameraCenter_;
+	int							GridCount_;
 
 public:
 
 	GridMeshSceneNode(irr::scene::ISceneNode* parent, irr::scene::ISceneManager* mgr, irr::s32 id) : irr::scene::ISceneNode(parent, mgr, id)
 	{
-		auto meshbuf = new irr::scene::SMeshBuffer;
+		irr::video::SColor clr(0xFFA0A0A0);
 
-		GridCount_ = 40;
-		auto lineCount = GridCount_ + 1;
-		auto vertexCount = lineCount * 2;
-
-		irr::video::SColor clr(0xFF808080);
-
-		auto offset = -GridCount_/2;
-
-		meshbuf->Vertices.reallocate(vertexCount);
-		meshbuf->Indices.reallocate(vertexCount);
-		for ( auto index=0; index<vertexCount; ++index )
 		{
-			auto xIndex = static_cast<float>(index / 2);
-			auto zIndex = static_cast<float>(index & 1);
+			MeshBuf_ = new irr::scene::SMeshBuffer;
 
-			meshbuf->Vertices.push_back(irr::video::S3DVertex(xIndex+offset, 0, zIndex*GridCount_+offset, 0, 1, 0, clr, 0, 0));
+			GridCount_ = 40;
+			auto lineCount = GridCount_ + 1;
+			auto vertexCount = lineCount * 2;
 
-			meshbuf->Indices.push_back(index);
+			auto offset = -GridCount_/2;
+
+			MeshBuf_->Vertices.reallocate(vertexCount);
+			MeshBuf_->Indices.reallocate(vertexCount);
+			for ( auto index=0; index<vertexCount; ++index )
+			{
+				auto xIndex = static_cast<float>(index / 2);
+				auto zIndex = static_cast<float>(index & 1);
+
+				MeshBuf_->Vertices.push_back(irr::video::S3DVertex(xIndex+offset, 0, zIndex*GridCount_+offset, 0, 1, 0, clr, 0, 0));
+
+				MeshBuf_->Indices.push_back(index);
+			}
+
+			MeshBuf_->getMaterial().Lighting = false;
+			MeshBuf_->getMaterial().Thickness = 1;
+			MeshBuf_->getMaterial().PolygonOffsetDirection = irr::video::EPO_BACK;
+			MeshBuf_->getMaterial().PolygonOffsetFactor = 7;
+			MeshBuf_->recalculateBoundingBox();
 		}
 
-		meshbuf->getMaterial().Lighting = false;
-		meshbuf->getMaterial().AntiAliasing = irr::video::EAAM_QUALITY|irr::video::EAAM_LINE_SMOOTH;
-		meshbuf->recalculateBoundingBox();
+		{
+			AxisMeshBuf_ = new irr::scene::SMeshBuffer;
 
-		auto newMesh = new irr::scene::SMesh;
-		newMesh->addMeshBuffer(meshbuf);
-		newMesh->recalculateBoundingBox();
-		meshbuf->drop();
-		meshbuf->getMaterial().PolygonOffsetDirection = irr::video::EPO_BACK;
-		meshbuf->getMaterial().PolygonOffsetFactor = 7;
-		Mesh_ = newMesh;
+			AxisMeshBuf_->Vertices.reallocate(4);
+			AxisMeshBuf_->Vertices.push_back(irr::video::S3DVertex(-1, 0, 0, 0, 1, 0, clr, 0, 0));
+			AxisMeshBuf_->Vertices.push_back(irr::video::S3DVertex(1, 0, 0, 0, 1, 0, clr, 0, 0));
+			AxisMeshBuf_->Vertices.push_back(irr::video::S3DVertex(0, 0, -1, 0, 1, 0, clr, 0, 0));
+			AxisMeshBuf_->Vertices.push_back(irr::video::S3DVertex(0, 0, 1, 0, 1, 0, clr, 0, 0));
+
+			AxisMeshBuf_->Indices.reallocate(4);
+			AxisMeshBuf_->Indices.push_back(0);
+			AxisMeshBuf_->Indices.push_back(1);
+			AxisMeshBuf_->Indices.push_back(2);
+			AxisMeshBuf_->Indices.push_back(3);
+
+			AxisMeshBuf_->getMaterial().Lighting = false;
+			AxisMeshBuf_->getMaterial().Thickness = 2;
+			AxisMeshBuf_->getMaterial().PolygonOffsetDirection = irr::video::EPO_BACK;
+			AxisMeshBuf_->getMaterial().PolygonOffsetFactor = 7;
+			AxisMeshBuf_->recalculateBoundingBox();
+		}
 	}
 
 	~GridMeshSceneNode()
 	{
-		Mesh_->drop();
+		MeshBuf_->drop();
+		AxisMeshBuf_->drop();
 	}
 
 public:
@@ -76,11 +95,7 @@ public:
 
 	virtual void render()
 	{
-		auto meshBuf = Mesh_->getMeshBuffer(0);
-
 		auto driver = SceneManager->getVideoDriver();
-
-		driver->setMaterial(meshBuf->getMaterial());
 
 		auto vec = CameraCenter_;
 		vec.X /= getScale().X * GridCount_;
@@ -93,6 +108,18 @@ public:
 		s.setScale(getScale());
 		r.setRotationDegrees(getRotation());
 
+		{
+			irr::core::matrix4 axisS;
+			auto scaleVec = getScale();
+			scaleVec.X *= GridCount_ * (std::abs(rowOffsetStep)+1);
+			scaleVec.Z *= GridCount_ * (std::abs(columOffsetStep)+1);
+			axisS.setScale(scaleVec);
+			driver->setMaterial(AxisMeshBuf_->getMaterial());
+			driver->setTransform(irr::video::ETS_WORLD, axisS);
+			driver->drawVertexPrimitiveList(AxisMeshBuf_->getVertices(), AxisMeshBuf_->getVertexCount(), AxisMeshBuf_->getIndices(), AxisMeshBuf_->getIndexCount()/2, irr::video::EVT_STANDARD, irr::scene::EPT_LINES);
+		}
+
+		driver->setMaterial(MeshBuf_->getMaterial());
 		for ( auto rowIndex=rowOffsetStep-1; rowIndex<=rowOffsetStep+1; ++rowIndex )
 		{
 			for ( auto columnIndex=columOffsetStep-1; columnIndex<=columOffsetStep+1; ++columnIndex )
@@ -101,27 +128,27 @@ public:
 
 				t.setTranslation(offset);
 				driver->setTransform(irr::video::ETS_WORLD, t*s);
-				driver->drawVertexPrimitiveList(meshBuf->getVertices(), meshBuf->getVertexCount(), meshBuf->getIndices(), meshBuf->getIndexCount()/2, irr::video::EVT_STANDARD, irr::scene::EPT_LINES);
+				driver->drawVertexPrimitiveList(MeshBuf_->getVertices(), MeshBuf_->getVertexCount(), MeshBuf_->getIndices(), MeshBuf_->getIndexCount()/2, irr::video::EVT_STANDARD, irr::scene::EPT_LINES);
 
 				driver->setTransform(irr::video::ETS_WORLD, t*r*s);
-				driver->drawVertexPrimitiveList(meshBuf->getVertices(), meshBuf->getVertexCount(), meshBuf->getIndices(), meshBuf->getIndexCount()/2, irr::video::EVT_STANDARD, irr::scene::EPT_LINES);
+				driver->drawVertexPrimitiveList(MeshBuf_->getVertices(), MeshBuf_->getVertexCount(), MeshBuf_->getIndices(), MeshBuf_->getIndexCount()/2, irr::video::EVT_STANDARD, irr::scene::EPT_LINES);
 			}
 		}
 	}
 
 	const irr::core::aabbox3df& getBoundingBox() const
 	{
-		return Mesh_->getBoundingBox();
+		return MeshBuf_->getBoundingBox();
 	}
 
 	virtual irr::u32 getMaterialCount() const
 	{
-		return Mesh_->getMeshBufferCount();
+		return 1;
 	}
 
 	virtual irr::video::SMaterial& getMaterial(irr::u32 i)
 	{
-		return Mesh_->getMeshBuffer(i)->getMaterial();
+		return MeshBuf_->getMaterial();
 	}	
 };
 

@@ -20,13 +20,7 @@ public:
 
 public:
 
-	typedef	std::vector<irr::core::vector3df>	PointList;
-
-public:
-
-	static	CFloorODLSPtr	CreateFloorByPath(SRenderContextWPtr renderContext, const TopoDS_Shape& bottomFace, const PointList& pntList, const gp_Pnt& center);
-
-	static	CFloorODLSPtr	CreateFloorByRect(SRenderContextWPtr renderContext, const irr::core::vector3df& first, const irr::core::vector3df& last, const irr::core::vector3df& thickVec, const gp_Pnt& center);
+	static	CFloorODLSPtr	CreateByFace(SRenderContextWPtr renderContext, const TopoDS_Shape& wallFace, const TopoDS_Shape& floorFace);
 
 public:
 	

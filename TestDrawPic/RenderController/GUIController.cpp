@@ -5,6 +5,8 @@
 #include "IrrEngine/SRenderContext.h"
 #include "EventUserType.h"
 
+#include "StatusMgr.h"
+
 #include <functional>
 
 static const auto ImageBorderX = 3;
@@ -105,7 +107,7 @@ void GUIController::Init()
 		TopDActiveTex_.reset(topDActTex, [](video::ITexture*){});
 	}
 
-	{//restore
+	{//real
 		auto realTex = driver->getTexture("../Data/Resource/3D/real_a.png");
 		auto realDTex = driver->getTexture("../Data/Resource/3D/real_d.png");
 		auto guiImage = AddImage(sprc->GUIEnv_.get(), realDTex);
@@ -351,6 +353,8 @@ void GUIController::OnResize()
 
 bool GUIController::PreRender3D()
 {
+	StatusMgr::GetInstance().RealWorld_ = IsTopCameraActive() && IsRealWorldActive();
+
 	return Minimum_;
 }
 

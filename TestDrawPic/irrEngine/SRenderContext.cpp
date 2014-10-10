@@ -83,8 +83,8 @@ SRenderContext::SRenderContext( void* Hwnd, irr::video::SColor clr ):ImpUPtr_(ne
 	{//Effect
 		imp_.Effect_ = std::make_shared<EffectHandler>(baseDevice, baseDriver->getScreenSize(), true, true, true);
 		imp_.Effect_->setActiveSceneManager(Smgr_.get());
-		imp_.Effect_->setAmbientColor(irr::video::SColor(255, 100, 100, 100));
-		imp_.Effect_->setClearColour(irr::video::SColor(255,100, 100, 100));
+		imp_.Effect_->setAmbientColor(BackGroundClr_);
+		imp_.Effect_->setClearColour(BackGroundClr_);
 		imp_.Effect_->enableDepthPass(true);
 
 		//Effect_->addShadowLight(SShadowLight(1024, irr::core::vector3df(0, 4000, 0), irr::core::vector3df(0,0,0), irr::video::SColorf(1,1,1,1), 20, 10000, 120*irr::core::DEGTORAD64, true));
@@ -248,4 +248,9 @@ void SRenderContext::RemoveNodeFromDepthPass( irr::scene::ISceneNode* node )
 void SRenderContext::Init()
 {
 	ImpUPtr_->RenderController_->SetRenderContextWPtr(shared_from_this());
+}
+
+void SRenderContext::EnableDepthPass( bool val )
+{
+	ImpUPtr_->Effect_->enableDepthPass(val);
 }

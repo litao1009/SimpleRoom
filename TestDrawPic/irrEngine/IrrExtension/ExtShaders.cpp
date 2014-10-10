@@ -3,7 +3,7 @@
 #include "ExtShaders.h"
 #include "irrlicht.h"
 
-const char*	Selection[2] = 
+const char*	LuminanceSahder[2] = 
 {
 	//"varying	vec4		vertexColor;"
 
@@ -40,7 +40,7 @@ const char*	Selection[2] =
 };
 
 
-void SelectionCB::OnSetConstants( irr::video::IMaterialRendererServices* services, irr::s32 userData )
+void LuminanceCB::OnSetConstants( irr::video::IMaterialRendererServices* services, irr::s32 userData )
 {
 	irr::s32 tex = 0;
 	services->setPixelShaderConstant("colorMap", &tex, 1);
@@ -49,17 +49,58 @@ void SelectionCB::OnSetConstants( irr::video::IMaterialRendererServices* service
 	services->setPixelShaderConstant("hasTexture", &hasTexture, 1);
 }
 
-void SelectionCB::OnSetMaterial( const irr::video::SMaterial& material )
+void LuminanceCB::OnSetMaterial( const irr::video::SMaterial& material )
 {
 	CurrentMaterial_ = material;
 }
 
-const char* SelectionCB::GetVertexShader()
+const char* LuminanceCB::GetVertexShader()
 {
-	return Selection[0];
+	return LuminanceSahder[0];
 }
 
-const char* SelectionCB::GetPixelShader()
+const char* LuminanceCB::GetPixelShader()
 {
-	return Selection[1];
+	return LuminanceSahder[1];
+}
+
+
+
+const char*	LineColorShader[2] = 
+{
+	"void main(void)"
+	"{"
+	"	gl_Position = ftransform();"
+	//"	gl_TexCoord[0] = gl_TextureMatrix[0]*gl_MultiTexCoord0;"
+	"}"
+
+	,
+
+	"uniform	vec4			lineColor;"
+	"void main(void)"
+	"{"
+	"	gl_FragColor = lineColor;"
+	"}"
+};
+
+void LineColorCB::OnSetConstants( irr::video::IMaterialRendererServices* services, irr::s32 userData )
+{
+	static irr::video::SColorf color;
+	color.set(1, 0, 0, 1);
+	services->setPixelShaderConstant("lineColor", &color.r, 1);
+}
+
+void LineColorCB::OnSetMaterial( const irr::video::SMaterial& material )
+{
+	CurrentMaterial_ = material;
+}
+
+const char* LineColorCB::GetVertexShader()
+{
+	return LineColorShader[0];
+}
+
+const char* LineColorCB::GetPixelShader()
+{
+	return LineColorShader[1];
 }

@@ -76,9 +76,6 @@
     <ClCompile Include="ChildFrm.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="TopoShape\CTopoShape.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="CtrlFuncView.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -229,6 +226,9 @@
     <ClCompile Include="RenderController\CreatingDoorController.cpp">
       <Filter>RenderController</Filter>
     </ClCompile>
+    <ClCompile Include="ODL\MeshSceneNode\WallMeshNode2D.cpp">
+      <Filter>ODL\MeshSceneNode</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BLL\BaseBLL.h">
@@ -310,9 +310,6 @@
       <Filter>BLL</Filter>
     </ClInclude>
     <ClInclude Include="ChildFrm.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="TopoShape\CTopoShape.h">
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="CtrlFuncView.h">
@@ -513,6 +510,9 @@
     <ClInclude Include="RenderController\CreatingDoorController.h">
       <Filter>RenderController</Filter>
     </ClInclude>
+    <ClInclude Include="ODL\MeshSceneNode\WallMeshNode2D.h">
+      <Filter>ODL\MeshSceneNode</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\buttons.bmp">
@@ -620,6 +620,9 @@
     </Filter>
     <Filter Include="RenderController\2D">
       <UniqueIdentifier>{d6a5c821-3f0d-43fb-986c-4afee75709b9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ODL\MeshSceneNode">
+      <UniqueIdentifier>{b22615fd-ddca-4d24-bf1b-d41a4c14d9d3}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

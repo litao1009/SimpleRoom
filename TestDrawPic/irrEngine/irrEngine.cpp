@@ -84,11 +84,19 @@ IrrEngine::IrrEngine(const irr::SIrrlichtCreationParameters& params):ImpUPtr_(ne
 	auto rawDevice = irr::createDeviceEx(imp_.Params_);
 	imp_.DeviceSPtr_.reset(static_cast<irr::CIrrDeviceWin32*>(rawDevice), std::bind(&irr::IrrlichtDevice::drop, std::placeholders::_1));
 
-	auto selectionCB = new SelectionCB;
-	auto material = rawDevice->getVideoDriver()->getGPUProgrammingServices()->addHighLevelShaderMaterial(SelectionCB::GetVertexShader(), SelectionCB::GetPixelShader(), selectionCB);
-	selectionCB->drop();
+	{
+		auto selectionCB = new LuminanceCB;
+		auto material = rawDevice->getVideoDriver()->getGPUProgrammingServices()->addHighLevelShaderMaterial(LuminanceCB::GetVertexShader(), LuminanceCB::GetPixelShader(), selectionCB);
+		selectionCB->drop();
+		imp_.ShaderMap_[EST_LUMINANCE] = material;
+	}
 
-	imp_.ShaderMap_[EST_SELECTION] = material;
+	{
+		auto blueLine = new LineColorCB;
+		auto material = rawDevice->getVideoDriver()->getGPUProgrammingServices()->addHighLevelShaderMaterial(LuminanceCB::GetVertexShader(), LuminanceCB::GetPixelShader(), blueLine);
+		blueLine->drop();
+		imp_.ShaderMap_[EST_BLUE_LINE] = material;
+	}
 }
 
 IrrEngine::~IrrEngine()

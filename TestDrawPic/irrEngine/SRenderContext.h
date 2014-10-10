@@ -55,6 +55,8 @@ public:
 
 	void	PushController(IRenderControllerSPtr controller);
 
+	void	EnableDepthPass(bool val);
+
 public:
 
 	//≥°æ∞π‹¿Ì∆˜

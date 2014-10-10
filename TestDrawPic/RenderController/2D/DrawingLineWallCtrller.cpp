@@ -101,7 +101,7 @@ DrawingLineWallCtrller::DrawingLineWallCtrller()
 	NeedUpdateMesh_ = false;
 	Checker_ = true;
 
-	WallThickness_ = 200;
+	WallThickness_ = 300;
 	LastAngle_ = 0;
 
 	State_ = EDWLS_BEGIN;
@@ -683,7 +683,7 @@ bool DrawingLineWallCtrller::UpdateMesh()
 			float vLen = 200;
 			irr::core::matrix4 scaleMat,rotateMat;
 			scaleMat.setScale(irr::core::vector3df(1/uLen, 1/vLen, 1));
-			rotateMat.setTextureRotationCenter(M_PI/4);
+			rotateMat.setTextureRotationCenter(static_cast<float>(M_PI/4));
 			MeshBuf_->getMaterial().setTextureMatrix(0, rotateMat*scaleMat);
 			MeshBuf_->getMaterial().Lighting = false;
 			MeshBuf_->getMaterial().ZWriteEnable = false;

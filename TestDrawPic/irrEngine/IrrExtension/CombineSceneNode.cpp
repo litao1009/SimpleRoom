@@ -34,8 +34,6 @@ void CCombineSceneNode::OnRegisterSceneNode()
 		return;
 	}
 
-	SceneManager->registerNodeForRendering(this);
-
 	ISceneNode::OnRegisterSceneNode();
 }
 

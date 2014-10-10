@@ -63,6 +63,7 @@ bool TopPickingController::OnPostEvent( const irr::SEvent& evt )
 	if ( evt.EventType == irr::EET_MOUSE_INPUT_EVENT && evt.MouseInput.Event == irr::EMIE_LMOUSE_LEFT_UP )
 	{
 		Picking_ = false;
+		PickingNode_.reset();
 	}
 
 	return false;
@@ -87,83 +88,7 @@ bool TopPickingController::PreRender3D()
 	auto smgr = GetRenderContextSPtr()->Smgr_.get();
 	auto line = smgr->getSceneCollisionManager()->getRayFromScreenCoordinates(CursorIPos_);
 
-	gp_Pnt lineStartPnt(line.start.X, line.start.Y, line.start.Z);
-	auto curEdge = BRepBuilderAPI_MakeEdge(lineStartPnt, gp_Pnt(line.end.X, line.end.Y, line.end.Z)).Edge();
-	BRepAdaptor_Curve edgeAdaptor(curEdge);
-	auto curGpLine = edgeAdaptor.Line();
-
-	std::map<double,CBaseODLWPtr> nodes;
-	auto spODL = RootODL_.lock();
-
-	for ( auto& curODL : spODL->GetChildrenList() )
-	{
-		if ( curODL->GetType() == EODLT_GROUP )//分组
-		{
-			
-			if ( curODL->GetBaseBndBox().Transformed(curODL->GetAbsoluteTransform()).IsOut(curGpLine) )
-			{
-				continue;
-			}
-
-			for ( auto& allowSweeping : curODL->GetChildrenList() )
-			{
-				auto curAbsoluteTransform = allowSweeping->GetAbsoluteTransform();
-
-				if ( allowSweeping->GetType() == EODLT_WALL || allowSweeping->GetType() == EODLT_FLOOR )//分组里的墙或地板
-				{
-					if ( allowSweeping->IsSelected() )
-					{
-						continue;
-					}
-
-					if ( allowSweeping->GetBaseBndBox().Transformed(curAbsoluteTransform).IsOut(curGpLine) )
-					{
-						continue;
-					}
-
-					auto& wallShape = allowSweeping->GetBaseShape();
-					auto& wallDis = allowSweeping->GetBaseSelector();
-					if ( wallShape.IsNull() )
-					{
-						continue;
-					}
-
-					auto transformedEdge = curEdge.Moved(allowSweeping->GetAbsoluteTransform().Inverted());
-					wallDis.LoadS2(transformedEdge);
-					wallDis.Perform();
-					auto dis = wallDis.Value();
-					if ( dis > Precision::Confusion() )
-					{
-						continue;
-					}
-
-					auto disSQ = wallDis.PointOnShape1(1).SquareDistance(lineStartPnt);
-
-					nodes[disSQ] = allowSweeping;
-				}
-			}
-		}
-		else if ( curODL->GetType() == EODLT_FLOOR )//单独的地板
-		{
-
-		}
-
-	}
-	
-	if ( nodes.empty() )
-	{
-		return false;
-	}
-
-	nodes.begin()->second.lock()->SetSwept(true);
-	SweepingNode_ = nodes.begin()->second;
-
-	if ( !Picking_ )
-	{
-		return false;
-	}
 	irr::core::vector3df curPos;
-
 	if ( StatusMgr::GetInstance().GridAlign_ )
 	{
 		curPos = *StatusMgr::GetInstance().GridAlign_;
@@ -173,19 +98,98 @@ bool TopPickingController::PreRender3D()
 		sPickingPlane.getIntersectionWithLine(line.start, line.getVector(), curPos);
 	}
 
-	auto curVec = curPos - SavePosition_;
-
-	CBaseODLSPtr pickingNode;
-	pickingNode = SweepingNode_.lock()->GetParent().lock();
-	pickingNode = pickingNode ? pickingNode : SweepingNode_.lock();
-
-	if ( pickingNode->GetType() == EODLT_GROUP )//暂时只能选组
+	if ( Picking_ && !PickingNode_.expired() )
 	{
-		auto curTrans = pickingNode->GetTranslation();
-		auto curDataTrans = pickingNode->GetDataSceneNode()->getPosition();
-		pickingNode->SetTranslation(gp_XYZ(curVec.X, curVec.Y, curVec.Z)+curTrans);
-		pickingNode->GetDataSceneNode()->setPosition(curVec+curDataTrans);
+		auto spPickingNode = PickingNode_.lock();
+
+		auto curVec = curPos - SavePosition_;
+
+		auto curTrans = spPickingNode->GetTranslation();
+		auto curDataTrans = spPickingNode->GetDataSceneNode()->getPosition();
+		spPickingNode->SetTranslation(gp_XYZ(curVec.X, curVec.Y, curVec.Z)+curTrans);
+		spPickingNode->GetDataSceneNode()->setPosition(curVec+curDataTrans);
 		SavePosition_ = curPos;
+	}
+	else
+	{
+		gp_Pnt lineStartPnt(line.start.X, line.start.Y, line.start.Z);
+		auto curEdge = BRepBuilderAPI_MakeEdge(lineStartPnt, gp_Pnt(line.end.X, line.end.Y, line.end.Z)).Edge();
+		BRepAdaptor_Curve edgeAdaptor(curEdge);
+		auto curGpLine = edgeAdaptor.Line();
+
+		std::map<double,CBaseODLWPtr> nodes;
+		auto spODL = RootODL_.lock();
+
+		for ( auto& curODL : spODL->GetChildrenList() )
+		{
+			if ( curODL->GetType() == EODLT_GROUP )//分组
+			{
+
+				if ( curODL->GetBaseBndBox().Transformed(curODL->GetAbsoluteTransform()).IsOut(curGpLine) )
+				{
+					continue;
+				}
+
+				for ( auto& allowSweeping : curODL->GetChildrenList() )
+				{
+					auto curAbsoluteTransform = allowSweeping->GetAbsoluteTransform();
+
+					if ( allowSweeping->GetType() == EODLT_WALL || allowSweeping->GetType() == EODLT_FLOOR )//分组里的墙或地板
+					{
+						if ( allowSweeping->IsSelected() )
+						{
+							continue;
+						}
+
+						if ( allowSweeping->GetBaseBndBox().Transformed(curAbsoluteTransform).IsOut(curGpLine) )
+						{
+							continue;
+						}
+
+						auto& wallShape = allowSweeping->GetBaseShape();
+						auto& wallDis = allowSweeping->GetBaseSelector();
+						if ( wallShape.IsNull() )
+						{
+							continue;
+						}
+
+						auto transformedEdge = curEdge.Moved(allowSweeping->GetAbsoluteTransform().Inverted());
+						wallDis.LoadS2(transformedEdge);
+						wallDis.Perform();
+						auto dis = wallDis.Value();
+						if ( dis > Precision::Confusion() )
+						{
+							continue;
+						}
+
+						auto disSQ = wallDis.PointOnShape1(1).SquareDistance(lineStartPnt);
+
+						nodes[disSQ] = allowSweeping;
+					}
+				}
+			}
+			else if ( curODL->GetType() == EODLT_FLOOR )//单独的地板
+			{
+
+			}
+
+		}
+
+		if ( nodes.empty() )
+		{
+			return false;
+		}
+
+		nodes.begin()->second.lock()->SetSwept(true);
+		SweepingNode_ = nodes.begin()->second;
+
+		if ( !Picking_ )
+		{
+			return false;
+		}
+
+		PickingNode_ = SweepingNode_.lock()->GetParent().lock();
+		PickingNode_ = PickingNode_.expired() ? SweepingNode_ : PickingNode_;
 	}
 
 	return false;

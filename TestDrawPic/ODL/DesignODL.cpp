@@ -71,6 +71,17 @@ public://IRenderController
 
 	virtual	bool	PreRender3D()
 	{
+		if ( !StatusMgr::GetInstance().RealWorld_ && GUIController_->IsTopCameraActive() )
+		{
+			CBaseSceneNode::SetRenderMode(CBaseSceneNode::ESNT_2D);
+			GetRenderContextSPtr()->EnableDepthPass(false);
+		}
+		else
+		{
+			CBaseSceneNode::SetRenderMode(CBaseSceneNode::ESNT_3D);
+			GetRenderContextSPtr()->EnableDepthPass(true);
+		}
+
 		if ( StatesController_->GetRenderState() == ERS_ANIMATION )
 		{
 			if ( !FlyCameraController_->IsFlying() )
@@ -125,44 +136,11 @@ public:
 			DrawLineWallCtrller_->Reset();
 			StatusMgr::GetInstance().DrawingState_ = StatusMgr::EDS_NONE;
 
-#pragma message("TODO:Ç½¸ßÅäÖÃ")
 			if ( !wallret.Shape_.IsNull() )
-			{
-				Bnd_Box groupBox;
-				BRepBndLib::Add(wallret.Shape_, groupBox);
-				const auto& samplePnt = wallret.Pnts_.back();
-				groupBox.Add(gp_Pnt(samplePnt.X, StatusMgr::GetInstance().CreateWallHeight_, samplePnt.Y));
-				gp_Pnt boxCenter;
-				{
-					Standard_Real xMin,yMin,zMin,xMax,yMax,zMax;
-					groupBox.Get(xMin, yMin, zMin, xMax, yMax, zMax);
-					boxCenter.SetX((xMin+xMax)/2);
-					boxCenter.SetY((yMin+yMax)/2);
-					boxCenter.SetZ((zMin+zMax)/2);
-					gp_Trsf t;
-					t.SetTranslationPart(boxCenter.XYZ().Reversed());
-					groupBox = groupBox.Transformed(t);
-				}
-				
-				auto newGroup = design->CreateChild<CGroupODL>(design->RenderContext_);
+			{				
+				auto newGroup = CGroupODL::CreateByWallPath(design->RenderContext_, wallret.Shape_, wallret.Pnts_, StatusMgr::GetInstance().CreateWallHeight_);
 
-				newGroup->SetTranslation(boxCenter.XYZ());
-				newGroup->GetDataSceneNode()->setPosition(irr::core::vector3df(static_cast<float>(boxCenter.X()), static_cast<float>(boxCenter.Y()), static_cast<float>(boxCenter.Z())));
-
-				newGroup->SetBaseBndBox(groupBox);
-
-				auto newWalls = CWallODL::CreateWallByBottomFace(design->RenderContext_, wallret.Shape_, wallret.Pnts_, StatusMgr::GetInstance().CreateWallHeight_, boxCenter);
-				
-				for ( auto& wall : newWalls )
-				{
-					newGroup->AddChild(wall);
-				}
-
-				if ( wallret.Pnts_.size() > 2 )
-				{
-					auto newFloor = CFloorODL::CreateFloorByPath(design->RenderContext_, wallret.Shape_, wallret.Pnts_, boxCenter);
-					newGroup->AddChild(newFloor);
-				}
+				design->AddChild(newGroup);
 			}
 
 			StatusMgr::GetInstance().DrawingState_ = StatusMgr::EDS_NONE;
@@ -178,52 +156,12 @@ public:
 			std::tie(firstPnt,LastPnt,Dir,thickness,valid) = DrawRectWallCtrller_->GetResult();
 			DrawRectWallCtrller_->Reset();
 			StatusMgr::GetInstance().DrawingState_ = StatusMgr::EDS_NONE;
-#pragma message("TODO:Ç½¸ßÅäÖÃ")
+
 			if ( valid )
 			{
-				auto firstToLast = LastPnt - firstPnt;
-				auto center = (firstPnt+LastPnt)/2;
-				center.Y = StatusMgr::GetInstance().CreateWallHeight_;
+				auto newGroup = CGroupODL::CreateByRect(design->RenderContext_, firstPnt, LastPnt, thickness, StatusMgr::GetInstance().CreateWallHeight_);
 
-				Bnd_Box groupBox;
-				groupBox.Add(gp_Pnt(firstPnt.X, firstPnt.Y, firstPnt.Z));
-				groupBox.Add(gp_Pnt(firstPnt.X+firstToLast.X, firstPnt.Y, firstPnt.Z));
-				groupBox.Add(gp_Pnt(LastPnt.X, LastPnt.Y, LastPnt.Z));
-				groupBox.Add(gp_Pnt(firstPnt.X, firstPnt.Y, firstPnt.Z+LastPnt.Z));
-				groupBox.Add(gp_Pnt(firstPnt.X+Dir.Z, firstPnt.Y, firstPnt.Z+Dir.Z));
-				groupBox.Add(gp_Pnt(firstPnt.X+firstToLast.X-Dir.Z, firstPnt.Y, firstPnt.Z+Dir.Z));
-				groupBox.Add(gp_Pnt(LastPnt.X-Dir.Z, LastPnt.Y, LastPnt.Z-Dir.Z));
-				groupBox.Add(gp_Pnt(firstPnt.X+Dir.Z, firstPnt.Y, firstPnt.Z+LastPnt.Z-Dir.Z));
-				groupBox.Add(gp_Pnt(center.X, center.Y, center.Z));
-
-				gp_Pnt groupCenter;
-				{
-					Standard_Real xMin,yMin,zMin,xMax,yMax,zMax;
-					groupBox.Get(xMin, yMin, zMin, xMax, yMax, zMax);
-					groupCenter.SetX((xMin+xMax)/2);
-					groupCenter.SetY((yMin+yMax)/2);
-					groupCenter.SetZ((zMin+zMax)/2);
-					gp_Trsf t;
-					t.SetTranslationPart(groupCenter.XYZ().Reversed());
-					groupBox = groupBox.Transformed(t);
-				}
-
-				auto newGroup = design->CreateChild<CGroupODL>(design->RenderContext_);
-
-				newGroup->SetTranslation(groupCenter.XYZ());
-				newGroup->GetDataSceneNode()->setPosition(irr::core::vector3df(static_cast<float>(groupCenter.X()), static_cast<float>(groupCenter.Y()), static_cast<float>(groupCenter.Z())));
-
-				newGroup->SetBaseBndBox(groupBox);
-
-				auto newWalls = CWallODL::CreateWallByRectRange(design->RenderContext_, firstPnt, LastPnt, Dir, StatusMgr::GetInstance().CreateWallHeight_);
-
-				for ( auto& wall : newWalls )
-				{
-					newGroup->AddChild(wall);
-				}
-
-				auto newFloor = CFloorODL::CreateFloorByRect(design->RenderContext_, firstPnt, LastPnt, Dir, groupCenter);
-				newGroup->AddChild(newFloor);
+				design->AddChild(newGroup);
 			}
 
 			StatusMgr::GetInstance().DrawingState_ = StatusMgr::EDS_NONE;
@@ -461,7 +399,7 @@ void CDesignODL::Init()
 	}
 	
 	{//RC
-		RenderContext_ =  IrrEngine::CreateRenderContext(Hwnd_);
+		RenderContext_ =  IrrEngine::CreateRenderContext(Hwnd_, irr::video::SColor(~0));
 		RenderContext_->Init();
 	}
 

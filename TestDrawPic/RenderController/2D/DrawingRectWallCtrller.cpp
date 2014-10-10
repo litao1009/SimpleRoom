@@ -150,7 +150,7 @@ DrawingRectWallCtrller::DrawingRectWallCtrller()
 	Checker_ = true;
 	Material_.Thickness = 3;
 
-	WallThickness_ = 200;
+	WallThickness_ = 300;
 
 	State_ = EDWRS_BEGIN;
 

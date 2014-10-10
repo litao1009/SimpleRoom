@@ -4,7 +4,9 @@
 
 enum EShaderType
 {
-	EST_SELECTION,
+	EST_LUMINANCE,
+
+	EST_BLUE_LINE,
 	
 	EST_COUNT
 };

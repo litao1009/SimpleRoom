@@ -60,5 +60,9 @@ public:
 		return adjMix;
 	}
 
+public:
+
+	static	irr::scene::IMeshBuffer*	NEW_CreateMeshBuffer( const TopoDS_Shape& shape );
+
 };
 #endif // ODLTools_h__

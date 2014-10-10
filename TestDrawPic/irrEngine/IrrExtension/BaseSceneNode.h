@@ -15,11 +15,17 @@ public:
 
 	enum ESceneNodeType
 	{
-		ESNT_2D,
-		ESNT_3D,
-		ESNT_COMBINE,
-		ESNT_COUNT
+		ESNT_NONE = 0,
+		ESNT_2D = 1,
+		ESNT_3D = ESNT_2D << 1,
+		ESNT_COMBINE = ESNT_2D | ESNT_3D
 	};
+
+public:
+
+	static	ESceneNodeType	GetRenderMode() { return RenderMode_; }
+
+	static	void			SetRenderMode(ESceneNodeType val) { RenderMode_ = val; }
 
 public:
 
@@ -54,6 +60,10 @@ private:
 	SRenderContextWPtr		RenderContextWPtr_;
 
 	CBaseODLWPtr			BaseODLWPtr_;
+
+private:
+
+	static	ESceneNodeType	RenderMode_;
 };
 
 #endif // BaseSceneNode_h__

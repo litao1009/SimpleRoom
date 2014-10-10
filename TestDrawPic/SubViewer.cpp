@@ -293,23 +293,6 @@ BOOL CSubViewer::PreTranslateMessage(MSG* pMsg)
 void CSubViewer::DrawItem(LPDRAWITEMSTRUCT /*lpDrawItemStruct*/)
 {
 	// TODO:  添加您的代码以绘制指定项
-	static unsigned count = 0;
-	if ( m_spRenderContext )
-	{
-		m_spRenderContext->Render();
-
-		//auto str = std::to_wstring(fps);
-		//str = std::to_wstring(count++) + L" FPS:" + str + L"\n";
-		//OutputDebugString(str.c_str());
-
-		auto pos = m_spRenderContext->Smgr_->getActiveCamera()->getPosition();
-		auto target = m_spRenderContext->Smgr_->getActiveCamera()->getTarget();
-		auto pPnt = static_cast<CTestDrawPicView*>(GetParent());
-
-		assert( nullptr != pPnt );
-
-		//pPnt->SetCameraInfo(m_spRenderContext->IsCameraVisible(), gp_Pnt(pos.X, pos.Y, pos.Z), gp_Pnt(target.X, target.Y, target.Z), m_spRenderContext->Smgr_->getActiveCamera()->getFOV());
-	}
 }
 
 void CSubViewer::OnTimer(UINT_PTR nIDEvent)
@@ -317,6 +300,14 @@ void CSubViewer::OnTimer(UINT_PTR nIDEvent)
 	//渲染
 	if (m_spRenderContext)
 	{
+		MSG msg;
+
+		while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+		{	
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+
 		m_spRenderContext->Render();
 	}
 	CStatic::OnTimer(nIDEvent);

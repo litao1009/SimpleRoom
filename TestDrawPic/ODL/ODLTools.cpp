@@ -613,3 +613,91 @@ ODLTools::SSingelMeshOpt ODLTools::CalculateRelation( const TopoDS_Shape& faceSh
 
 	return ret;
 }
+
+irr::scene::IMeshBuffer* ODLTools::NEW_CreateMeshBuffer( const TopoDS_Shape& shape )
+{
+	auto meshBufferPtr = new CDynamicMeshBuffer(EVT_STANDARD, EIT_32BIT);
+	meshBufferPtr->setHardwareMappingHint(EHM_STATIC);
+
+	for ( TopExp_Explorer exp(shape, TopAbs_FACE); exp.More(); exp.Next() )
+	{
+		auto& curFace = TopoDS::Face(exp.Current());
+
+		Handle(Geom_Surface) surf = BRep_Tool::Surface(curFace);
+
+		Standard_Real umin,umax,vmin,vmax;
+		BRepTools::UVBounds(curFace, umin, umax, vmin, vmax);
+		auto faceDir = GeomLProp_SLProps(surf, umin, vmin, 1, 0.001).Normal();
+		if ( TopAbs_REVERSED == curFace.Orientation() )
+		{
+			faceDir.Reverse();
+		}
+
+		BRepMesh::Mesh(curFace, 0.1);
+
+		TopLoc_Location L;
+		Handle (Poly_Triangulation) polyTriangles = BRep_Tool::Triangulation(curFace,L);
+
+		if ( polyTriangles.IsNull() )
+		{
+			return nullptr;
+		}
+
+		const TColgp_Array1OfPnt& aNodes = polyTriangles->Nodes();
+		const Poly_Array1OfTriangle& triangles = polyTriangles->Triangles();
+
+		auto vsize = meshBufferPtr->getVertexBuffer().allocated_size();
+		auto isize = meshBufferPtr->getIndexBuffer().allocated_size();
+		auto curVertexSize = meshBufferPtr->getVertexBuffer().size();
+		meshBufferPtr->getVertexBuffer().reallocate(vsize + aNodes.Length());
+		meshBufferPtr->getIndexBuffer().reallocate(isize + triangles.Length()*3);
+
+		vector3df normal(static_cast<f32>(faceDir.X()), static_cast<f32>(faceDir.Y()), static_cast<f32>(faceDir.Z()));
+
+		SColor clr(0xff, 0xff, 0xff, 0xff);
+		TColgp_Array1OfPnt transNodes(1, aNodes.Length());
+		for( auto index=1; index<=aNodes.Length(); ++index )
+		{
+			auto pnt = aNodes(index).Transformed(L);
+			transNodes(index) = pnt;
+
+			GeomAPI_ProjectPointOnSurf projpnta(pnt, surf);
+			Quantity_Parameter u,v;
+			projpnta.LowerDistanceParameters(u, v);
+
+			vector3df pos(static_cast<f32>(pnt.X()), static_cast<f32>(pnt.Y()), static_cast<f32>(pnt.Z()));
+			vector2df coord(static_cast<f32>(u-umin),static_cast<f32>(v-vmin));
+			S3DVertex meshVertex(pos, normal, clr, coord);
+
+			meshBufferPtr->getVertexBuffer().push_back(meshVertex);
+		}
+		meshBufferPtr->recalculateBoundingBox();
+
+		for( auto index=1,n1=0,n2=0,n3=0; index<=triangles.Length(); ++index )
+		{
+			triangles(index).Get(n1,n2,n3);
+
+			gp_Vec v1(transNodes(n1), transNodes(n2));
+			gp_Vec v2(transNodes(n1), transNodes(n3));
+
+			auto v = v1.Crossed(v2);
+
+			if ( gp_Dir(v).Angle(faceDir) > M_PI_2 )
+			{
+				meshBufferPtr->getIndexBuffer().push_back(n1-1+curVertexSize);
+				meshBufferPtr->getIndexBuffer().push_back(n2-1+curVertexSize);
+				meshBufferPtr->getIndexBuffer().push_back(n3-1+curVertexSize);
+			}
+			else
+			{
+				meshBufferPtr->getIndexBuffer().push_back(n1-1+curVertexSize);
+				meshBufferPtr->getIndexBuffer().push_back(n3-1+curVertexSize);
+				meshBufferPtr->getIndexBuffer().push_back(n2-1+curVertexSize);
+			}
+		}
+	}
+
+	meshBufferPtr->getMaterial().Lighting = false;
+
+	return meshBufferPtr;
+}

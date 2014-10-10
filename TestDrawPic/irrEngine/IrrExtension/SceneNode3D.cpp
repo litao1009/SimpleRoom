@@ -81,9 +81,12 @@ void CSceneNode3D::OnRegisterSceneNode()
 		return;
 	}
 
-	SceneManager->registerNodeForRendering(this);
+	if ( GetRenderMode() & ESNT_3D )
+	{
+		SceneManager->registerNodeForRendering(this);
 
-	ISceneNode::OnRegisterSceneNode();
+		ISceneNode::OnRegisterSceneNode();
+	}
 }
 
 irr::video::SMaterial& CSceneNode3D::getMaterial( u32 i )
