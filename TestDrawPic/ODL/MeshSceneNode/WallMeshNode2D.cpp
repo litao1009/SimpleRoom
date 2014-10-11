@@ -135,7 +135,7 @@ void WallMeshNode2D::UpdateMesh( const TopoDS_Shape& wallBottomFace )
 	}
 
 	FaceBuffer_->getMaterial().Lighting = false;
-	FaceBuffer_->getMaterial().ZBuffer = false;
+	FaceBuffer_->getMaterial().ZWriteEnable = false;
 	FaceBuffer_->getMaterial().BackfaceCulling = false;
 	FaceBuffer_->getMaterial().setTexture(0, SceneManager->getVideoDriver()->getTexture("../Data/Resource/3D/wallLine.png"));
 	{
@@ -146,7 +146,7 @@ void WallMeshNode2D::UpdateMesh( const TopoDS_Shape& wallBottomFace )
 	}
 
 	LineBuffer_->getMaterial().Lighting = false;
-	LineBuffer_->getMaterial().ZBuffer = false;
+	LineBuffer_->getMaterial().ZWriteEnable = false;
 	LineBuffer_->getMaterial().BackfaceCulling = false;
 	LineBuffer_->getMaterial().Thickness = 2;
 }

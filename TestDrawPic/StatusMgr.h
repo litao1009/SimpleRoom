@@ -19,6 +19,7 @@ class	StatusMgr
 		Test_CreateWindow_ = false;
 		Test_CreateBayWindow_ = false;
 		RealWorld_ = false;
+		PutingDoor_ = false;
 	}
 
 	~StatusMgr() {}
@@ -55,6 +56,7 @@ public:
 	bool									Test_CreateDoor_;
 	bool									Test_CreateWindow_;
 	bool									Test_CreateBayWindow_;
+	bool									PutingDoor_;
 	//--for test
 };
 #endif // StatusMgr_h__

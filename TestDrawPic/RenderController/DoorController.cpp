@@ -8,7 +8,9 @@
 
 #include "StatusMgr.h"
 
-#include "ODL/MeshSceneNode/DoorMeshNode2D.h"
+#include "BRepBuilderAPI_MakeEdge.hxx"
+#include "BRepAdaptor_Curve.hxx"
+#include "gp_Lin.hxx"
 
 class	DoorController::Imp
 {
@@ -16,10 +18,12 @@ public:
 
 	Imp()
 	{
-		DoorMesh_ = nullptr;
+		
+
 	}
 
-	DoorMeshNode2D*	DoorMesh_;
+	CDoorODLSPtr	CreatedDoor_;
+	CBaseODLWPtr	PickingNode_;
 };
 
 DoorController::DoorController():ImpUPtr_(new Imp)
@@ -64,9 +68,16 @@ bool DoorController::PreRender3D()
 			if ( StatusMgr::GetInstance().Test_CreateDoor_ )
 			{
 				StatusMgr::GetInstance().Test_CreateDoor_ = false;
+				StatusMgr::GetInstance().PutingDoor_ = true;
 
-				ImpUPtr_->DoorMesh_ = new DoorMeshNode2D(RootODL_.lock()->GetDataSceneNode().get());
-				ImpUPtr_->DoorMesh_->UpdateMesh(900, 300);
+				ImpUPtr_->CreatedDoor_ = CDoorODL::Create<CDoorODL>(GetRenderContextSPtr());
+				RootODL_.lock()->AddChild(ImpUPtr_->CreatedDoor_);
+
+				auto line = GetRenderContextSPtr()->Smgr_->getSceneCollisionManager()->getRayFromScreenCoordinates(CursorIPos_);
+				irr::core::vector3df newPos;
+				sPlane.getIntersectionWithLine(line.start, line.getVector(), newPos);
+				ImpUPtr_->CreatedDoor_->SetTranslation(gp_XYZ(newPos.X, newPos.Y, newPos.Z));
+				ImpUPtr_->CreatedDoor_->GetDataSceneNode()->setPosition(newPos);
 
 				State_ = EDS_CREATE;
 			}
@@ -78,7 +89,78 @@ bool DoorController::PreRender3D()
 			irr::core::vector3df newPos;
 			sPlane.getIntersectionWithLine(line.start, line.getVector(), newPos);
 
-			ImpUPtr_->DoorMesh_->setPosition(newPos);
+			gp_Pnt lineStartPnt(line.start.X, line.start.Y, line.start.Z);
+			auto curEdge = BRepBuilderAPI_MakeEdge(lineStartPnt, gp_Pnt(line.end.X, line.end.Y, line.end.Z)).Edge();
+			BRepAdaptor_Curve edgeAdaptor(curEdge);
+			auto curGpLine = edgeAdaptor.Line();
+
+			auto spPickingNode = ImpUPtr_->PickingNode_.lock();
+			if ( spPickingNode )
+			{
+				if ( !spPickingNode->GetBaseBndBox().IsOut(curGpLine.Transformed(spPickingNode->GetAbsoluteTransform().Inverted())) )
+				{
+					const auto& box = spPickingNode->GetBaseBndBox();
+					auto transform = spPickingNode->GetAbsoluteTransform().Inverted();
+					gp_Pnt curPnt(newPos.X, newPos.Y, newPos.Z);
+					curPnt.Transform(transform);
+
+					ImpUPtr_->CreatedDoor_->SetTranslation(gp_XYZ(curPnt.X(), 0, 0));
+					ImpUPtr_->CreatedDoor_->GetDataSceneNode()->setPosition(irr::core::vector3df(static_cast<float>(curPnt.X()), 0, 0));
+					return false;
+				}
+				else
+				{
+					RootODL_.lock()->AddChild(ImpUPtr_->CreatedDoor_);
+					ImpUPtr_->PickingNode_.reset();
+				}
+			}
+
+			for ( auto& groupODL : RootODL_.lock()->GetChildrenList() )
+			{
+				if ( groupODL->GetType() != EODLT_GROUP )
+				{
+					continue;
+				}
+
+				if ( groupODL->GetBaseBndBox().IsOut(curGpLine.Transformed(groupODL->GetAbsoluteTransform().Inverted())) )
+				{
+					continue;
+				}
+
+				for ( auto& wallODL : groupODL->GetChildrenList() )
+				{
+					if ( wallODL->GetType() != EODLT_WALL )
+					{
+						continue;
+					}
+
+					if ( wallODL->GetBaseBndBox().IsOut(curGpLine.Transformed(wallODL->GetAbsoluteTransform().Inverted())) )
+					{
+						continue;
+					}
+
+					const auto& box = wallODL->GetBaseBndBox();
+					Standard_Real xMin,yMin,zMin,xMax,yMax,zMax;
+					box.Get(xMin,yMin,zMin,xMax,yMax,zMax);
+					ImpUPtr_->CreatedDoor_->Update2DZone(900, static_cast<float>(std::abs(zMax-zMin)));
+
+					auto transform = wallODL->GetAbsoluteTransform().Inverted();
+					gp_Pnt curPnt(newPos.X, newPos.Y, newPos.Z);
+					curPnt.Transform(transform);
+
+					ImpUPtr_->PickingNode_ = wallODL;
+					wallODL->AddChild(ImpUPtr_->CreatedDoor_);
+					ImpUPtr_->CreatedDoor_->SetTranslation(gp_XYZ(curPnt.X(), 0, 0));
+					ImpUPtr_->CreatedDoor_->GetDataSceneNode()->setPosition(irr::core::vector3df(static_cast<float>(curPnt.X()), 0, 0));
+					ImpUPtr_->CreatedDoor_->Set2DLineColor(irr::video::SColor(0xFF8F8F8F));
+
+					return false;
+				}
+			}
+
+			ImpUPtr_->CreatedDoor_->SetTranslation(gp_XYZ(newPos.X, newPos.Y, newPos.Z));
+			ImpUPtr_->CreatedDoor_->GetDataSceneNode()->setPosition(newPos);
+			ImpUPtr_->CreatedDoor_->Set2DLineColor(irr::video::SColor(0xFFFF0000));
 		}
 		break;
 	case DoorController::EDS_PICKING:
@@ -92,7 +174,10 @@ bool DoorController::PreRender3D()
 
 void DoorController::PostRender3D()
 {
-
+	if ( ImpUPtr_->CreatedDoor_ )
+	{
+		ImpUPtr_->CreatedDoor_->Draw2DMesh();
+	}
 }
 
 bool DoorController::PreRender2D()

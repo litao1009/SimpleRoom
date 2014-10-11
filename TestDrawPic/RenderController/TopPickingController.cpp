@@ -125,7 +125,7 @@ bool TopPickingController::PreRender3D()
 			if ( curODL->GetType() == EODLT_GROUP )//·Ö×é
 			{
 
-				if ( curODL->GetBaseBndBox().Transformed(curODL->GetAbsoluteTransform()).IsOut(curGpLine) )
+				if ( curODL->GetBaseBndBox().IsOut(curGpLine.Transformed(curODL->GetAbsoluteTransform().Inverted())) )
 				{
 					continue;
 				}
@@ -141,7 +141,7 @@ bool TopPickingController::PreRender3D()
 							continue;
 						}
 
-						if ( allowSweeping->GetBaseBndBox().Transformed(curAbsoluteTransform).IsOut(curGpLine) )
+						if ( allowSweeping->GetBaseBndBox().IsOut(curGpLine.Transformed(curAbsoluteTransform.Inverted())) )
 						{
 							continue;
 						}
@@ -153,7 +153,7 @@ bool TopPickingController::PreRender3D()
 							continue;
 						}
 
-						auto transformedEdge = curEdge.Moved(allowSweeping->GetAbsoluteTransform().Inverted());
+						auto transformedEdge = curEdge.Moved(curAbsoluteTransform.Inverted());
 						wallDis.LoadS2(transformedEdge);
 						wallDis.Perform();
 						auto dis = wallDis.Value();

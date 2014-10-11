@@ -41,6 +41,7 @@ public:
 		auto newChild = std::make_shared<subType>();
 		auto datasceneNode = CCombineSceneNode::Create(renderContext, newChild);
 		newChild->SetDataSceneNode(datasceneNode);
+		newChild->Init();
 
 		AddChild(newChild);
 
@@ -53,6 +54,7 @@ public:
 		auto newNode = std::make_shared<subType>();
 		auto datasceneNode = CCombineSceneNode::Create(renderContext, newNode);
 		newNode->SetDataSceneNode(datasceneNode);
+		newNode->Init();
 
 		return newNode;
 	}

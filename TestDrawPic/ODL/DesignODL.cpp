@@ -102,13 +102,16 @@ public://IRenderController
 
 		if ( StatesController_->GetRenderState() == ERS_TOP_VIEW )
 		{
+			TopPickingController_->SetEnable(true);
+
 			if ( StatusMgr::GetInstance().DrawingState_ != StatusMgr::EDS_NONE )
 			{
 				TopPickingController_->SetEnable(false);
 			}
-			else
+			
+			if ( StatusMgr::GetInstance().PutingDoor_ )
 			{
-				TopPickingController_->SetEnable(true);
+				TopPickingController_->SetEnable(false);
 			}
 		}
 

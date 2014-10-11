@@ -69,6 +69,12 @@ CBaseODLSPtr CWallODL::CreateByBottomFace( SRenderContextWPtr renderContext, con
 
 	gp_Trsf absoluteToRelation;
 	{//…Ë÷√Œª÷√
+		gp_Trsf rotToDZ;
+		gp_Trsf transToCenter;
+
+		rotToDZ.SetRotation(gp_Quaternion(wallPathDir, gp::DZ()));
+		curSolid.Move(rotToDZ);
+
 		Bnd_Box wallBox;
 		gp_Pnt wallCenter;
 		{
@@ -78,12 +84,11 @@ CBaseODLSPtr CWallODL::CreateByBottomFace( SRenderContextWPtr renderContext, con
 			wallCenter.SetXYZ(gp_XYZ((xMin+xMax)/2, (yMin+yMax)/2, (zMin+zMax)/2));
 		}
 
-		gp_Trsf t,r;
-		t.SetTranslationPart(gp_Vec(gp::Origin(), wallCenter).Reversed());
-		r.SetRotation(gp_Quaternion(wallPathDir, gp::DZ()));
-		absoluteToRelation = t * r;
+		transToCenter.SetTranslationPart(gp_Vec(gp::Origin(), wallCenter).Reversed());
 
-		curSolid.Move(absoluteToRelation);
+		curSolid.Move(transToCenter);
+
+		absoluteToRelation = transToCenter * rotToDZ;
 
 		auto relationToAbsolute = absoluteToRelation.Inverted();
 		auto translation = relationToAbsolute.TranslationPart();

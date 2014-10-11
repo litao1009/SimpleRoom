@@ -13,7 +13,7 @@ DoorMeshNode2D::DoorMeshNode2D( irr::scene::ISceneNode* parent, irr::s32 id /*= 
 {
 	irr::core::vector3df dn(0,1,0);
 	irr::video::SColor dc(0xFFF0F0F0);
-	irr::video::SColor dbc(0xFF000000);
+	irr::video::SColor dbc(0xFF8F8F8F);
 	irr::core::vector2df dt(0,0);
 
 	{
@@ -34,6 +34,7 @@ DoorMeshNode2D::DoorMeshNode2D( irr::scene::ISceneNode* parent, irr::s32 id /*= 
 		RectBuffer_->recalculateBoundingBox();
 		RectBuffer_->getMaterial().Lighting = false;
 		RectBuffer_->getMaterial().BackfaceCulling = false;
+		RectBuffer_->getMaterial().ZBuffer = irr::video::ECFN_ALWAYS;
 	}
 
 	{
@@ -65,6 +66,8 @@ DoorMeshNode2D::DoorMeshNode2D( irr::scene::ISceneNode* parent, irr::s32 id /*= 
 		CircleBuffer_->getMaterial().DiffuseColor = dbc;
 		CircleBuffer_->getMaterial().BackfaceCulling = false;
 		CircleBuffer_->getMaterial().AntiAliasing = irr::video::EAAM_QUALITY|irr::video::EAAM_LINE_SMOOTH;
+		CircleBuffer_->getMaterial().ZBuffer = irr::video::ECFN_ALWAYS;
+		CircleBuffer_->getMaterial().Thickness = 2;
 	}
 
 	DrawTriangle_ = true;
@@ -101,7 +104,7 @@ void DoorMeshNode2D::render()
 	driver->drawVertexPrimitiveList(RectBuffer_->getVertices(), RectBuffer_->getVertexCount(), RectBuffer_->getIndices(), RectBuffer_->getIndexCount(), irr::video::EVT_STANDARD, irr::scene::EPT_LINE_LOOP);
 
 	driver->setTransform(irr::video::ETS_WORLD, AbsoluteTransformation * CircleTransform_);
-	driver->drawVertexPrimitiveList(CircleBuffer_->getVertices(), CircleBuffer_->getVertexCount(), CircleBuffer_->getIndices(), CircleBuffer_->getIndexCount(), irr::video::EVT_STANDARD, irr::scene::EPT_LINE_LOOP);
+	driver->drawVertexPrimitiveList(CircleBuffer_->getVertices(), CircleBuffer_->getVertexCount(), CircleBuffer_->getIndices(), CircleBuffer_->getIndexCount()-1, irr::video::EVT_STANDARD, irr::scene::EPT_LINE_STRIP);
 }
 
 irr::video::SMaterial& DoorMeshNode2D::getMaterial( irr::u32 i )
