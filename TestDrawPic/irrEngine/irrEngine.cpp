@@ -93,9 +93,9 @@ IrrEngine::IrrEngine(const irr::SIrrlichtCreationParameters& params):ImpUPtr_(ne
 
 	{
 		auto blueLine = new LineColorCB;
-		auto material = rawDevice->getVideoDriver()->getGPUProgrammingServices()->addHighLevelShaderMaterial(LuminanceCB::GetVertexShader(), LuminanceCB::GetPixelShader(), blueLine);
+		auto material = rawDevice->getVideoDriver()->getGPUProgrammingServices()->addHighLevelShaderMaterial(LineColorCB::GetVertexShader(), LineColorCB::GetPixelShader(), blueLine);
 		blueLine->drop();
-		imp_.ShaderMap_[EST_BLUE_LINE] = material;
+		imp_.ShaderMap_[EST_LINE] = material;
 	}
 }
 

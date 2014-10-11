@@ -22,6 +22,7 @@
 #include "RenderController/UpdateTransformingCtrller.h"
 #include "RenderController/2D/DrawingLineWallCtrller.h"
 #include "RenderController/2D/DrawingRectWallCtrller.h"
+#include "RenderController/DoorController.h"
 
 //--test
 #include "RenderController/TestDecorGUIBoard.h"
@@ -47,19 +48,13 @@ public:
 	CameraControllerSPtr				CameraController_;
 	FlyCameraControllerSPtr				FlyCameraController_;
 	UpdateTransformingCtrllerSPtr		UpdateTransformingCtrller_;
+	DoorControllerSPtr					DoorController_;
 
 public:
 
 	Imp()
 	{
-		DrawLineWallCtrller_ = std::make_shared<DrawingLineWallCtrller>();
-		DrawRectWallCtrller_ = std::make_shared<DrawingRectWallCtrller>();
-		TopPickingController_ = std::make_shared<TopPickingController>();
-		StatesController_ = std::make_shared<StatesController>();
-		GUIController_ = std::make_shared<GUIController>();
-		CameraController_ = std::make_shared<CameraController>();
-		FlyCameraController_ = std::make_shared<FlyCameraController>();
-		UpdateTransformingCtrller_ = std::make_shared<UpdateTransformingCtrller>();
+		
 	}
 
 public://IRenderController
@@ -109,7 +104,11 @@ public://IRenderController
 		{
 			if ( StatusMgr::GetInstance().DrawingState_ != StatusMgr::EDS_NONE )
 			{
-				BuildWall();
+				TopPickingController_->SetEnable(false);
+			}
+			else
+			{
+				TopPickingController_->SetEnable(true);
 			}
 		}
 
@@ -117,57 +116,6 @@ public://IRenderController
 	}
 
 public:
-
-	void BuildWall()
-	{
-		auto design = GetDesignSPtr();
-
-		DrawLineWallCtrller_->SetEnable(StatusMgr::GetInstance().DrawingState_ == StatusMgr::EDS_LINE_WALL);
-		DrawRectWallCtrller_->SetEnable(StatusMgr::GetInstance().DrawingState_ == StatusMgr::EDS_RECT_WALL);
-
-		//新建墙
-		if ( DrawLineWallCtrller_->GetState() == DrawingLineWallCtrller::EDWLS_FINISH )
-		{
-			auto wallret = DrawLineWallCtrller_->GetResult();
-			if ( wallret.Pnts_.size() <= 1 )
-			{
-				wallret.Shape_.Nullify();
-			}
-			DrawLineWallCtrller_->Reset();
-			StatusMgr::GetInstance().DrawingState_ = StatusMgr::EDS_NONE;
-
-			if ( !wallret.Shape_.IsNull() )
-			{				
-				auto newGroup = CGroupODL::CreateByWallPath(design->RenderContext_, wallret.Shape_, wallret.Pnts_, StatusMgr::GetInstance().CreateWallHeight_);
-
-				design->AddChild(newGroup);
-			}
-
-			StatusMgr::GetInstance().DrawingState_ = StatusMgr::EDS_NONE;
-			DrawLineWallCtrller_->SetEnable(StatusMgr::GetInstance().DrawingState_ == StatusMgr::EDS_LINE_WALL);
-		}
-
-		//新建墙
-		if ( DrawRectWallCtrller_->GetState() == DrawingRectWallCtrller::EDWRS_FINISH )
-		{
-			irr::core::vector3df firstPnt,LastPnt, Dir;
-			float thickness;
-			bool valid;
-			std::tie(firstPnt,LastPnt,Dir,thickness,valid) = DrawRectWallCtrller_->GetResult();
-			DrawRectWallCtrller_->Reset();
-			StatusMgr::GetInstance().DrawingState_ = StatusMgr::EDS_NONE;
-
-			if ( valid )
-			{
-				auto newGroup = CGroupODL::CreateByRect(design->RenderContext_, firstPnt, LastPnt, thickness, StatusMgr::GetInstance().CreateWallHeight_);
-
-				design->AddChild(newGroup);
-			}
-
-			StatusMgr::GetInstance().DrawingState_ = StatusMgr::EDS_NONE;
-			DrawRectWallCtrller_->SetEnable(StatusMgr::GetInstance().DrawingState_ == StatusMgr::EDS_RECT_WALL);
-		}
-	}
 
 	bool SwitchCameraIfNeed()
 	{
@@ -391,22 +339,34 @@ CDesignODL::~CDesignODL(void)
 
 void CDesignODL::Init()
 {
+	auto& imp_ = *ImpSPtr_;
+
+	{//RC
+		RenderContext_ = IrrEngine::CreateRenderContext(Hwnd_, irr::video::SColor(~0));
+		RenderContext_->Init();
+	}
+
 	{//Imp
+		imp_.DrawLineWallCtrller_ = std::make_shared<DrawingLineWallCtrller>();
+		imp_.DrawRectWallCtrller_ = std::make_shared<DrawingRectWallCtrller>();
+		imp_.TopPickingController_ = std::make_shared<TopPickingController>();
+		imp_.StatesController_ = std::make_shared<StatesController>();
+		imp_.GUIController_ = std::make_shared<GUIController>();
+		imp_.CameraController_ = std::make_shared<CameraController>();
+		imp_.FlyCameraController_ = std::make_shared<FlyCameraController>();
+		imp_.UpdateTransformingCtrller_ = std::make_shared<UpdateTransformingCtrller>();
+		imp_.DoorController_ = std::make_shared<DoorController>();
+
 		ImpSPtr_->DesignODL_ = shared_from_this();
 		ImpSPtr_->DrawLineWallCtrller_->SetRootODL(shared_from_this());
+		ImpSPtr_->DrawRectWallCtrller_->SetRootODL(shared_from_this());
 		ImpSPtr_->TopPickingController_->SetRootODL(shared_from_this());
 		ImpSPtr_->UpdateTransformingCtrller_->SetRootODL(shared_from_this());
-	}
-	
-	{//RC
-		RenderContext_ =  IrrEngine::CreateRenderContext(Hwnd_, irr::video::SColor(~0));
-		RenderContext_->Init();
+		ImpSPtr_->DoorController_->SetRootODL(shared_from_this());
 	}
 
 	{//Controller
 		ImpSPtr_->StatesController_->SetRenderState(ERS_TOP_VIEW);
-		ImpSPtr_->DrawLineWallCtrller_->SetEnable(false);
-		ImpSPtr_->DrawRectWallCtrller_->SetEnable(false);
 
 		RenderContext_->PushController(ImpSPtr_->StatesController_);
 		RenderContext_->PushController(std::static_pointer_cast<IRenderController>(ImpSPtr_));
@@ -424,6 +384,7 @@ void CDesignODL::Init()
 			ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->DrawRectWallCtrller_);
 			ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->TopPickingController_);
 			ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, std::make_shared<TestDecorGUIBoard>());
+			ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->DoorController_);
 		}
 
 		{//MayaView

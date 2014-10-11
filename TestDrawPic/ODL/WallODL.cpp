@@ -81,8 +81,6 @@ CBaseODLSPtr CWallODL::CreateByBottomFace( SRenderContextWPtr renderContext, con
 		gp_Trsf t,r;
 		t.SetTranslationPart(gp_Vec(gp::Origin(), wallCenter).Reversed());
 		r.SetRotation(gp_Quaternion(wallPathDir, gp::DZ()));
-
-		
 		absoluteToRelation = t * r;
 
 		curSolid.Move(absoluteToRelation);
@@ -103,7 +101,6 @@ CBaseODLSPtr CWallODL::CreateByBottomFace( SRenderContextWPtr renderContext, con
 	}
 
 	{//3DÄ£ÐÍ
-
 		auto meshBuf = ODLTools::NEW_CreateMeshBuffer(curSolid);
 		assert(meshBuf);
 		auto newMesh = new irr::scene::SMesh;

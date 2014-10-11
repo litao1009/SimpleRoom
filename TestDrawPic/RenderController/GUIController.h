@@ -36,8 +36,6 @@ public://IRenderController
 
 public:
 
-	bool	IsMinimum() const { return Minimum_; }
-
 	bool	IsCameraVisible() const { return CameraVisible_; }
 
 	bool	IsTopCameraActive() const { return TopCameraActive_; }
@@ -45,8 +43,6 @@ public:
 	bool	IsMayaCameraActive() const { return MayaCameraActive_; }
 
 	bool	IsFPSCameraActive() const { return FPSCameraActive_; }
-
-	bool	IsRealWorldActive() const { return RealWorld_; }
 
 private:
 

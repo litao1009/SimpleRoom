@@ -3,8 +3,9 @@
 
 #pragma once
 
-#include "RenderController/EventUserType.h"
 #include "irrEngine/IRenderController.h"
+
+#include "ODL/BaseODLFwd.h"
 
 #include "IMeshBuffer.h"
 
@@ -15,8 +16,6 @@
 class	DrawingRectWallCtrller : public IRenderController
 {
 public:
-	//First,Last,Dir, Thickness
-	typedef	std::tuple<irr::core::vector3df,irr::core::vector3df, irr::core::vector3df, float, bool>	SResult;
 
 	enum EDrawingWallRectState
 	{
@@ -46,12 +45,7 @@ public:
 
 	void						SetWallThickness(float val) { WallThickness_ = val; }
 
-	SResult	GetResult() const
-	{
-		auto vec = MeshBuf_->getPosition(4) - MeshBuf_->getPosition(0);
-		vec.X = 0;
-		return std::make_tuple(FirstPnt_,LastPnt_, vec, WallThickness_, true);
-	}
+	void						SetRootODL(const CBaseODLWPtr& rootODL) { RootODL_ = rootODL; }
 
 private:
 
@@ -71,6 +65,7 @@ private:
 	bool						Checker_;
 
 	EDrawingWallRectState		State_;
+	CBaseODLWPtr				RootODL_;
 
 };
 

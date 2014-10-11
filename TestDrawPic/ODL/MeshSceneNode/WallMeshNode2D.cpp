@@ -46,6 +46,8 @@ void WallMeshNode2D::OnRegisterSceneNode()
 
 		SceneManager->registerNodeForRendering(this);
 	}
+
+	ISceneNode::OnRegisterSceneNode();
 }
 
 void WallMeshNode2D::render()

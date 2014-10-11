@@ -86,8 +86,9 @@ const char*	LineColorShader[2] =
 void LineColorCB::OnSetConstants( irr::video::IMaterialRendererServices* services, irr::s32 userData )
 {
 	static irr::video::SColorf color;
-	color.set(1, 0, 0, 1);
-	services->setPixelShaderConstant("lineColor", &color.r, 1);
+	auto& curColor = CurrentMaterial_.DiffuseColor;
+	color.set(1, static_cast<float>(curColor.getRed())/255.f, static_cast<float>(curColor.getGreen())/255.f, static_cast<float>(curColor.getBlue())/255.f);
+	services->setPixelShaderConstant("lineColor", &color.r, 4);
 }
 
 void LineColorCB::OnSetMaterial( const irr::video::SMaterial& material )

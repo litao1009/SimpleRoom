@@ -353,7 +353,7 @@ void GUIController::OnResize()
 
 bool GUIController::PreRender3D()
 {
-	StatusMgr::GetInstance().RealWorld_ = IsTopCameraActive() && IsRealWorldActive();
+	StatusMgr::GetInstance().RealWorld_ = IsTopCameraActive() && RealWorld_;
 
 	return Minimum_;
 }

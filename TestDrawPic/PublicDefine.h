@@ -9,9 +9,6 @@ enum EObjectDisplayLayerType
 	//对象组
 	EODLT_GROUP= 1,
 
-	//绘制矩形
-	EOBT_GUIDE_RECT = 3,
-
 	//户型图
 	EODLT_ROOM_STYLE = 4,
 
@@ -57,8 +54,7 @@ enum EObjectDisplayLayerType
 	//房间装饰
 	EODLT_DECOR = 41,
 
-	//相机
-	EODLT_CAMERA=50
+	EODLT_DOOR = 42
 };
 
 enum ENUM_OPERAT_TYPE

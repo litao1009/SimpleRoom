@@ -223,11 +223,17 @@
     <ClCompile Include="RenderController\TestDecorGUIBoard.cpp">
       <Filter>RenderController</Filter>
     </ClCompile>
-    <ClCompile Include="RenderController\CreatingDoorController.cpp">
-      <Filter>RenderController</Filter>
-    </ClCompile>
     <ClCompile Include="ODL\MeshSceneNode\WallMeshNode2D.cpp">
       <Filter>ODL\MeshSceneNode</Filter>
+    </ClCompile>
+    <ClCompile Include="ODL\MeshSceneNode\DoorMeshNode2D.cpp">
+      <Filter>ODL\MeshSceneNode</Filter>
+    </ClCompile>
+    <ClCompile Include="ODL\DoorODL.cpp">
+      <Filter>ODL</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderController\DoorController.cpp">
+      <Filter>RenderController</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -507,11 +513,17 @@
     <ClInclude Include="RenderController\TestDecorGUIBoard.h">
       <Filter>RenderController</Filter>
     </ClInclude>
-    <ClInclude Include="RenderController\CreatingDoorController.h">
-      <Filter>RenderController</Filter>
-    </ClInclude>
     <ClInclude Include="ODL\MeshSceneNode\WallMeshNode2D.h">
       <Filter>ODL\MeshSceneNode</Filter>
+    </ClInclude>
+    <ClInclude Include="ODL\MeshSceneNode\DoorMeshNode2D.h">
+      <Filter>ODL\MeshSceneNode</Filter>
+    </ClInclude>
+    <ClInclude Include="ODL\DoorODL.h">
+      <Filter>ODL</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderController\DoorController.h">
+      <Filter>RenderController</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

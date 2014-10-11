@@ -65,7 +65,7 @@ SRenderContext::SRenderContext( void* Hwnd, irr::video::SColor clr ):ImpUPtr_(ne
 
 	{//Cursor
 		irr::core::dimension2du drect(viewRect.right, viewRect.bottom);
-		auto cur = new irr::CIrrDeviceWin32::CCursorControl(static_cast<irr::CIrrDeviceWin32*>(baseDevice), drect, (HWND)Hwnd, false);
+		auto cur = new irr::CIrrDeviceWin32::CCursorControl(static_cast<irr::CIrrDeviceWin32*>(baseDevice), drect, (HWND)Hwnd, true);
 		CursorControl_.reset(cur, std::bind(&irr::gui::ICursorControl::drop, std::placeholders::_1));
 	}
 

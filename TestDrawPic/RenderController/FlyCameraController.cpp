@@ -51,3 +51,8 @@ bool FlyCameraController::OnPreEvent( const irr::SEvent& event )
 
 	return false;
 }
+
+void FlyCameraController::PostRender3D()
+{
+
+}

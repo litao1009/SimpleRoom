@@ -90,12 +90,11 @@ bool CSimpleOrthoAnimator::OnEvent(const irr::SEvent& evt)
 			break;
 		case irr::EMIE_MOUSE_MOVED:
 			CursorPos = CursorControl->getRelativePosition();
-			CursorIPos.X = CursorControl->getPosition().X;
-			CursorIPos.Y = CursorControl->getPosition().Y;
+			CursorIPos.X = evt.MouseInput.X;
+			CursorIPos.Y = evt.MouseInput.Y;
 			break;
 		case irr::EMIE_MOUSE_WHEEL:
 			{
-				CursorControl->getRelativePosition();
 				if ( std::abs(evt.MouseInput.Wheel) < 0.001 )
 				{
 					MouseWheel = 0;
@@ -240,8 +239,8 @@ void CSimpleOrthoAnimator::animateNode(irr::scene::ISceneNode* node, irr::u32 ti
 
 	if ( MouseWheel != 0 )
 	{
-		static auto smallFactor = 0.5f;
-		static auto bigFactor = 2.f;
+		static auto smallFactor = 0.9f;
+		static auto bigFactor = 1.1f;
 
 		auto curWidth = camera->GetBaseWidth();
 		auto smaller = curWidth * smallFactor;

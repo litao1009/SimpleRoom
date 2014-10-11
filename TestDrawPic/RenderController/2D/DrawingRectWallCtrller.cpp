@@ -4,6 +4,7 @@
 #include "IrrEngine/SRenderContext.h"
 
 #include "ODL/ODLTools.h"
+#include "ODL/GroupODL.h"
 
 #include "SMeshBuffer.h"
 
@@ -182,6 +183,11 @@ bool DrawingRectWallCtrller::OnPostEvent( const irr::SEvent& event )
 		return false;
 	}
 
+	if ( StatusMgr::GetInstance().DrawingState_ != StatusMgr::EDS_RECT_WALL )
+	{
+		return false;
+	}
+
 	if ( event.EventType == irr::EET_MOUSE_INPUT_EVENT )
 	{
 		if ( event.MouseInput.Event == irr::EMIE_MOUSE_MOVED )
@@ -239,6 +245,12 @@ bool DrawingRectWallCtrller::OnPostEvent( const irr::SEvent& event )
 bool DrawingRectWallCtrller::PreRender3D()
 {
 	if ( !IsEnable() )
+	{
+		Reset();
+		return false;
+	}
+
+	if ( StatusMgr::GetInstance().DrawingState_ != StatusMgr::EDS_RECT_WALL )
 	{
 		Reset();
 		return false;
@@ -304,6 +316,16 @@ bool DrawingRectWallCtrller::PreRender3D()
 		}
 		break;
 	case DrawingRectWallCtrller::EDWRS_FINISH:
+		{
+			auto vec = MeshBuf_->getPosition(4) - MeshBuf_->getPosition(0);
+			vec.X = 0;
+
+			auto newGroup = CGroupODL::CreateByRect(GetRenderContextSPtr(), FirstPnt_, LastPnt_, WallThickness_, StatusMgr::GetInstance().CreateWallHeight_);
+			RootODL_.lock()->AddChild(newGroup);
+
+			StatusMgr::GetInstance().DrawingState_ = StatusMgr::EDS_NONE;
+			Reset();
+		}
 		break;
 	case DrawingRectWallCtrller::EDWRS_COUNT:
 		break;

@@ -6,7 +6,7 @@ enum EShaderType
 {
 	EST_LUMINANCE,
 
-	EST_BLUE_LINE,
+	EST_LINE,
 	
 	EST_COUNT
 };

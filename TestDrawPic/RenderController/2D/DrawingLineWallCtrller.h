@@ -47,6 +47,8 @@ public://IRenderController
 	virtual bool	PreRender3D();
 	virtual void	PostRender3D();
 
+	virtual void	Init();
+
 public:
 
 	EDrawingWallLineState		GetState() const { return State_; }
@@ -54,14 +56,6 @@ public:
 	void						Reset();
 
 	void						SetWallThickness(float val) { WallThickness_ = val; }
-
-	SResult						GetResult() const
-	{
-		SResult s;
-		s.Shape_ = FaceShape_;
-		s.Pnts_ = Pnts_;
-		return s;
-	}
 
 	bool						UpdateMesh();
 
@@ -82,7 +76,7 @@ private:
 	irr::scene::IMeshBuffer*	CircleMeshBuf_;
 	irr::core::vector2di		CursorIPos_;
 	irr::core::vector3df		CurrentPos_;
-	irr::video::SMaterial		Material_;
+	//irr::video::SMaterial		Material_;
 	EDrawingWallLineState		State_;
 	TopoDS_Shape				FaceShape_;
 	PointList					Pnts_;

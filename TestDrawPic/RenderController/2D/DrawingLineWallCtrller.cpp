@@ -2,9 +2,11 @@
 
 #include "DrawingLineWallCtrller.h"
 #include "IrrEngine/SRenderContext.h"
+#include "irrEngine/irrEngine.h"
 
 #include "ODL/ODLTools.h"
 #include "ODL/BaseODL.h"
+#include "ODL/GroupODL.h"
 
 #include "SMeshBuffer.h"
 
@@ -46,7 +48,15 @@ DrawingLineWallCtrller::DrawingLineWallCtrller()
 	MeshBuf_ = nullptr;
 	LineMeshBuf_ = nullptr;
 	
-	PathMeshBuf_ = new irr::scene::SMeshBuffer;
+	{
+		PathMeshBuf_ = new irr::scene::SMeshBuffer;
+		PathMeshBuf_->getMaterial().Lighting = false;
+		PathMeshBuf_->getMaterial().ZWriteEnable = false;
+		PathMeshBuf_->getMaterial().BackfaceCulling = false;
+		PathMeshBuf_->getMaterial().Thickness = 3;
+		PathMeshBuf_->getMaterial().MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_LINE);
+		PathMeshBuf_->getMaterial().DiffuseColor = s_LineColor;
+	}
 
 	{
 		TmpRect_ = new irr::scene::SMeshBuffer;
@@ -62,6 +72,12 @@ DrawingLineWallCtrller::DrawingLineWallCtrller()
 		smeshBuf->Indices.push_back(1);
 		smeshBuf->Indices.push_back(2);
 		smeshBuf->Indices.push_back(3);
+
+		TmpRect_->getMaterial().Lighting = false;
+		TmpRect_->getMaterial().ZWriteEnable = false;
+		TmpRect_->getMaterial().BackfaceCulling = false;
+		TmpRect_->getMaterial().Thickness = 3;
+		TmpRect_->getMaterial().DiffuseColor = irr::video::SColor(0xFF000000);
 	}
 
 	CircleMeshBuf_ = new irr::scene::SMeshBuffer;
@@ -91,12 +107,12 @@ DrawingLineWallCtrller::DrawingLineWallCtrller()
 			smeshBuf->Vertices.push_back(irr::video::S3DVertex(pos, s_PntNormal, bClr ? s_PntColor : clr, s_PntCoord));
 			smeshBuf->Indices.push_back(index-1);
 		}
-	}
 
-	Material_.Lighting = false;
-	Material_.ZWriteEnable = false;
-	Material_.BackfaceCulling = false;
-	Material_.Thickness = 3;
+		CircleMeshBuf_->getMaterial().Lighting = false;
+		CircleMeshBuf_->getMaterial().ZWriteEnable = false;
+		CircleMeshBuf_->getMaterial().BackfaceCulling = false;
+		CircleMeshBuf_->getMaterial().Thickness = 3;
+	}
 
 	NeedUpdateMesh_ = false;
 	Checker_ = true;
@@ -143,6 +159,11 @@ DrawingLineWallCtrller::~DrawingLineWallCtrller()
 bool DrawingLineWallCtrller::OnPostEvent( const irr::SEvent& event )
 {
 	if ( !IsEnable() )
+	{
+		return false;
+	}
+
+	if ( StatusMgr::GetInstance().DrawingState_ != StatusMgr::EDS_LINE_WALL )
 	{
 		return false;
 	}
@@ -242,6 +263,12 @@ bool DrawingLineWallCtrller::OnPostEvent( const irr::SEvent& event )
 bool DrawingLineWallCtrller::PreRender3D()
 {
 	if ( !IsEnable() )
+	{
+		Reset();
+		return false;
+	}
+
+	if ( StatusMgr::GetInstance().DrawingState_ != StatusMgr::EDS_LINE_WALL )
 	{
 		Reset();
 		return false;
@@ -492,6 +519,21 @@ bool DrawingLineWallCtrller::PreRender3D()
 		}
 		break;
 	case DrawingLineWallCtrller::EDWLS_FINISH:
+		{
+			if ( Pnts_.size() <= 1 )
+			{
+				FaceShape_.Nullify();
+			}
+
+			if ( !FaceShape_.IsNull() )
+			{				
+				auto newGroup = CGroupODL::CreateByWallPath(GetRenderContextSPtr(), FaceShape_, Pnts_, StatusMgr::GetInstance().CreateWallHeight_);
+				CurrentRoot_.lock()->AddChild(newGroup);
+			}
+
+			StatusMgr::GetInstance().DrawingState_ = StatusMgr::EDS_NONE;
+			Reset();
+		}
 		break;
 	case DrawingLineWallCtrller::EDWLS_COUNT:
 		break;
@@ -530,30 +572,34 @@ void DrawingLineWallCtrller::PostRender3D()
 				driver->drawMeshBuffer(MeshBuf_);
 			}
 
-			driver->setMaterial(Material_);
-
 			if ( LineMeshBuf_ )
 			{
+				driver->setMaterial(LineMeshBuf_->getMaterial());
 				driver->drawVertexPrimitiveList(LineMeshBuf_->getVertices(), LineMeshBuf_->getVertexCount(), LineMeshBuf_->getIndices(), LineMeshBuf_->getIndexCount()/2, EVT_STANDARD, EPT_LINES);
 			}
 
-			for ( unsigned index=0; index<TmpRect_->getVertexCount(); ++index )
 			{
-				tmpRectSmesh->Vertices[index].Color.set(~0);
+				TmpRect_->getMaterial().MaterialType = EMT_SOLID;
+				driver->setMaterial(TmpRect_->getMaterial());
+				driver->drawVertexPrimitiveList(TmpRect_->getVertices(), TmpRect_->getVertexCount(), TmpRect_->getIndices(), TmpRect_->getIndexCount()-2, EVT_STANDARD, EPT_TRIANGLE_FAN);
+				
+				TmpRect_->getMaterial().MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_LINE);
+				driver->setMaterial(TmpRect_->getMaterial());
+				driver->drawVertexPrimitiveList(TmpRect_->getVertices(), TmpRect_->getVertexCount(), TmpRect_->getIndices(), TmpRect_->getIndexCount(), EVT_STANDARD, EPT_LINE_LOOP);
 			}
-			driver->drawVertexPrimitiveList(TmpRect_->getVertices(), TmpRect_->getVertexCount(), TmpRect_->getIndices(), TmpRect_->getIndexCount()-2, EVT_STANDARD, EPT_TRIANGLE_FAN);
-
-			for ( unsigned index=0; index<TmpRect_->getVertexCount(); ++index )
-			{
-				tmpRectSmesh->Vertices[index].Color.set(0xFF000000);
-			}
-			driver->drawVertexPrimitiveList(TmpRect_->getVertices(), TmpRect_->getVertexCount(), TmpRect_->getIndices(), TmpRect_->getIndexCount(), EVT_STANDARD, EPT_LINE_LOOP);
 
 			if ( PathMeshBuf_->getIndexCount() > 1 )
 			{
+				driver->setMaterial(PathMeshBuf_->getMaterial());
 				driver->drawVertexPrimitiveList(PathMeshBuf_->getVertices(), PathMeshBuf_->getVertexCount(), PathMeshBuf_->getIndices(), PathMeshBuf_->getIndexCount()-1, EVT_STANDARD, EPT_LINE_STRIP);
 			}
 
+			irr::video::SMaterial mat;
+			mat.Lighting = false;
+			mat.ZWriteEnable = false;
+			mat.BackfaceCulling = false;
+			mat.Thickness = 3;
+			driver->setMaterial(mat);
 			if ( Checker_ )
 			{
 				driver->draw3DLine(Pnts_.back(), CurrentPos_, s_PathColor);
@@ -582,6 +628,7 @@ void DrawingLineWallCtrller::PostRender3D()
 				auto xAngle2 = static_cast<float>(d2.AngleWithRef(gp::DX(), gp::DY()));
 
 				r.setRotationRadians(irr::core::vector3df(0, angle > 0 ? -xAngle : -xAngle2, 0));
+				driver->setMaterial(CircleMeshBuf_->getMaterial());
 				driver->setTransform(irr::video::ETS_WORLD, t*r*s);
 				driver->drawVertexPrimitiveList(CircleMeshBuf_->getVertices(), CircleMeshBuf_->getVertexCount(), CircleMeshBuf_->getIndices(), angleCount, EVT_STANDARD, EPT_LINE_STRIP);
 			}
@@ -717,6 +764,13 @@ bool DrawingLineWallCtrller::UpdateMesh()
 			}
 
 			LineMeshBuf_ = newSmesh;
+
+			LineMeshBuf_->getMaterial().Lighting = false;
+			LineMeshBuf_->getMaterial().ZWriteEnable = false;
+			LineMeshBuf_->getMaterial().BackfaceCulling = false;
+			LineMeshBuf_->getMaterial().Thickness = 3;
+			LineMeshBuf_->getMaterial().MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_LINE);
+			LineMeshBuf_->getMaterial().DiffuseColor = s_LineColor;
 		}
 	}
 
@@ -737,4 +791,16 @@ bool DrawingLineWallCtrller::UpdateMesh()
 	NeedUpdateMesh_ = false;
 
 	return true;
+}
+
+void DrawingLineWallCtrller::Init()
+{
+// 	auto tex = GetRenderContextSPtr()->Smgr_->getVideoDriver()->getTexture("../Data/Resource/3D/wallLine.png");
+// 	TmpRect_->getMaterial().setTexture(0, tex);
+// 	float uLen = 200;
+// 	float vLen = 200;
+// 	irr::core::matrix4 scaleMat,rotateMat;
+// 	scaleMat.setScale(irr::core::vector3df(1/uLen, 1/vLen, 1));
+// 	rotateMat.setTextureRotationCenter(static_cast<float>(M_PI/4));
+// 	TmpRect_->getMaterial().setTextureMatrix(0, rotateMat*scaleMat);
 }

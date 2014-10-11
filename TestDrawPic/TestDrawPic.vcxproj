@@ -153,8 +153,10 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClInclude Include="NumberTextCtrl.h" />
     <ClInclude Include="ODL\BaseODLFwd.h" />
     <ClInclude Include="ODL\DesignODL.h" />
+    <ClInclude Include="ODL\DoorODL.h" />
     <ClInclude Include="ODL\FloorODL.h" />
     <ClInclude Include="ODL\GroupODL.h" />
+    <ClInclude Include="ODL\MeshSceneNode\DoorMeshNode2D.h" />
     <ClInclude Include="ODL\MeshSceneNode\WallMeshNode2D.h" />
     <ClInclude Include="ODL\ODLTools.h" />
     <ClInclude Include="ODL\ShapeSceneNode.h" />
@@ -187,7 +189,7 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClInclude Include="RenderController\2D\DrawingLineWallCtrller.h" />
     <ClInclude Include="RenderController\2D\DrawingRectWallCtrller.h" />
     <ClInclude Include="RenderController\CameraController.h" />
-    <ClInclude Include="RenderController\CreatingDoorController.h" />
+    <ClInclude Include="RenderController\DoorController.h" />
     <ClInclude Include="RenderController\EventUserType.h" />
     <ClInclude Include="RenderController\FlyCameraController.h" />
     <ClInclude Include="RenderController\GridController.h" />
@@ -245,8 +247,10 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClCompile Include="NumberTextCtrl.cpp" />
     <ClCompile Include="DragDataListCtrl.cpp" />
     <ClCompile Include="ODL\DesignODL.cpp" />
+    <ClCompile Include="ODL\DoorODL.cpp" />
     <ClCompile Include="ODL\FloorODL.cpp" />
     <ClCompile Include="ODL\GroupODL.cpp" />
+    <ClCompile Include="ODL\MeshSceneNode\DoorMeshNode2D.cpp" />
     <ClCompile Include="ODL\MeshSceneNode\WallMeshNode2D.cpp" />
     <ClCompile Include="ODL\ODLTools.cpp" />
     <ClCompile Include="ODL\BaseODL.cpp" />
@@ -280,7 +284,7 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClCompile Include="RenderController\2D\DrawingLineWallCtrller.cpp" />
     <ClCompile Include="RenderController\2D\DrawingRectWallCtrller.cpp" />
     <ClCompile Include="RenderController\CameraController.cpp" />
-    <ClCompile Include="RenderController\CreatingDoorController.cpp" />
+    <ClCompile Include="RenderController\DoorController.cpp" />
     <ClCompile Include="RenderController\FlyCameraController.cpp" />
     <ClCompile Include="RenderController\GridController.cpp" />
     <ClCompile Include="RenderController\GUIController.cpp" />
