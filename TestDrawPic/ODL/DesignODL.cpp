@@ -109,7 +109,7 @@ public://IRenderController
 				TopPickingController_->SetEnable(false);
 			}
 			
-			if ( StatusMgr::GetInstance().PutingDoor_ )
+			if ( StatusMgr::GetInstance().PuttingState_ != StatusMgr::EPS_NONE )
 			{
 				TopPickingController_->SetEnable(false);
 			}

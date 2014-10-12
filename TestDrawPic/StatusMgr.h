@@ -12,14 +12,11 @@ class	StatusMgr
 {
 	StatusMgr()
 	{
-		DrawingState_ = EDS_NONE;
+		RealWorld_ = false;
 		CreateWallHeight_ = 2600;
 
-		Test_CreateDoor_ = false;
-		Test_CreateWindow_ = false;
-		Test_CreateBayWindow_ = false;
-		RealWorld_ = false;
-		PutingDoor_ = false;
+		DrawingState_ = EDS_NONE;
+		PuttingState_ = EPS_NONE;
 	}
 
 	~StatusMgr() {}
@@ -31,7 +28,17 @@ public:
 		EDS_NONE,
 		EDS_LINE_WALL,
 		EDS_RECT_WALL,
+		EDS_BAY_WINDOW,
 		EDS_COUNT
+	};
+
+	enum EPuttingState
+	{
+		EPS_NONE,
+		EPS_DOOR,
+		EPS_WINDOW,
+		EPS_DECOR,
+		EPS_COUNT
 	};
 
 public:
@@ -53,10 +60,7 @@ public:
 	bool									RealWorld_;
 
 	//--for test
-	bool									Test_CreateDoor_;
-	bool									Test_CreateWindow_;
-	bool									Test_CreateBayWindow_;
-	bool									PutingDoor_;
+	EPuttingState							PuttingState_;
 	//--for test
 };
 #endif // StatusMgr_h__

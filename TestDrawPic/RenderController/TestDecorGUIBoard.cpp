@@ -95,7 +95,7 @@ bool TestDecorGUIBoard::OnGUIEvent( const irr::SEvent& evt )
 
 		if ( evt.GUIEvent.EventType == (EGUI_EVENT_TYPE)CGUIImageButton::EIS_LEFTUP )
 		{
-			StatusMgr::GetInstance().Test_CreateDoor_ = true;
+			StatusMgr::GetInstance().PuttingState_ = StatusMgr::EPS_DOOR;
 		}
 	}
 
@@ -119,7 +119,7 @@ bool TestDecorGUIBoard::OnGUIEvent( const irr::SEvent& evt )
 
 		if ( evt.GUIEvent.EventType == (EGUI_EVENT_TYPE)CGUIImageButton::EIS_LEFTUP )
 		{
-			StatusMgr::GetInstance().Test_CreateWindow_ = true;
+			StatusMgr::GetInstance().PuttingState_ = StatusMgr::EPS_WINDOW;
 		}
 	}
 
@@ -143,7 +143,7 @@ bool TestDecorGUIBoard::OnGUIEvent( const irr::SEvent& evt )
 
 		if ( evt.GUIEvent.EventType == (EGUI_EVENT_TYPE)CGUIImageButton::EIS_LEFTUP )
 		{
-			StatusMgr::GetInstance().Test_CreateBayWindow_ = true;
+			StatusMgr::GetInstance().DrawingState_ = StatusMgr::EDS_BAY_WINDOW;
 		}
 	}
 

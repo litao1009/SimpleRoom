@@ -49,6 +49,30 @@ bool DoorController::OnPostEvent( const irr::SEvent& evt )
 		CursorIPos_.Y = evt.MouseInput.Y;
 	}
 
+	switch (State_)
+	{
+	case DoorController::EDS_NONE:
+		break;
+	case DoorController::EDS_CREATE:
+		{
+			if ( evt.EventType == irr::EET_KEY_INPUT_EVENT && evt.KeyInput.Key == irr::KEY_ESCAPE && !evt.KeyInput.PressedDown )
+			{
+				State_ = EDS_NONE;
+				StatusMgr::GetInstance().PuttingState_ = StatusMgr::EPS_NONE;
+				if ( ImpUPtr_->CreatedDoor_ )
+				{
+					ImpUPtr_->CreatedDoor_->RemoveFromParent();
+					ImpUPtr_->CreatedDoor_.reset();
+				}
+			}
+		}
+		break;
+	case DoorController::EDS_PICKING:
+		break;
+	default:
+		break;
+	}
+
 	return false;
 }
 
@@ -61,26 +85,25 @@ bool DoorController::PreRender3D()
 {
 	static irr::core::plane3df sPlane(0,0,0,0,1,0);
 
+	if ( StatusMgr::GetInstance().PuttingState_ != StatusMgr::EPS_DOOR )
+	{
+		return false;
+	}
+
 	switch (State_)
 	{
 	case DoorController::EDS_NONE:
 		{
-			if ( StatusMgr::GetInstance().Test_CreateDoor_ )
-			{
-				StatusMgr::GetInstance().Test_CreateDoor_ = false;
-				StatusMgr::GetInstance().PutingDoor_ = true;
+			ImpUPtr_->CreatedDoor_ = CDoorODL::Create<CDoorODL>(GetRenderContextSPtr());
+			RootODL_.lock()->AddChild(ImpUPtr_->CreatedDoor_);
 
-				ImpUPtr_->CreatedDoor_ = CDoorODL::Create<CDoorODL>(GetRenderContextSPtr());
-				RootODL_.lock()->AddChild(ImpUPtr_->CreatedDoor_);
+			auto line = GetRenderContextSPtr()->Smgr_->getSceneCollisionManager()->getRayFromScreenCoordinates(CursorIPos_);
+			irr::core::vector3df newPos;
+			sPlane.getIntersectionWithLine(line.start, line.getVector(), newPos);
+			ImpUPtr_->CreatedDoor_->SetTranslation(gp_XYZ(newPos.X, newPos.Y, newPos.Z));
+			ImpUPtr_->CreatedDoor_->GetDataSceneNode()->setPosition(newPos);
 
-				auto line = GetRenderContextSPtr()->Smgr_->getSceneCollisionManager()->getRayFromScreenCoordinates(CursorIPos_);
-				irr::core::vector3df newPos;
-				sPlane.getIntersectionWithLine(line.start, line.getVector(), newPos);
-				ImpUPtr_->CreatedDoor_->SetTranslation(gp_XYZ(newPos.X, newPos.Y, newPos.Z));
-				ImpUPtr_->CreatedDoor_->GetDataSceneNode()->setPosition(newPos);
-
-				State_ = EDS_CREATE;
-			}
+			State_ = EDS_CREATE;
 		}
 		break;
 	case DoorController::EDS_CREATE:
@@ -174,6 +197,11 @@ bool DoorController::PreRender3D()
 
 void DoorController::PostRender3D()
 {
+	if ( StatusMgr::GetInstance().PuttingState_ != StatusMgr::EPS_DOOR )
+	{
+		return;
+	}
+
 	if ( ImpUPtr_->CreatedDoor_ )
 	{
 		ImpUPtr_->CreatedDoor_->Draw2DMesh();
