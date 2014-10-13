@@ -49,6 +49,7 @@ public:
 			MeshBuf_->getMaterial().Thickness = 1;
 			MeshBuf_->getMaterial().PolygonOffsetDirection = irr::video::EPO_BACK;
 			MeshBuf_->getMaterial().PolygonOffsetFactor = 7;
+			MeshBuf_->getMaterial().Wireframe = true;
 			MeshBuf_->recalculateBoundingBox();
 		}
 
@@ -71,6 +72,7 @@ public:
 			AxisMeshBuf_->getMaterial().Thickness = 2;
 			AxisMeshBuf_->getMaterial().PolygonOffsetDirection = irr::video::EPO_BACK;
 			AxisMeshBuf_->getMaterial().PolygonOffsetFactor = 7;
+			AxisMeshBuf_->getMaterial().Wireframe = true;
 			AxisMeshBuf_->recalculateBoundingBox();
 		}
 	}
@@ -88,7 +90,7 @@ public:
 	virtual void OnRegisterSceneNode()
 	{
 		if (IsVisible)
-			SceneManager->registerNodeForRendering(this);
+			SceneManager->registerNodeForRendering(this, irr::scene::ESNRP_SOLID);
 
 		ISceneNode::OnRegisterSceneNode();
 	}

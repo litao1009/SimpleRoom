@@ -47,6 +47,7 @@ private:
 public:
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	virtual void DrawItem(LPDRAWITEMSTRUCT /*lpDrawItemStruct*/);
+	virtual BOOL DestroyWindow();
 };
 
 

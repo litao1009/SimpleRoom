@@ -54,7 +54,8 @@ enum EObjectDisplayLayerType
 	//·¿¼ä×°ÊÎ
 	EODLT_DECOR = 41,
 
-	EODLT_DOOR = 42
+	EODLT_DOOR,
+	EODLT_WINDOW
 };
 
 enum ENUM_OPERAT_TYPE

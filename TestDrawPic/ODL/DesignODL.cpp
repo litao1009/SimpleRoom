@@ -23,6 +23,7 @@
 #include "RenderController/2D/DrawingLineWallCtrller.h"
 #include "RenderController/2D/DrawingRectWallCtrller.h"
 #include "RenderController/DoorController.h"
+#include "RenderController/WindowController.h"
 
 //--test
 #include "RenderController/TestDecorGUIBoard.h"
@@ -49,6 +50,7 @@ public:
 	FlyCameraControllerSPtr				FlyCameraController_;
 	UpdateTransformingCtrllerSPtr		UpdateTransformingCtrller_;
 	DoorControllerSPtr					DoorController_;
+	WindowControllerSPtr				WindowController_;
 
 public:
 
@@ -66,17 +68,6 @@ public://IRenderController
 
 	virtual	bool	PreRender3D()
 	{
-		if ( !StatusMgr::GetInstance().RealWorld_ && GUIController_->IsTopCameraActive() )
-		{
-			CBaseSceneNode::SetRenderMode(CBaseSceneNode::ESNT_2D);
-			GetRenderContextSPtr()->EnableDepthPass(false);
-		}
-		else
-		{
-			CBaseSceneNode::SetRenderMode(CBaseSceneNode::ESNT_3D);
-			GetRenderContextSPtr()->EnableDepthPass(true);
-		}
-
 		if ( StatesController_->GetRenderState() == ERS_ANIMATION )
 		{
 			if ( !FlyCameraController_->IsFlying() )
@@ -95,7 +86,21 @@ public://IRenderController
 				}
 			}
 
+			CBaseSceneNode::SetRenderMode(CBaseSceneNode::ESNT_3D);
+			GetRenderContextSPtr()->EnableDepthPass(true);
+
 			return false;
+		}
+
+		if ( !StatusMgr::GetInstance().RealWorld_ && GUIController_->IsTopCameraActive() )
+		{
+			CBaseSceneNode::SetRenderMode(CBaseSceneNode::ESNT_2D);
+			GetRenderContextSPtr()->EnableDepthPass(false);
+		}
+		else
+		{
+			CBaseSceneNode::SetRenderMode(CBaseSceneNode::ESNT_3D);
+			GetRenderContextSPtr()->EnableDepthPass(true);
 		}
 
 		SwitchCameraIfNeed();
@@ -359,6 +364,7 @@ void CDesignODL::Init()
 		imp_.FlyCameraController_ = std::make_shared<FlyCameraController>();
 		imp_.UpdateTransformingCtrller_ = std::make_shared<UpdateTransformingCtrller>();
 		imp_.DoorController_ = std::make_shared<DoorController>();
+		imp_.WindowController_ = std::make_shared<WindowController>();
 
 		ImpSPtr_->DesignODL_ = shared_from_this();
 		ImpSPtr_->DrawLineWallCtrller_->SetRootODL(shared_from_this());
@@ -366,6 +372,7 @@ void CDesignODL::Init()
 		ImpSPtr_->TopPickingController_->SetRootODL(shared_from_this());
 		ImpSPtr_->UpdateTransformingCtrller_->SetRootODL(shared_from_this());
 		ImpSPtr_->DoorController_->SetRootODL(shared_from_this());
+		ImpSPtr_->WindowController_->SetRootODL(shared_from_this());
 	}
 
 	{//Controller
@@ -388,6 +395,7 @@ void CDesignODL::Init()
 			ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->TopPickingController_);
 			ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, std::make_shared<TestDecorGUIBoard>());
 			ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->DoorController_);
+			ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->WindowController_);
 		}
 
 		{//MayaView

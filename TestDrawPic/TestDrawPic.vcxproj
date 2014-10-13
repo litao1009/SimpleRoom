@@ -158,6 +158,7 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClInclude Include="ODL\GroupODL.h" />
     <ClInclude Include="ODL\MeshSceneNode\DoorMeshNode2D.h" />
     <ClInclude Include="ODL\MeshSceneNode\WallMeshNode2D.h" />
+    <ClInclude Include="ODL\MeshSceneNode\WindowMeshNode2D.h" />
     <ClInclude Include="ODL\ODLTools.h" />
     <ClInclude Include="ODL\ShapeSceneNode.h" />
     <ClInclude Include="ODL\TSceneNode.h" />
@@ -184,6 +185,7 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClInclude Include="DAL\OrderDAL.h" />
     <ClInclude Include="ODL\WallFaceODL.h" />
     <ClInclude Include="ODL\WallODL.h" />
+    <ClInclude Include="ODL\WindowODL.h" />
     <ClInclude Include="PublicDefine.h" />
     <ClInclude Include="RenderController\2D\DrawingLineCtrller.h" />
     <ClInclude Include="RenderController\2D\DrawingLineWallCtrller.h" />
@@ -200,6 +202,7 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClInclude Include="RenderController\TopPickingController.h" />
     <ClInclude Include="RenderController\TopViewController.h" />
     <ClInclude Include="RenderController\UpdateTransformingCtrller.h" />
+    <ClInclude Include="RenderController\WindowController.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="BLL\WallBLL.h" />
     <ClInclude Include="BLL\WallFaceZoneBLL.h" />
@@ -252,6 +255,7 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClCompile Include="ODL\GroupODL.cpp" />
     <ClCompile Include="ODL\MeshSceneNode\DoorMeshNode2D.cpp" />
     <ClCompile Include="ODL\MeshSceneNode\WallMeshNode2D.cpp" />
+    <ClCompile Include="ODL\MeshSceneNode\WindowMeshNode2D.cpp" />
     <ClCompile Include="ODL\ODLTools.cpp" />
     <ClCompile Include="ODL\BaseODL.cpp" />
     <ClCompile Include="DAL\BaseDAL.cpp" />
@@ -280,6 +284,7 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClCompile Include="ODL\ShapeSceneNode.cpp" />
     <ClCompile Include="ODL\WallFaceODL.cpp" />
     <ClCompile Include="ODL\WallODL.cpp" />
+    <ClCompile Include="ODL\WindowODL.cpp" />
     <ClCompile Include="RenderController\2D\DrawingLineCtrller.cpp" />
     <ClCompile Include="RenderController\2D\DrawingLineWallCtrller.cpp" />
     <ClCompile Include="RenderController\2D\DrawingRectWallCtrller.cpp" />
@@ -293,6 +298,7 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClCompile Include="RenderController\TestDecorGUIBoard.cpp" />
     <ClCompile Include="RenderController\TopPickingController.cpp" />
     <ClCompile Include="RenderController\UpdateTransformingCtrller.cpp" />
+    <ClCompile Include="RenderController\WindowController.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>

@@ -34,7 +34,9 @@ DoorMeshNode2D::DoorMeshNode2D( irr::scene::ISceneNode* parent, irr::s32 id /*= 
 		RectBuffer_->recalculateBoundingBox();
 		RectBuffer_->getMaterial().Lighting = false;
 		RectBuffer_->getMaterial().BackfaceCulling = false;
-		RectBuffer_->getMaterial().ZBuffer = irr::video::ECFN_ALWAYS;
+		//RectBuffer_->getMaterial().ZBuffer = irr::video::ECFN_ALWAYS;
+		RectBuffer_->getMaterial().PolygonOffsetDirection = irr::video::EPO_FRONT;
+		RectBuffer_->getMaterial().PolygonOffsetFactor = 5;
 	}
 
 	{
@@ -61,13 +63,16 @@ DoorMeshNode2D::DoorMeshNode2D( irr::scene::ISceneNode* parent, irr::s32 id /*= 
 		CircleBuffer_->Vertices.push_back(irr::video::S3DVertex(irr::core::vector3df(0), dn, clr, dt));
 		CircleBuffer_->Indices.push_back(91);
 		CircleBuffer_->recalculateBoundingBox();
+		CircleBuffer_->getMaterial().ZBuffer = irr::video::ECFN_ALWAYS;
 		CircleBuffer_->getMaterial().Lighting = false;
 		CircleBuffer_->getMaterial().MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_LINE);
 		CircleBuffer_->getMaterial().DiffuseColor = dbc;
-		CircleBuffer_->getMaterial().BackfaceCulling = false;
-		CircleBuffer_->getMaterial().AntiAliasing = irr::video::EAAM_QUALITY|irr::video::EAAM_LINE_SMOOTH;
-		CircleBuffer_->getMaterial().ZBuffer = irr::video::ECFN_ALWAYS;
+		//CircleBuffer_->getMaterial().AntiAliasing = irr::video::EAAM_LINE_SMOOTH;
 		CircleBuffer_->getMaterial().Thickness = 2;
+		CircleBuffer_->getMaterial().PolygonOffsetDirection = irr::video::EPO_FRONT;
+		CircleBuffer_->getMaterial().PolygonOffsetFactor = 7;
+		//CircleBuffer_->getMaterial().Wireframe = true;
+		//CircleBuffer_->getMaterial().ZBuffer = irr::video::ECFN_ALWAYS;
 	}
 
 	DrawTriangle_ = true;
@@ -83,7 +88,7 @@ void DoorMeshNode2D::OnRegisterSceneNode()
 {
 	if ( isVisible() )
 	{
-		SceneManager->registerNodeForRendering(this);
+		SceneManager->registerNodeForRendering(this, irr::scene::ESNRP_SOLID);
 	}
 
 	ISceneNode::OnRegisterSceneNode();

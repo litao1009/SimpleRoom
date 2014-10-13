@@ -272,16 +272,14 @@ void CSimpleOrthoAnimator::animateNode(irr::scene::ISceneNode* node, irr::u32 ti
 			{
 				auto curFactor = static_cast<float>(camera->GetBaseWidth()) / static_cast<float>(curWidth);
 				auto cursorRelatvie = CursorPos;
-				
-				auto cursorXLength = static_cast<float>(CursorIPos.X) / cursorRelatvie.X;
-				auto cursorYLength = static_cast<float>(CursorIPos.Y) / cursorRelatvie.Y;
 
 				cursorRelatvie -= 0.5f;
 				cursorRelatvie *= curFactor;
 				cursorRelatvie += 0.5f;
 
-				auto newIPosX = static_cast<int>(cursorRelatvie.X * cursorXLength);
-				auto newIPosY = static_cast<int>(cursorRelatvie.Y * cursorYLength);
+				auto sz = node->getSceneManager()->getVideoDriver()->getScreenSize();
+				auto newIPosX = static_cast<int>(cursorRelatvie.X * sz.Width);
+				auto newIPosY = static_cast<int>(cursorRelatvie.Y * sz.Height);
 				auto line = smgr->getSceneCollisionManager()->getRayFromScreenCoordinates(irr::core::position2di(newIPosX,newIPosY), camera);
 				auto ret = zeroPlane.getIntersectionWithLine(line.start, line.getVector(), newPos);
 				assert(ret);

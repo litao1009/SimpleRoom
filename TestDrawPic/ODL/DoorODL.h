@@ -23,7 +23,9 @@ public:
 
 public:
 
-	void	Update2DZone(float xLength, float zLength);
+	void	UpdateZone(float xLength, float yLength, float zLength);
+
+	std::tuple<float,float,float>	GetZone() const;
 
 	void	Set2DLineColor(const irr::video::SColor& clr);
 

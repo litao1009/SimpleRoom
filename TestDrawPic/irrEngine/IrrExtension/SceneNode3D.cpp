@@ -83,7 +83,7 @@ void CSceneNode3D::OnRegisterSceneNode()
 
 	if ( GetRenderMode() & ESNT_3D )
 	{
-		SceneManager->registerNodeForRendering(this);
+		SceneManager->registerNodeForRendering(this, irr::scene::ESNRP_SOLID);
 
 		ISceneNode::OnRegisterSceneNode();
 	}

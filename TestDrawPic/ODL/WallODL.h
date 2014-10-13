@@ -9,6 +9,9 @@
 
 class CWallODL : public CBaseODL
 {
+	class	Imp;
+	std::unique_ptr<Imp>	ImpUPtr_;
+
 public:
 
 	CWallODL();
@@ -24,9 +27,15 @@ public:
 
 	virtual void	UpdateSweeping();
 
+	virtual	void	Init();
+
 public:
 
 	void	SetDefaultTexture();
+
+	void	UpdateCutShape();
+
+	void	SetNeedUpdate();
 };
 
 typedef	std::shared_ptr<CWallODL>	CWallODLSPtr;

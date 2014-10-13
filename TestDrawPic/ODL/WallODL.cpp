@@ -16,7 +16,23 @@
 
 #include "ODL/MeshSceneNode/WallMeshNode2D.h"
 
-CWallODL::CWallODL()
+#include "BRepAlgoAPI_Cut.hxx"
+
+
+class	CWallODL::Imp
+{
+public:
+
+	Imp()
+	{
+		NeedUpdate_ = false;
+	}
+
+	TopoDS_Shape	CutSolid_;
+	bool			NeedUpdate_;
+};
+
+CWallODL::CWallODL():ImpUPtr_(new Imp)
 {
 	
 }
@@ -24,6 +40,7 @@ CWallODL::CWallODL()
 
 CWallODL::~CWallODL(void)
 {
+
 }
 
 void CWallODL::SetDefaultTexture()
@@ -34,11 +51,16 @@ void CWallODL::SetDefaultTexture()
 	auto uLen = 4000.f;//tex->getSize().Width;
 	auto vLen = 3000.f;//tex->getSize().Height;
 
-	GetDataSceneNode()->setMaterialTexture(0, tex);
 	irr::core::matrix4 texMat;
 	texMat.setScale(irr::core::vector3df(1/uLen, 1/vLen, 1));
 	auto meshBufferPtr = GetDataSceneNode()->getMesh()->getMeshBuffer(0);
+
 	meshBufferPtr->getMaterial().setTextureMatrix(0, texMat);
+	GetDataSceneNode()->setMaterialTexture(0, tex);
+}
+void CWallODL::Init()
+{
+	
 }
 
 void CWallODL::UpdateSweeping()
@@ -135,4 +157,49 @@ CBaseODLSPtr CWallODL::CreateByBottomFace( SRenderContextWPtr renderContext, con
 	}
 
 	return newWall;
+}
+
+void CWallODL::UpdateCutShape()
+{
+	if ( !ImpUPtr_->NeedUpdate_ )
+	{
+		return;
+	}
+	ImpUPtr_->CutSolid_ = GetBaseShape();
+
+	for ( auto& curChild : GetChildrenList() )
+	{
+		if ( curChild->GetType() != EODLT_DOOR && curChild->GetType() != EODLT_WINDOW )
+		{
+			continue;
+		}
+
+		auto childShape = curChild->GetBaseShape();
+		assert(!childShape.IsNull());
+		childShape.Move(curChild->GetTransform());
+
+		BRepAlgoAPI_Cut bc(ImpUPtr_->CutSolid_, childShape);
+		ImpUPtr_->CutSolid_ = bc.Shape();
+	}
+
+	{//3DÄ£ÐÍ
+		auto meshBuf = ODLTools::NEW_CreateMeshBuffer(ImpUPtr_->CutSolid_);
+		assert(meshBuf);
+
+		auto curMesh = static_cast<irr::scene::SMesh*>(GetDataSceneNode()->getMesh());
+		curMesh->clear();
+		curMesh->addMeshBuffer(meshBuf);
+		curMesh->recalculateBoundingBox();
+		meshBuf->drop();
+
+		GetDataSceneNode()->setMaterialFlag(irr::video::EMF_LIGHTING, false);
+		SetDefaultTexture();
+	}
+
+	ImpUPtr_->NeedUpdate_ = false;
+}
+
+void CWallODL::SetNeedUpdate()
+{
+	ImpUPtr_->NeedUpdate_ = true;
 }

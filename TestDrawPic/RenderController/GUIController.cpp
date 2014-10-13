@@ -397,6 +397,11 @@ bool GUIController::PreRender2D()
 		ShowCameraImage_->setImage(HideCameraTex_.get());
 	}
 
+	MinimumImage_->setVisible(false);
+	ResizeImage_->setVisible(false);
+	RestoreImage_->setVisible(false);
+	ShowCameraImage_->setVisible(false);
+
 	return false;
 }
 

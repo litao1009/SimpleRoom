@@ -242,10 +242,6 @@ BOOL CSubViewer::PreTranslateMessage(MSG* pMsg)
 void CSubViewer::DrawItem(LPDRAWITEMSTRUCT /*lpDrawItemStruct*/)
 {
 	// TODO:  添加您的代码以绘制指定项
-}
-
-void CSubViewer::OnTimer(UINT_PTR nIDEvent)
-{
 	//渲染
 	if (m_spRenderContext)
 	{
@@ -259,5 +255,18 @@ void CSubViewer::OnTimer(UINT_PTR nIDEvent)
 
 		m_spRenderContext->Render();
 	}
+}
+
+void CSubViewer::OnTimer(UINT_PTR nIDEvent)
+{
+	Invalidate();
+
 	CStatic::OnTimer(nIDEvent);
+}
+
+BOOL CSubViewer::DestroyWindow()
+{
+	// TODO: 在此添加专用代码和/或调用基类
+	KillTimer(1000);
+	return CStatic::DestroyWindow();
 }

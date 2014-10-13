@@ -235,6 +235,15 @@
     <ClCompile Include="RenderController\DoorController.cpp">
       <Filter>RenderController</Filter>
     </ClCompile>
+    <ClCompile Include="ODL\MeshSceneNode\WindowMeshNode2D.cpp">
+      <Filter>ODL\MeshSceneNode</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderController\WindowController.cpp">
+      <Filter>RenderController</Filter>
+    </ClCompile>
+    <ClCompile Include="ODL\WindowODL.cpp">
+      <Filter>ODL</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BLL\BaseBLL.h">
@@ -524,6 +533,15 @@
     </ClInclude>
     <ClInclude Include="RenderController\DoorController.h">
       <Filter>RenderController</Filter>
+    </ClInclude>
+    <ClInclude Include="ODL\MeshSceneNode\WindowMeshNode2D.h">
+      <Filter>ODL\MeshSceneNode</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderController\WindowController.h">
+      <Filter>RenderController</Filter>
+    </ClInclude>
+    <ClInclude Include="ODL\WindowODL.h">
+      <Filter>ODL</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

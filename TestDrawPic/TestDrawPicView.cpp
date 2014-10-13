@@ -273,6 +273,16 @@ void CTestDrawPicView::OnSize(UINT nType, int cx, int cy)
 {
 	CCtrlFuncView::OnSize(nType, cx, cy);
 
+	if (GetSubView().GetSafeHwnd())
+	{
+		CRect rtMain;
+		GetWindowRect(rtMain);
+
+		GetSubView().MoveWindow(0, 0, rtMain.Width(), rtMain.Height());
+	}
+	
+
+	/*
 	if (this->GetSafeHwnd())
 	{
 		static auto firstUpdate = true;
@@ -294,7 +304,7 @@ void CTestDrawPicView::OnSize(UINT nType, int cx, int cy)
 				GetSubView().MoveWindow(0, rtMain.Height()-rtSub.Height(), rtSub.Width(), rtSub.Height());
 			}
 		}
-	}
+	}*/
 }
 
 
