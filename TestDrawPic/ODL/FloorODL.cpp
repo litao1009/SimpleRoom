@@ -88,6 +88,7 @@ CFloorODLSPtr CFloorODL::CreateByFace( SRenderContextWPtr renderContext, const T
 		auto smgr = newFloor->GetDataSceneNode()->getSceneManager();
 
 		meshBuf->getMaterial().setTexture(0, smgr->getVideoDriver()->getTexture("../Data/Resource/3D/floorLine.png"));
+		meshBuf->getMaterial().BackfaceCulling = false;
 		irr::core::matrix4 r,s;
 		s.setTextureScale(1/200.f, 1/200.f);
 		r.setTextureRotationCenter(static_cast<float>(M_PI_2));

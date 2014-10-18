@@ -80,6 +80,26 @@ DrawingLineWallCtrller::DrawingLineWallCtrller()
 		TmpRect_->getMaterial().DiffuseColor = irr::video::SColor(0xFF000000);
 	}
 
+	{
+		PntMeshBuf_ = new irr::scene::SMeshBuffer;
+		auto smeshBuf = static_cast<irr::scene::SMeshBuffer*>(PntMeshBuf_);
+		smeshBuf->Vertices.reallocate(4);
+		smeshBuf->Vertices.push_back(irr::video::S3DVertex(irr::core::vector3df(-10, 0, -10), s_PntNormal, s_PathColor, irr::core::vector2df(0,0)));
+		smeshBuf->Vertices.push_back(irr::video::S3DVertex(irr::core::vector3df(10, 0, -10), s_PntNormal, s_PathColor, irr::core::vector2df(1,0)));
+		smeshBuf->Vertices.push_back(irr::video::S3DVertex(irr::core::vector3df(10, 0, 10), s_PntNormal, s_PathColor, irr::core::vector2df(1,1)));
+		smeshBuf->Vertices.push_back(irr::video::S3DVertex(irr::core::vector3df(10, 0, -10), s_PntNormal, s_PathColor, irr::core::vector2df(0,1)));
+		smeshBuf->Indices.reallocate(4);
+		smeshBuf->Indices.push_back(0);
+		smeshBuf->Indices.push_back(1);
+		smeshBuf->Indices.push_back(2);
+		smeshBuf->Indices.push_back(3);
+
+		PntMeshBuf_->getMaterial().Lighting = false;
+		PntMeshBuf_->getMaterial().ZWriteEnable = false;
+		PntMeshBuf_->getMaterial().BackfaceCulling = false;
+		PntMeshBuf_->getMaterial().Thickness = 3;
+	}
+
 	CircleMeshBuf_ = new irr::scene::SMeshBuffer;
 	{
 		auto smeshBuf = static_cast<irr::scene::SMeshBuffer*>(CircleMeshBuf_);
@@ -153,6 +173,11 @@ DrawingLineWallCtrller::~DrawingLineWallCtrller()
 	if ( CircleMeshBuf_ )
 	{
 		CircleMeshBuf_->drop();
+	}
+
+	if ( PntMeshBuf_ )
+	{
+		PntMeshBuf_->drop();
 	}
 }
 
@@ -262,42 +287,31 @@ bool DrawingLineWallCtrller::OnPostEvent( const irr::SEvent& event )
 
 bool DrawingLineWallCtrller::PreRender3D()
 {
+	SetEnable( StatusMgr::GetInstance().DrawingState_ == StatusMgr::EDS_LINE_WALL );
+
 	if ( !IsEnable() )
 	{
 		Reset();
 		return false;
 	}
 
-	if ( StatusMgr::GetInstance().DrawingState_ != StatusMgr::EDS_LINE_WALL )
-	{
-		Reset();
-		return false;
-	}
-
-	if ( StatusMgr::GetInstance().GridAlign_ )
-	{
-		CurrentPos_ = *StatusMgr::GetInstance().GridAlign_;
-	}
-	else
-	{
-		auto smgr = GetRenderContextSPtr()->Smgr_.get();
-		auto line = smgr->getSceneCollisionManager()->getRayFromScreenCoordinates(CursorIPos_);
-		s_PntPlane.getIntersectionWithLine(line.start, line.getVector(), CurrentPos_);
-	}
-
 	UpdateMesh();
 
 	Checker_ = true;
 
+	auto smgr = GetRenderContextSPtr()->Smgr_.get();
+	auto line = smgr->getSceneCollisionManager()->getRayFromScreenCoordinates(CursorIPos_);
+	s_PntPlane.getIntersectionWithLine(line.start, line.getVector(), CurrentPos_);
+
 	switch (State_)
 	{
 	case DrawingLineWallCtrller::EDWLS_BEGIN:
-		break;
+		//break;
 	case DrawingLineWallCtrller::EDWLS_DRAWING:
 		{
 			auto smgr = GetRenderContextSPtr()->Smgr_.get();
 
-			if ( Pnts_.back().getDistanceFromSQ(CurrentPos_) < WallThickness_*WallThickness_ )
+			if ( !Pnts_.empty() && (Pnts_.back().getDistanceFromSQ(CurrentPos_) < WallThickness_*WallThickness_) )
 			{
 				Checker_ = false;
 			}
@@ -316,17 +330,23 @@ bool DrawingLineWallCtrller::PreRender3D()
 			}
 
 			//吸附其他墙面
+			if ( !foundAlign )
 			{
-				auto curVertex = BRepBuilderAPI_MakeVertex(gp_Pnt(CurrentPos_.X, CurrentPos_.Y, CurrentPos_.Z)).Vertex();
-				BRepExtrema_DistShapeShape selector;
-				
-				selector.LoadS1(curVertex);
+				gp_Pnt curPnt(CurrentPos_.X, CurrentPos_.Y, CurrentPos_.Z);
+				auto curVertex = BRepBuilderAPI_MakeVertex(curPnt).Vertex();
+				Bnd_Box bb;
+				bb.Add(curPnt);
 
 				assert(!CurrentRoot_.expired());
 				auto spRoot = CurrentRoot_.lock();
 				for ( auto& curGroup : spRoot->GetChildrenList() )
 				{
 					if ( curGroup->GetType() != EODLT_GROUP )
+					{
+						continue;
+					}
+
+					if ( curGroup->GetBaseBndBox().Distance(bb.Transformed(curGroup->GetAbsoluteTransform().Inverted())) > WallThickness_/2 )
 					{
 						continue;
 					}
@@ -340,7 +360,15 @@ bool DrawingLineWallCtrller::PreRender3D()
 							continue;
 						}
 
-						selector.LoadS2(curWall->GetBaseShape());
+						auto inverted = curWall->GetAbsoluteTransform().Inverted();
+						
+						if ( curWall->GetBaseBndBox().Distance(bb.Transformed(inverted)) > WallThickness_/2 )
+						{
+							continue;
+						}
+
+						auto& selector = curWall->GetBaseSelector();
+						selector.LoadS2(curVertex.Moved(inverted));
 						selector.Perform();
 
 						if ( 0 == selector.NbSolution() )
@@ -354,20 +382,17 @@ bool DrawingLineWallCtrller::PreRender3D()
 							continue;
 						}
 
-						TopoDS_Vertex curVertex;
-						gp_Pnt curPnt;
-
-						if ( BRepExtrema_IsVertex == selector.SupportTypeShape2(1) )
+						if ( BRepExtrema_IsVertex == selector.SupportTypeShape1(1) )
 						{
-							curVertex = TopoDS::Vertex(selector.SupportOnShape2(1));
+							curVertex = TopoDS::Vertex(selector.SupportOnShape1(1));
 							curPnt = BRep_Tool::Pnt(curVertex);
 						}
-						else if ( BRepExtrema_IsOnEdge == selector.SupportTypeShape2(1) )
+						else if ( BRepExtrema_IsOnEdge == selector.SupportTypeShape1(1) )
 						{
 							Standard_Real curPar;
-							selector.ParOnEdgeS2(1, curPar);
+							selector.ParOnEdgeS1(1, curPar);
 							
-							auto curEdge = TopoDS::Edge(selector.SupportOnShape2(1));
+							auto curEdge = TopoDS::Edge(selector.SupportOnShape1(1));
 							BRepAdaptor_Curve edgeAdaptor(curEdge);
 							auto firstL = BRepGProp_EdgeTool::FirstParameter(edgeAdaptor);
 							auto lastL = BRepGProp_EdgeTool::LastParameter(edgeAdaptor);
@@ -398,14 +423,14 @@ bool DrawingLineWallCtrller::PreRender3D()
 							}
 							else
 							{
-								curPnt = selector.PointOnShape2(1);
+								curPnt = selector.PointOnShape1(1);
 							}
 						}
-						else if ( BRepExtrema_IsInFace == selector.SupportTypeShape2(1) )
+						else if ( BRepExtrema_IsInFace == selector.SupportTypeShape1(1) )
 						{
 							Standard_Real u,v, uMin,uMax,vMin,vMax;
-							selector.ParOnFaceS2(1, u, v);
-							auto curFace = TopoDS::Face(selector.SupportOnShape2(1));
+							selector.ParOnFaceS1(1, u, v);
+							auto curFace = TopoDS::Face(selector.SupportOnShape1(1));
  							BRepAdaptor_Surface bs(curFace);
 							uMin = bs.FirstUParameter();
 							uMax = bs.LastUParameter();
@@ -423,27 +448,56 @@ bool DrawingLineWallCtrller::PreRender3D()
 							if ( uDis < vDis )
 							{
 								adjU = adjU<uMax-adjU ? 0 : uMax;
+
+								if ( std::abs(adjV-WallThickness_) < WallThickness_/2 )
+								{
+									adjV = WallThickness_;
+								}
+								else if ( std::abs((adjVMax-WallThickness_) - adjV) < WallThickness_/2 )
+								{
+									adjV = adjVMax - WallThickness_;
+								}
 							}
 							else
 							{
 								adjV = adjV<vMax-adjV ? 0 : vMax;
+
+								if ( std::abs(adjU-WallThickness_) < WallThickness_/2 )
+								{
+									adjU = WallThickness_;
+								}
+								else if ( std::abs((adjUMax-WallThickness_) - adjU) < WallThickness_/2 )
+								{
+									adjU = adjUMax - WallThickness_;
+								}
 							}
 
 							bs.D0(adjU+uMin, adjV+vMin, curPnt);
 						}
 
-						CurrentPos_.X = static_cast<float>(curPnt.X());
-						CurrentPos_.Y = static_cast<float>(curPnt.Y());
-						CurrentPos_.Z = static_cast<float>(curPnt.Z());
+						curPnt.Transform(curWall->GetAbsoluteTransform());
+
 						needBreak = true;
 						break;
 					}
 
 					if ( needBreak )
 					{
+						CurrentPos_.X = static_cast<float>(curPnt.X());
+						CurrentPos_.Y = static_cast<float>(curPnt.Y());
+						CurrentPos_.Z = static_cast<float>(curPnt.Z());
+
 						foundAlign = true;
 						break;
 					}
+				}
+			}
+
+			if ( !foundAlign )
+			{
+				if ( StatusMgr::GetInstance().GridAlign_ )
+				{
+					CurrentPos_ = *StatusMgr::GetInstance().GridAlign_;
 				}
 			}
 
@@ -460,7 +514,7 @@ bool DrawingLineWallCtrller::PreRender3D()
 			}
 
 			//极轴追踪
-			if ( !foundAlign && !StatusMgr::GetInstance().GridAlign_ && Checker_ )
+			if ( !Pnts_.empty() && !foundAlign && !StatusMgr::GetInstance().GridAlign_ && Checker_ )
 			{
 				vector3df refDir;
 				if ( Pnts_.size() > 1 )
@@ -506,6 +560,7 @@ bool DrawingLineWallCtrller::PreRender3D()
 				CurrentPos_ = Pnts_.back() + vector3df(static_cast<float>(newDir.X()), static_cast<float>(newDir.Y()), static_cast<float>(newDir.Z())) * curLength;
 			}
 			
+			if ( !Pnts_.empty() )
 			{//TmpRect_
 				auto& lastPnt = Pnts_.back();
 				vector3df dirVec = CurrentPos_ - lastPnt;
@@ -551,19 +606,31 @@ void DrawingLineWallCtrller::PostRender3D()
 		return;
 	}
 
+	auto driver = GetRenderContextSPtr()->Smgr_->getVideoDriver();
 	auto tmpRectSmesh = static_cast<irr::scene::SMeshBuffer*>(TmpRect_);
 
 	switch (State_)
 	{
 	case DrawingLineWallCtrller::EDWLS_BEGIN:
 		{
-			
+			driver->setTransform(irr::video::ETS_WORLD, irr::core::matrix4());
+
+			auto radius = 32.f;
+			auto p1 = CurrentPos_ + vector3df(-radius, 0, -radius);
+			auto p2 = CurrentPos_ + vector3df(radius, 0, -radius);
+			auto p3 = CurrentPos_ + vector3df(radius, 0, radius);
+			auto p4 = CurrentPos_ + vector3df(-radius, 0, radius);
+			PntMeshBuf_->getPosition(0) = p1;
+			PntMeshBuf_->getPosition(1) = p2;
+			PntMeshBuf_->getPosition(2) = p3;
+			PntMeshBuf_->getPosition(3) = p4;
+
+			driver->setMaterial(PntMeshBuf_->getMaterial());
+			driver->drawVertexPrimitiveList(PntMeshBuf_->getVertices(), PntMeshBuf_->getVertexCount(), PntMeshBuf_->getIndices(), PntMeshBuf_->getIndexCount()/2, EVT_STANDARD, EPT_TRIANGLE_FAN);
 		}
 		break;
 	case DrawingLineWallCtrller::EDWLS_DRAWING:
 		{
-			auto driver = GetRenderContextSPtr()->Smgr_->getVideoDriver();
-
 			driver->setTransform(irr::video::ETS_WORLD, irr::core::matrix4());
 
 			if ( MeshBuf_ )

@@ -5,11 +5,7 @@
 
 #include "ODL/MeshSceneNode/DoorMeshNode2D.h"
 
-//-test
-#include "ISceneManager.h"
-#include "SMesh.h"
-#include "IMeshBuffer.h"
-//-test
+#include "BRepPrimAPI_MakeBox.hxx"
 
 class	CDoorODL::Imp
 {
@@ -41,8 +37,6 @@ CDoorODL::~CDoorODL()
 	}
 }
 
-#include "BRepPrimAPI_MakeBox.hxx"
-
 void CDoorODL::UpdateZone( float xLength, float yLength, float zLength )
 {
 	auto& xLen_ = ImpUPtr_->XLength_;
@@ -69,13 +63,6 @@ void CDoorODL::UpdateZone( float xLength, float yLength, float zLength )
 	tfs.SetTranslationPart(gp_Vec(gp_Pnt(xLen_/2, yLen_/2, zLen_/2), gp::Origin()));
 	box.Move(tfs);
 	SetBaseShape(box);
-
-// 	{//test
-// 		auto mesh = GetDataSceneNode()->getSceneManager()->getMesh("../Data/Resource/Models/door1.obj");
-// 		GetDataSceneNode()->setMesh(mesh);
-// 		GetDataSceneNode()->setMaterialFlag(irr::video::EMF_LIGHTING, false);
-// 		GetDataSceneNode()->setMaterialFlag(irr::video::EMF_BACK_FACE_CULLING, false);
-// 	}
 }
 
 void CDoorODL::Set2DLineColor( const irr::video::SColor& clr )

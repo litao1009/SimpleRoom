@@ -195,14 +195,14 @@ bool GridController::OnPreEvent( const irr::SEvent& evt )
 			GridPos_.X -= factor;
 			if ( std::abs(factor) > GridSize_/2 )
 			{
-				GridPos_.X += GridPos_.X > 0 ? GridSize_ : -GridSize_;
+				GridPos_.X += factor > 0 ? GridSize_ : -GridSize_;
 			}
 
 			factor = std::fmod(GridPos_.Z, GridSize_);
 			GridPos_.Z -= factor;
 			if ( std::abs(factor) > GridSize_/2 )
 			{
-				GridPos_.Z += GridPos_.Z > 0 ? GridSize_ : -GridSize_;
+				GridPos_.Z += factor > 0 ? GridSize_ : -GridSize_;
 			}
 
 			StatusMgr::GetInstance().GridAlign_ = GridPos_;

@@ -74,6 +74,7 @@ private:
 	irr::scene::IMeshBuffer*	LineMeshBuf_;
 	irr::scene::IMeshBuffer*	PathMeshBuf_;
 	irr::scene::IMeshBuffer*	CircleMeshBuf_;
+	irr::scene::IMeshBuffer*	PntMeshBuf_;
 	irr::core::vector2di		CursorIPos_;
 	irr::core::vector3df		CurrentPos_;
 	//irr::video::SMaterial		Material_;
