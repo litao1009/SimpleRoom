@@ -25,8 +25,10 @@
 #include "GeomAPI.hxx"
 #include "Geom2dAPI_InterCurveCurve.hxx"
 #include "BRepBuilderAPI_MakeEdge.hxx"
+#include "BRepExtrema_ExtCC.hxx"
 
 #include <vector>
+
 
 using namespace irr;
 using namespace scene;
@@ -59,6 +61,7 @@ public:
 		FloatingLine_->getMaterial().ZWriteEnable = false;
 
 		PressDown_ = false;
+		Finish_ = false;
 	}
 
 	~Imp()
@@ -84,6 +87,7 @@ public:
 	vector3df					CurrentPos_;
 	vector2di					CursorIPos_;
 	bool						PressDown_;
+	bool						Finish_;
 };
 
 TestDrawRoomCtrller::TestDrawRoomCtrller():ImpUPtr_(new Imp)
@@ -224,18 +228,87 @@ bool TestDrawRoomCtrller::PreRender3D()
 		break;
 	case EState::ES_DRAWING:
 		{
-			bool valid = false;
+			bool valid = true;
 			{//checkValid
-				auto lastCorner = GraphController::GetInstance().GetTempPathCorners().back();
+
+				//目前的路径
+				auto pathCorners = GraphController::GetInstance().GetTempPathCorners();
+
+				//与最后一个点重合
+				auto lastCorner = pathCorners.back();
 				if ( lastCorner == alignConer )
 				{
-					break;
+					valid = false;
 				}
 
-				auto curEdge = BRepBuilderAPI_MakeEdge(lastCorner->GetPosition(), cursorPnt).Edge();
-				for ( auto& curWall : GraphController::GetInstance().GetAllWalls() )
+				//目前的边
+				auto floatingEdge = BRepBuilderAPI_MakeEdge(lastCorner->GetPosition(), cursorPnt).Edge();
+				BRepAdaptor_Curve floatingBC(floatingEdge);
+
+				//与上一条边的夹角小于15度
+				if ( valid )
 				{
-					auto wallEdge = curWall->GetEdge();
+					if ( pathCorners.size() >= 2 )
+					{
+						auto lastCorner = pathCorners.back();
+						for ( auto& curWall : GraphController::GetInstance().GetWallsOnCorner(lastCorner) )
+						{
+							auto curWallEdge = curWall->GetEdge();
+							BRepAdaptor_Curve wallBC(curWallEdge);
+
+							auto curAngle = floatingBC.Line().Direction().Angle(wallBC.Line().Direction());
+							if ( curAngle > M_PI_2 )
+							{
+								curAngle = M_PI - curAngle;
+							}
+
+							static auto rad15 = 15 * M_PI / 180.f;
+
+							if ( curAngle < rad15 )
+							{
+								valid = false;
+								break;
+							}
+
+						}
+					}
+				}
+
+				//是否有交叉
+				if ( valid )
+				{
+					//目前的边
+					auto floatingEdge = BRepBuilderAPI_MakeEdge(lastCorner->GetPosition(), cursorPnt).Edge();
+					BRepAdaptor_Curve floatingBC(floatingEdge);
+
+					BRepExtrema_ExtCC becc;
+					becc.Initialize(floatingEdge);
+					Standard_Real firstP,lastP;
+					BRep_Tool::Range(floatingEdge, firstP, lastP);
+
+					for ( auto& curWall : GraphController::GetInstance().GetAllWalls() )
+					{
+						auto wallEdge = curWall->GetEdge();
+
+						becc.Perform(wallEdge);
+
+						if ( 0 == becc.NbExt() )
+						{
+							continue;
+						}
+
+						Standard_Real firstCurP,lastCurP;
+						BRep_Tool::Range(wallEdge, firstCurP, lastCurP);
+
+						auto par1 = becc.ParameterOnE1(1);
+						auto par2 = becc.ParameterOnE2(1);
+
+						if ( par1 > firstP && par1 < lastP && par2 > firstCurP && par2 < lastCurP )
+						{
+							valid = false;
+							break;
+						}
+					}
 				}
 			}
 
@@ -243,11 +316,29 @@ bool TestDrawRoomCtrller::PreRender3D()
 			{
 				imp_.PressDown_ = false;
 
-
+				if ( valid )
+				{
+					if ( alignConer )
+					{
+						GraphController::GetInstance().AddCornerToTempPath(alignConer);
+					}
+					else
+					{
+						GraphController::GetInstance().AddCornerToTempPath(GraphController::GetInstance().CreateCorner(cursorPnt));
+					}
+				}
 			}
-			else
-			{
 
+			if ( imp_.Finish_ )
+			{
+				if ( GraphController::GetInstance().UpdatePath() )
+				{
+
+				}
+
+				imp_.PressDown_ = false;
+				imp_.Finish_ = false;
+				imp_.State_ = EState::ES_READY;
 			}
 		}
 		break;
@@ -291,6 +382,13 @@ bool TestDrawRoomCtrller::OnPostEvent( const irr::SEvent& evt )
 		}
 	}
 
+	if ( evt.EventType == EET_KEY_INPUT_EVENT )
+	{
+		if ( evt.KeyInput.Key == KEY_ESCAPE )
+		{
+			imp_.Finish_ = true;
+		}
+	}
 
 	return false;
 }

@@ -18,6 +18,8 @@ public:
 
 	WallList	GetAllWalls();
 
+	WallList	GetWallsOnCorner(const CornerSPtr& corner);
+
 	bool		AddCornerToTempPath(const CornerSPtr& corner);
 
 	CornerSPtr	CreateCorner(const gp_Pnt& position);
@@ -27,4 +29,6 @@ public:
 	bool		RemoveCorner(const CornerSPtr& corner);
 
 	CornerList	GetTempPathCorners() const;
+
+	bool		UpdatePath();
 };
