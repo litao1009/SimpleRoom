@@ -244,6 +244,9 @@
     <ClCompile Include="ODL\WindowODL.cpp">
       <Filter>ODL</Filter>
     </ClCompile>
+    <ClCompile Include="RenderController\TestDrawRoom.cpp">
+      <Filter>RenderController</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BLL\BaseBLL.h">
@@ -542,6 +545,9 @@
     </ClInclude>
     <ClInclude Include="ODL\WindowODL.h">
       <Filter>ODL</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderController\TestDrawRoom.h">
+      <Filter>RenderController</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

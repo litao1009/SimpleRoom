@@ -27,6 +27,7 @@
 
 //--test
 #include "RenderController/TestDecorGUIBoard.h"
+#include "RenderController/TestDrawRoom.h"
 //--test
 
 #include "BRepBuilderAPI_MakeEdge.hxx"
@@ -394,6 +395,7 @@ void CDesignODL::Init()
 			ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->DrawRectWallCtrller_);
 			ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->TopPickingController_);
 			ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, std::make_shared<TestDecorGUIBoard>());
+			ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, std::make_shared<TestDrawRoomCtrller>());
 			ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->DoorController_);
 			ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->WindowController_);
 		}

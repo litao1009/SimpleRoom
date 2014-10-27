@@ -165,7 +165,11 @@ GridController::GridController()
 
 GridController::~GridController()
 {
-	Node_->drop();
+	if ( Node_ )
+	{
+		Node_->drop();
+	}
+	
 }
 
 bool GridController::OnPreEvent( const irr::SEvent& evt )

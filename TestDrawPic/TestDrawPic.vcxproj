@@ -199,6 +199,7 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClInclude Include="RenderController\ResizeController.h" />
     <ClInclude Include="RenderController\StatesController.h" />
     <ClInclude Include="RenderController\TestDecorGUIBoard.h" />
+    <ClInclude Include="RenderController\TestDrawRoom.h" />
     <ClInclude Include="RenderController\TopPickingController.h" />
     <ClInclude Include="RenderController\TopViewController.h" />
     <ClInclude Include="RenderController\UpdateTransformingCtrller.h" />
@@ -296,6 +297,7 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClCompile Include="RenderController\ResizeController.cpp" />
     <ClCompile Include="RenderController\StatesController.cpp" />
     <ClCompile Include="RenderController\TestDecorGUIBoard.cpp" />
+    <ClCompile Include="RenderController\TestDrawRoom.cpp" />
     <ClCompile Include="RenderController\TopPickingController.cpp" />
     <ClCompile Include="RenderController\UpdateTransformingCtrller.cpp" />
     <ClCompile Include="RenderController\WindowController.cpp" />
