@@ -193,6 +193,14 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClInclude Include="RenderController\CameraController.h" />
     <ClInclude Include="RenderController\DoorController.h" />
     <ClInclude Include="RenderController\EventUserType.h" />
+    <ClInclude Include="RenderController\FloorPlan\Corner.h" />
+    <ClInclude Include="RenderController\FloorPlan\CornerFwd.h" />
+    <ClInclude Include="RenderController\FloorPlan\Graph.h" />
+    <ClInclude Include="RenderController\FloorPlan\GraphController.h" />
+    <ClInclude Include="RenderController\FloorPlan\Room.h" />
+    <ClInclude Include="RenderController\FloorPlan\RoomFwd.h" />
+    <ClInclude Include="RenderController\FloorPlan\Wall.h" />
+    <ClInclude Include="RenderController\FloorPlan\WallFwd.h" />
     <ClInclude Include="RenderController\FlyCameraController.h" />
     <ClInclude Include="RenderController\GridController.h" />
     <ClInclude Include="RenderController\GUIController.h" />
