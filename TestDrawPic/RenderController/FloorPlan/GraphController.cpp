@@ -144,6 +144,8 @@ WallSPtr GraphController::AddWall( const CornerSPtr& corner1, const CornerSPtr& 
 
 	newWall->SetIndex(index.first);
 
+	newWall->UpdateMesh();
+
 	return newWall;
 }
 

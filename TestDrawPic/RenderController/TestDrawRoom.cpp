@@ -53,7 +53,7 @@ public:
 		TestRoomLine_ = new SMeshBuffer;
 		TestRoomLine_->getMaterial().Lighting = false;
 		TestRoomLine_->getMaterial().BackfaceCulling = false;
-		TestRoomLine_->getMaterial().Thickness = 4;
+		TestRoomLine_->getMaterial().Thickness = 2;
 		TestRoomLine_->getMaterial().ZWriteEnable = false;
 
 		PositionRect_ = new SMeshBuffer;
@@ -66,7 +66,7 @@ public:
 		FloatingLine_->getMaterial().Lighting = false;
 		FloatingLine_->getMaterial().BackfaceCulling = false;
 		FloatingLine_->getMaterial().ZWriteEnable = false;
-		FloatingLine_->getMaterial().Thickness = 2;
+		FloatingLine_->getMaterial().Thickness = 4;
 
 		PressDown_ = false;
 		Finish_ = false;
@@ -411,8 +411,15 @@ bool TestDrawRoomCtrller::PreRender3D()
 
 			if ( imp_.Finish_ )
 			{
-				imp_.PressDown_ = false;
+				//imp_.PressDown_ = false;
 				imp_.Finish_ = false;
+
+				auto walls = GraphController::GetInstance().GetWallsOnCorner(imp_.BeginCorner_);
+				if ( walls.empty() )
+				{
+					GraphController::GetInstance().RemoveCorner(imp_.BeginCorner_);
+				}
+				imp_.BeginCorner_ = nullptr;
 
 				imp_.State_ = EState::ES_READY;
 			}
@@ -427,15 +434,15 @@ bool TestDrawRoomCtrller::PreRender3D()
 		auto allWalls = GraphController::GetInstance().GetAllWalls();
 
 		imp_.TestRoomLine_->Vertices.clear();
-		imp_.TestRoomLine_->Vertices.reallocate(allWalls.size()*2);
+		imp_.TestRoomLine_->Vertices.reallocate(allWalls.size()*6);
 		imp_.TestRoomLine_->Indices.clear();
-		imp_.TestRoomLine_->Indices.reallocate(allWalls.size()*2);
+		imp_.TestRoomLine_->Indices.reallocate(allWalls.size()*6*4);
 
 		for ( auto& curWall : allWalls )
 		{
-			auto curEdge = curWall->GetEdge();
-			auto p1 = BRep_Tool::Pnt(TopExp::FirstVertex(curEdge));
-			auto p2 = BRep_Tool::Pnt(TopExp::LastVertex(curEdge));
+			curWall->UpdateMesh();
+
+			auto& meshPoints = curWall->GetMeshPoints();
 
 			using namespace irr;
 			using namespace video;
@@ -444,12 +451,44 @@ bool TestDrawRoomCtrller::PreRender3D()
 			vector3df normal(0,1,0);
 			SColor clr(0xFF000000);
 			vector2df coord(0,0);
-			imp_.TestRoomLine_->Vertices.push_back(S3DVertex(vector3df(static_cast<float>(p1.X()), static_cast<float>(p1.Y()), static_cast<float>(p1.Z())), normal, clr, coord));
-			imp_.TestRoomLine_->Vertices.push_back(S3DVertex(vector3df(static_cast<float>(p2.X()), static_cast<float>(p2.Y()), static_cast<float>(p2.Z())), normal, clr, coord));
 
-			auto curIndexSize = imp_.TestRoomLine_->Indices.size();
-			imp_.TestRoomLine_->Indices.push_back(curIndexSize++);
-			imp_.TestRoomLine_->Indices.push_back(curIndexSize++);
+			auto curVertexSize = imp_.TestRoomLine_->Vertices.size();
+
+			imp_.TestRoomLine_->Vertices.push_back(S3DVertex(vector3df(static_cast<float>(meshPoints[0].X()), static_cast<float>(meshPoints[0].Y()), static_cast<float>(meshPoints[0].Z())), normal, clr, coord));
+			imp_.TestRoomLine_->Vertices.push_back(S3DVertex(vector3df(static_cast<float>(meshPoints[1].X()), static_cast<float>(meshPoints[1].Y()), static_cast<float>(meshPoints[1].Z())), normal, clr, coord));
+			imp_.TestRoomLine_->Vertices.push_back(S3DVertex(vector3df(static_cast<float>(meshPoints[2].X()), static_cast<float>(meshPoints[2].Y()), static_cast<float>(meshPoints[2].Z())), normal, clr, coord));
+			imp_.TestRoomLine_->Vertices.push_back(S3DVertex(vector3df(static_cast<float>(meshPoints[3].X()), static_cast<float>(meshPoints[3].Y()), static_cast<float>(meshPoints[3].Z())), normal, clr, coord));
+			imp_.TestRoomLine_->Vertices.push_back(S3DVertex(vector3df(static_cast<float>(meshPoints[4].X()), static_cast<float>(meshPoints[4].Y()), static_cast<float>(meshPoints[4].Z())), normal, clr, coord));
+			imp_.TestRoomLine_->Vertices.push_back(S3DVertex(vector3df(static_cast<float>(meshPoints[5].X()), static_cast<float>(meshPoints[5].Y()), static_cast<float>(meshPoints[5].Z())), normal, clr, coord));
+
+// 			imp_.TestRoomLine_->Indices.push_back(curVertexSize);
+// 			imp_.TestRoomLine_->Indices.push_back(curVertexSize + 1);
+// 			imp_.TestRoomLine_->Indices.push_back(curVertexSize + 2);
+// 
+// 			imp_.TestRoomLine_->Indices.push_back(curVertexSize);
+// 			imp_.TestRoomLine_->Indices.push_back(curVertexSize + 2);
+// 			imp_.TestRoomLine_->Indices.push_back(curVertexSize + 3);
+// 
+// 			imp_.TestRoomLine_->Indices.push_back(curVertexSize);
+// 			imp_.TestRoomLine_->Indices.push_back(curVertexSize + 3);
+// 			imp_.TestRoomLine_->Indices.push_back(curVertexSize + 4);
+// 
+// 			imp_.TestRoomLine_->Indices.push_back(curVertexSize);
+// 			imp_.TestRoomLine_->Indices.push_back(curVertexSize + 4);
+// 			imp_.TestRoomLine_->Indices.push_back(curVertexSize + 5);
+
+			imp_.TestRoomLine_->Indices.push_back(curVertexSize);
+			imp_.TestRoomLine_->Indices.push_back(curVertexSize+1);
+			imp_.TestRoomLine_->Indices.push_back(curVertexSize+1);
+			imp_.TestRoomLine_->Indices.push_back(curVertexSize+2);
+			imp_.TestRoomLine_->Indices.push_back(curVertexSize+2);
+			imp_.TestRoomLine_->Indices.push_back(curVertexSize+3);
+			imp_.TestRoomLine_->Indices.push_back(curVertexSize+3);
+			imp_.TestRoomLine_->Indices.push_back(curVertexSize+4);
+			imp_.TestRoomLine_->Indices.push_back(curVertexSize+4);
+			imp_.TestRoomLine_->Indices.push_back(curVertexSize+5);
+			imp_.TestRoomLine_->Indices.push_back(curVertexSize+5);
+			imp_.TestRoomLine_->Indices.push_back(curVertexSize+0);
 		}
 	}
 
@@ -458,17 +497,13 @@ bool TestDrawRoomCtrller::PreRender3D()
 		imp_.PositionRectTransMat_.setTranslation(center);
 	}
 
-	imp_.FloatingLine_->Vertices.clear();
-	imp_.FloatingLine_->Indices.clear();
 	if ( imp_.BeginCorner_ )
 	{
 		auto beginPnt = imp_.BeginCorner_->GetPosition();
 		vector3df beginVec(static_cast<float>(beginPnt.X()), static_cast<float>(beginPnt.Y()), static_cast<float>(beginPnt.Z()));
 		vector3df curVec(static_cast<float>(cursorPnt.X()), static_cast<float>(cursorPnt.Y()), static_cast<float>(cursorPnt.Z()));
-		imp_.FloatingLine_->Vertices.push_back(S3DVertex(beginVec, vector3df(0,1,0), SColor(0xFF0000FF), vector2df(0,0)));
-		imp_.FloatingLine_->Vertices.push_back(S3DVertex(curVec, vector3df(0,1,0), SColor(0xFF0000FF), vector2df(0,0)));
-		imp_.FloatingLine_->Indices.push_back(0);
-		imp_.FloatingLine_->Indices.push_back(1);
+		imp_.FloatingLine_->getPosition(0) = beginVec;
+		imp_.FloatingLine_->getPosition(1) = curVec;
 	}
 
 	return false;
@@ -480,20 +515,40 @@ void TestDrawRoomCtrller::PostRender3D()
 
 	auto driver = GetRenderContextSPtr()->Smgr_->getVideoDriver();
 
-	driver->setTransform(ETS_WORLD, matrix4());
-	driver->setMaterial(imp_.TestRoomLine_->getMaterial());
-	driver->drawVertexPrimitiveList(imp_.TestRoomLine_->getVertices(), imp_.TestRoomLine_->getVertexCount(), imp_.TestRoomLine_->getIndices(), imp_.TestRoomLine_->getIndexCount()/2, EVT_STANDARD, EPT_LINES);
+	switch (imp_.State_)
+	{
+	case EState::ES_READY:
+		{
+			driver->setTransform(ETS_WORLD, matrix4());
+			driver->setMaterial(imp_.TestRoomLine_->getMaterial());
+			driver->drawVertexPrimitiveList(imp_.TestRoomLine_->getVertices(), imp_.TestRoomLine_->getVertexCount(), imp_.TestRoomLine_->getIndices(), imp_.TestRoomLine_->getIndexCount()/2, EVT_STANDARD, EPT_LINES);
 
-	driver->setTransform(ETS_WORLD, matrix4());
-	driver->setMaterial(imp_.FloatingLine_->getMaterial());
-	driver->drawVertexPrimitiveList(imp_.FloatingLine_->getVertices(), imp_.FloatingLine_->getVertexCount(), imp_.FloatingLine_->getIndices(), imp_.FloatingLine_->getIndexCount()/2, EVT_STANDARD, EPT_LINES);
+			driver->setTransform(ETS_WORLD, imp_.PositionRectTransMat_*imp_.PositionRectScaleMat_);
+			driver->setMaterial(imp_.PositionRect_->getMaterial());
+			driver->drawVertexPrimitiveList(imp_.PositionRect_->getVertices(), imp_.PositionRect_->getVertexCount(), imp_.PositionRect_->getIndices(), imp_.PositionRect_->getIndexCount()/2, EVT_STANDARD, EPT_TRIANGLE_FAN);
+		}
+		break;
+	case EState::ES_DRAWING:
+		{
+			driver->setTransform(ETS_WORLD, matrix4());
+			driver->setMaterial(imp_.TestRoomLine_->getMaterial());
+			driver->drawVertexPrimitiveList(imp_.TestRoomLine_->getVertices(), imp_.TestRoomLine_->getVertexCount(), imp_.TestRoomLine_->getIndices(), imp_.TestRoomLine_->getIndexCount()/2, EVT_STANDARD, EPT_LINES);
 
-	driver->setTransform(ETS_WORLD, imp_.PositionRectTransMat_*imp_.PositionRectScaleMat_);
-	driver->setMaterial(imp_.PositionRect_->getMaterial());
-	driver->drawVertexPrimitiveList(imp_.PositionRect_->getVertices(), imp_.PositionRect_->getVertexCount(), imp_.PositionRect_->getIndices(), imp_.PositionRect_->getIndexCount()/2, EVT_STANDARD, EPT_TRIANGLE_FAN);
+			if ( imp_.BeginCorner_ )
+			{
+				driver->setTransform(ETS_WORLD, matrix4());
+				driver->setMaterial(imp_.FloatingLine_->getMaterial());
+				driver->drawVertexPrimitiveList(imp_.FloatingLine_->getVertices(), imp_.FloatingLine_->getVertexCount(), imp_.FloatingLine_->getIndices(), imp_.FloatingLine_->getIndexCount()/2, EVT_STANDARD, EPT_LINES);
+			}
 
-
-	//driver->drawVertexPrimitiveList(imp_.FloatingLine_->getVertices(), imp_.FloatingLine_->getVertexCount(), imp_.FloatingLine_->getIndices(), imp_.FloatingLine_->getIndexCount()/2, EVT_STANDARD, EPT_LINES);
+			driver->setTransform(ETS_WORLD, imp_.PositionRectTransMat_*imp_.PositionRectScaleMat_);
+			driver->setMaterial(imp_.PositionRect_->getMaterial());
+			driver->drawVertexPrimitiveList(imp_.PositionRect_->getVertices(), imp_.PositionRect_->getVertexCount(), imp_.PositionRect_->getIndices(), imp_.PositionRect_->getIndexCount()/2, EVT_STANDARD, EPT_TRIANGLE_FAN);
+		}
+		break;
+	default:
+		break;
+	}
 }
 
 bool TestDrawRoomCtrller::OnPostEvent( const irr::SEvent& evt )
@@ -516,7 +571,7 @@ bool TestDrawRoomCtrller::OnPostEvent( const irr::SEvent& evt )
 
 	if ( evt.EventType == EET_KEY_INPUT_EVENT )
 	{
-		if ( evt.KeyInput.Key == KEY_ESCAPE )
+		if ( evt.KeyInput.Key == KEY_ESCAPE && evt.KeyInput.PressedDown )
 		{
 			imp_.Finish_ = true;
 		}
@@ -560,4 +615,10 @@ void TestDrawRoomCtrller::Init()
 		imp_.PositionRect_->getMaterial().setTexture(0, GetRenderContextSPtr()->Smgr_->getVideoDriver()->getTexture("../Data/Resource/3D/dot.png"));
 	}
 	
+	{
+		imp_.FloatingLine_->Vertices.push_back(S3DVertex(vector3df(0), vector3df(0,1,0), SColor(0xFF0000FF), vector2df(0,0)));
+		imp_.FloatingLine_->Vertices.push_back(S3DVertex(vector3df(0), vector3df(0,1,0), SColor(0xFF0000FF), vector2df(0,0)));
+		imp_.FloatingLine_->Indices.push_back(0);
+		imp_.FloatingLine_->Indices.push_back(1);
+	}
 }

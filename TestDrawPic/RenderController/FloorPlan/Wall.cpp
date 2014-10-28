@@ -74,8 +74,8 @@ public:
 		gp_Vec curThickVec = gp_Vec(curThickDir) * wall->GetThickness()/2;
 
 		auto wallsAtCorner = GraphController::GetInstance().GetWallsOnCorner(corner);
+		assert(!wallsAtCorner.empty());
 
-		if ( wallsAtCorner.size() == 1 )
 		{
 			auto p1 = curThickVec.XYZ() + curBeginPos.XYZ();
 			auto p2 = curBeginPos.XYZ();
@@ -93,7 +93,10 @@ public:
 				meshPoints_[2] = p2;
 				meshPoints_[1] = p3;
 			}
+		}
 
+		if ( wallsAtCorner.size() == 1 )
+		{
 			return;
 		}
 
@@ -144,7 +147,7 @@ public:
 			auto otherEndPos = otherEndCorner->GetPosition();
 			gp_Dir otherDir = gp_Vec(otherBeginPos, otherEndPos);
 			auto otherThickDir = otherDir.Crossed(gp::DY().Reversed());
-			gp_Vec otherThickVec = gp_Vec(curThickDir) * otherTopWall->GetThickness()/2;
+			gp_Vec otherThickVec = gp_Vec(otherThickDir) * otherTopWall->GetThickness()/2;
 
 			auto curEdge = BRepBuilderAPI_MakeEdge(curBeginPos.XYZ()+curThickVec.XYZ(), curEndPos.XYZ()+curThickVec.XYZ()).Edge();
 			auto otherEdge = BRepBuilderAPI_MakeEdge(otherBeginPos.XYZ()+otherThickVec.Reversed().XYZ(), otherEndPos.XYZ()+otherThickVec.Reversed().XYZ()).Edge();
@@ -152,17 +155,34 @@ public:
 			BRepAdaptor_Curve curBC(curEdge);
 			BRepAdaptor_Curve otherBC(otherEdge);
 
-			gp_Pln pln(gp_Ax3(gp::Origin(), gp::DY().Reversed(), gp::DX()));
+			if ( Standard_False == curBC.Line().Direction().IsParallel(otherBC.Line().Direction(), Precision::Confusion()) )
+			{
+				gp_Pln pln(gp_Ax3(gp::Origin(), gp::DY().Reversed(), gp::DX()));
 
-			auto firstline2D = GeomAPI::To2d(curBC.Curve().Curve(), pln);
-			auto secondline2D = GeomAPI::To2d(otherBC.Curve().Curve(), pln);
+				auto firstline2D = GeomAPI::To2d(curBC.Curve().Curve(), pln);
+				auto secondline2D = GeomAPI::To2d(otherBC.Curve().Curve(), pln);
 
-			Geom2dAPI_InterCurveCurve icc(firstline2D, secondline2D);
-			assert(icc.NbPoints() == 1);
+				Geom2dAPI_InterCurveCurve icc(firstline2D, secondline2D);
+				assert(icc.NbPoints() == 1);
 
-			auto pnt2D = icc.Point(1);
-			gp_Pnt pnt(pnt2D.X(), 0, pnt2D.Y());
-			p1 = pnt;
+				auto pnt2D = icc.Point(1);
+				gp_Pnt pnt(pnt2D.X(), 0, pnt2D.Y());
+				p1 = pnt;
+			}
+			else
+			{
+				if ( corner == wall->GetFirstCorner().lock() )
+				{
+					p1 = meshPoints_[0];
+					p3 = meshPoints_[4];
+				}
+				else
+				{
+					p1 = meshPoints_[3];
+					p3 = meshPoints_[1];
+				}
+				
+			}
 		}
 
 		{//Bottom
@@ -178,7 +198,7 @@ public:
 			auto otherEndPos = otherEndCorner->GetPosition();
 			gp_Dir otherDir = gp_Vec(otherBeginPos, otherEndPos);
 			auto otherThickDir = otherDir.Crossed(gp::DY().Reversed());
-			gp_Vec otherThickVec = gp_Vec(curThickDir) * otherTopWall->GetThickness()/2;
+			gp_Vec otherThickVec = gp_Vec(otherThickDir) * otherTopWall->GetThickness()/2;
 
 			auto curEdge = BRepBuilderAPI_MakeEdge(curBeginPos.XYZ()+curThickVec.Reversed().XYZ(), curEndPos.XYZ()+curThickVec.Reversed().XYZ()).Edge();
 			auto otherEdge = BRepBuilderAPI_MakeEdge(otherBeginPos.XYZ()+otherThickVec.XYZ(), otherEndPos.XYZ()+otherThickVec.XYZ()).Edge();
@@ -186,17 +206,33 @@ public:
 			BRepAdaptor_Curve curBC(curEdge);
 			BRepAdaptor_Curve otherBC(otherEdge);
 
-			gp_Pln pln(gp_Ax3(gp::Origin(), gp::DY().Reversed(), gp::DX()));
+			if ( Standard_False == curBC.Line().Direction().IsParallel(otherBC.Line().Direction(), Precision::Confusion()) )
+			{
+				gp_Pln pln(gp_Ax3(gp::Origin(), gp::DY().Reversed(), gp::DX()));
 
-			auto firstline2D = GeomAPI::To2d(curBC.Curve().Curve(), pln);
-			auto secondline2D = GeomAPI::To2d(otherBC.Curve().Curve(), pln);
+				auto firstline2D = GeomAPI::To2d(curBC.Curve().Curve(), pln);
+				auto secondline2D = GeomAPI::To2d(otherBC.Curve().Curve(), pln);
 
-			Geom2dAPI_InterCurveCurve icc(firstline2D, secondline2D);
-			assert(icc.NbPoints() == 1);
+				Geom2dAPI_InterCurveCurve icc(firstline2D, secondline2D);
+				assert(icc.NbPoints() == 1);
 
-			auto pnt2D = icc.Point(1);
-			gp_Pnt pnt(pnt2D.X(), 0, pnt2D.Y());
-			p3 = pnt;
+				auto pnt2D = icc.Point(1);
+				gp_Pnt pnt(pnt2D.X(), 0, pnt2D.Y());
+				p3 = pnt;
+			}
+			else
+			{
+				if ( corner == wall->GetFirstCorner().lock() )
+				{
+					p1 = meshPoints_[0];
+					p3 = meshPoints_[4];
+				}
+				else
+				{
+					p1 = meshPoints_[3];
+					p3 = meshPoints_[1];
+				}
+			}
 		}
 
 		if ( corner == wall->GetFirstCorner().lock() )
@@ -219,8 +255,6 @@ Wall::Wall( const CornerSPtr& firstCorner, const CornerSPtr& secondCorner, float
 	FirstCorner_ = firstCorner;
 	SecondCorner_ = secondCorner;
 	Thickness_ = wallThickness;
-
-	UpdateMesh();
 }
 
 

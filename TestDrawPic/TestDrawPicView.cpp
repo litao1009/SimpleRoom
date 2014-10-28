@@ -613,7 +613,6 @@ BOOL CTestDrawPicView::PreTranslateMessage(MSG* pMsg)
 		evt.MouseInput.Y = (short)HIWORD(pMsg->lParam) - p.y;
 		evt.MouseInput.Wheel = ((irr::f32)((short)HIWORD(pMsg->wParam))) / (irr::f32)WHEEL_DELTA;
 		rc->PostEvent(evt);
-		TRACE(L"Wheel:%f\n", evt.MouseInput.Wheel);
 	}
 
 	return CView::PreTranslateMessage(pMsg);
