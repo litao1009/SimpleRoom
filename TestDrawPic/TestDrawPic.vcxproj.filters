@@ -247,6 +247,12 @@
     <ClCompile Include="RenderController\TestDrawRoom.cpp">
       <Filter>RenderController</Filter>
     </ClCompile>
+    <ClCompile Include="RenderController\FloorPlan\GraphController.cpp">
+      <Filter>RenderController\FloorPlan</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderController\FloorPlan\Wall.cpp">
+      <Filter>RenderController\FloorPlan</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BLL\BaseBLL.h">

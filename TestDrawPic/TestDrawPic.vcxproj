@@ -299,6 +299,8 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClCompile Include="RenderController\2D\DrawingRectWallCtrller.cpp" />
     <ClCompile Include="RenderController\CameraController.cpp" />
     <ClCompile Include="RenderController\DoorController.cpp" />
+    <ClCompile Include="RenderController\FloorPlan\GraphController.cpp" />
+    <ClCompile Include="RenderController\FloorPlan\Wall.cpp" />
     <ClCompile Include="RenderController\FlyCameraController.cpp" />
     <ClCompile Include="RenderController\GridController.cpp" />
     <ClCompile Include="RenderController\GUIController.cpp" />

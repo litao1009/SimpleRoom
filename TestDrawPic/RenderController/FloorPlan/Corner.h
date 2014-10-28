@@ -12,17 +12,23 @@ class	Corner : public std::enable_shared_from_this<Corner>
 {
 public:
 
-	Corner();
+	typedef	Graph::vertex_descriptor	VertexIndex;
 
 public:
 
-	void	Init( Graph& theGraph);
+public:
 
 	const gp_Pnt&	GetPosition() const { return Position_; }
 
+	void	SetPosition(const gp_Pnt& pos) { Position_ = pos; }
+
+	const VertexIndex&	GetIndex() const { return GraphIndex_; }
+
+	void	SetIndex(const VertexIndex& val) { GraphIndex_ = val; }
+
 private:
 
-	std::size_t	GraphIndex_;
+	VertexIndex	GraphIndex_;
 	gp_Pnt		Position_;
 };
 
