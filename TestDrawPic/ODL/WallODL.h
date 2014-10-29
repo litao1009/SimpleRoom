@@ -5,40 +5,68 @@
 
 #include "BaseODL.h"
 
+#include "CornerODLFwd.h"
+#include "GraphODLFwd.h"
+
 #include "TopoDS_Shape.hxx"
 
-class CWallODL : public CBaseODL
+class WallODL : public CBaseODL
 {
 	class	Imp;
 	std::unique_ptr<Imp>	ImpUPtr_;
 
 public:
 
-	CWallODL();
-	~CWallODL(void);
+	typedef	Graph::edge_descriptor	EdgeIndex;
+	typedef	std::array<gp_Pnt, 6>	MeshPoints;
 
 public:
 
-	static	CBaseODLSPtr	CreateByBottomFace(SRenderContextWPtr renderContext, const TopoDS_Shape& bottomFace, const gp_Dir& wallPathDir, float wallHeight);
+	WallODL(const GraphODLWPtr graphODL, const CornerODLSPtr& firstCorner, const CornerODLSPtr& secondCorner,  float wallThickness = 200.f);
+	~WallODL(void);
 
 public:
 	
 	virtual	EObjectDisplayLayerType	GetType() const { return EODLT_WALL; }
 
-	virtual void	UpdateSweeping();
-
 	virtual	void	Init();
 
 public:
 
-	void	SetDefaultTexture();
+	bool				IsBezierCurve() const;
 
-	void	UpdateCutShape();
+	TopoDS_Edge			GetEdge(const CornerODLSPtr& fromCorner = nullptr) const;
 
-	void	SetNeedUpdate();
+	const EdgeIndex&	GetIndex() const { return GraphIndex_; }
+
+	void				SetIndex(const EdgeIndex& val) { GraphIndex_ = val; }
+
+	CornerODLWPtr		GetFirstCorner() const { return FirstCorner_; }
+
+	CornerODLWPtr		GetSecondCorner() const { return SecondCorner_; }
+
+	void				SetThickness(float val) { Thickness_ = val; }
+
+	float				GetThickness() const { return Thickness_; }
+
+	void				UpdateMesh();
+
+	const MeshPoints&	GetMeshPoints() { return MeshPoints_; }
+
+private:
+
+	EdgeIndex		GraphIndex_;
+
+	CornerODLWPtr	FirstCorner_;
+	CornerODLWPtr	SecondCorner_;
+
+	float			Thickness_;
+	MeshPoints		MeshPoints_;
+
+	GraphODLWPtr	GraphODL_;
 };
 
-typedef	std::shared_ptr<CWallODL>	CWallODLSPtr;
-typedef	std::weak_ptr<CWallODL>		CWallODLWPtr;
+typedef	std::shared_ptr<WallODL>	CWallODLSPtr;
+typedef	std::weak_ptr<WallODL>		CWallODLWPtr;
 
 #endif // WallODL_h__

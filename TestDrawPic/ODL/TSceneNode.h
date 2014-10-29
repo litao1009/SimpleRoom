@@ -22,8 +22,10 @@ public:
 
 public:
 
-	TSceneNode()
-	{}
+	TSceneNode(const SRenderContextWPtr& renderContext)
+	{
+		RenderContext_ = renderContext;
+	}
 
 	virtual ~TSceneNode()
 	{
@@ -36,11 +38,10 @@ public:
 public:
 
 	template<typename subType>
-	typename TSceneNode<subType>::SceneNodeSPtr	CreateChild(SRenderContextWPtr renderContext)
+	typename TSceneNode<subType>::SceneNodeSPtr	CreateChild(const SRenderContextWPtr& renderContext)
 	{
-		auto newChild = std::make_shared<subType>();
-		auto datasceneNode = CCombineSceneNode::Create(renderContext, newChild);
-		newChild->SetDataSceneNode(datasceneNode);
+		auto newChild = std::make_shared<subType>(renderContext);
+		newChild->CreateEmptyDataSceneNode();
 		newChild->Init();
 
 		AddChild(newChild);
@@ -51,9 +52,8 @@ public:
 	template<typename subType>
 	static	typename TSceneNode<subType>::SceneNodeSPtr	Create(SRenderContextWPtr renderContext)
 	{
-		auto newNode = std::make_shared<subType>();
-		auto datasceneNode = CCombineSceneNode::Create(renderContext, newNode);
-		newNode->SetDataSceneNode(datasceneNode);
+		auto newNode = std::make_shared<subType>(renderContext);
+		newNode->CreateEmptyDataSceneNode();
 		newNode->Init();
 
 		return newNode;
@@ -172,10 +172,21 @@ public:
 		}
 	}
 
+	void					CreateEmptyDataSceneNode()
+	{
+		auto datasceneNode = CCombineSceneNode::Create(GetRenderContextWPtr(), shared_from_this());
+		SetDataSceneNode(datasceneNode);
+	}
+
+public:
+
+	SRenderContextWPtr		GetRenderContextWPtr() const { return RenderContext_; }
+
 private:
 
-	SceneNodeWPtr	ParentWPtr_;
-	ChildrenList	ChildrenList_;
+	SRenderContextWPtr	RenderContext_;
+	SceneNodeWPtr		ParentWPtr_;
+	ChildrenList		ChildrenList_;
 
 	//ÈýÎ¬½Úµã
 	CombineSceneNodeSPtr	DataSceneNode_;

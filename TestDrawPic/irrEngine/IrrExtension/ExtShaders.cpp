@@ -105,3 +105,48 @@ const char* LineColorCB::GetPixelShader()
 {
 	return LineColorShader[1];
 }
+
+
+const char*	VertexAlhpa[2] = 
+{
+	"void main(void)"
+	"{"
+	"	gl_Position = ftransform();"
+	"	gl_TexCoord[0] = gl_TextureMatrix[0]*gl_MultiTexCoord0;"
+	"}"
+
+	,
+
+	"uniform	float			factor;"
+	"uniform	sampler2D		colorMap;"
+
+	"void main(void)"
+	"{"
+	"	vec4 color = texture2D(colorMap, vec2(gl_TexCoord[0]));"
+	"	color.a *= factor;"
+	"	gl_FragColor = color;"
+	"}"
+};
+
+void VertexAlphaCB::OnSetConstants( irr::video::IMaterialRendererServices* services, irr::s32 userData )
+{
+	irr::s32 pos = 0;
+
+	services->setPixelShaderConstant("colorMap", &pos, 1);
+	services->setPixelShaderConstant("factor", &CurrentMaterial_.MaterialTypeParam, 1);
+}
+
+void VertexAlphaCB::OnSetMaterial( const irr::video::SMaterial& material )
+{
+	CurrentMaterial_ = material;
+}
+
+const char* VertexAlphaCB::GetVertexShader()
+{
+	return VertexAlhpa[0];
+}
+
+const char* VertexAlphaCB::GetPixelShader()
+{
+	return VertexAlhpa[1];
+}

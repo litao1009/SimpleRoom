@@ -4,55 +4,53 @@
 enum EObjectDisplayLayerType
 {
 	//基类
-	EODLT_BASE = 0,
+	EODLT_BASE,
 
 	//对象组
-	EODLT_GROUP= 1,
+	EODLT_GROUP,
 
 	//户型图
-	EODLT_ROOM_STYLE = 4,
+	EODLT_ROOM_STYLE,
 
 	//户型 墙线
-	EODLT_ROOM_STYLE_LINE = 5,
+	EODLT_ROOM_STYLE_LINE,
 
 	//设计方案
-	EODLT_DESIGN = 8,
+	EODLT_DESIGN,
+
+	//墙角
+	EODLT_CORNER,
 
 	//墙
-	EODLT_WALL= 11,
+	EODLT_WALL,
 
 	//墙面
-	EODLT_WALLFACE = 12,
+	EODLT_WALLFACE,
 
 	//墙面分区
-	EODLT_WALLFACE_ZONE = 13,
+	EODLT_WALLFACE_ZONE,
 
 	//梁
-	EODLT_BEAM = 14,
+	EODLT_BEAM,
 
-	/*EOBT_Beam_Face = 15,
-	EOBT_Beam_Face_Zone = 16,*/
 
 	//柱
-	EODLT_PILLAR = 17,
-
-	/*EOBT_Pillar_Face = 18,
-	EOBT_Pillar_Face_Zone = 19,*/
+	EODLT_PILLAR,
 
 	//地
-	EODLT_FLOOR=21,
+	EODLT_FLOOR,
 
 	//地皮
-	EODLT_FLOOR_ZONE=23,
+	EODLT_FLOOR_ZONE,
 
 	//天花板
-	EODLT_SKY=31,
+	EODLT_SKY,
 
 	//天花板皮
-	EODLT_SKY_ZONE=32,
+	EODLT_SKY_ZONE,
 
 	//房间装饰
-	EODLT_DECOR = 41,
+	EODLT_DECOR,
 
 	EODLT_DOOR,
 	EODLT_WINDOW

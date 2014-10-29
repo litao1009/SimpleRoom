@@ -67,7 +67,7 @@ CBaseODLSPtr CGroupODL::CreateByWallPath( SRenderContextSPtr& rc, const TopoDS_S
 			auto drawDir = (pnt1-pnt0).normalize();
 			auto wallDir = drawDir.crossProduct(s_YDir);
 
-			auto newWall = CWallODL::CreateByBottomFace(rc, exp.Current(), gp_Dir(wallDir.X,wallDir.Y,wallDir.Z), wallHeight);
+			auto newWall = WallODL::CreateByBottomFace(rc, exp.Current(), gp_Dir(wallDir.X,wallDir.Y,wallDir.Z), wallHeight);
 			newGroup->AddChild(newWall);
 		}
 	}

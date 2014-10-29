@@ -71,8 +71,8 @@ bool DoorController::OnPostEvent( const irr::SEvent& evt )
 			{
 				if ( ImpUPtr_->Checker_ )
 				{
-					std::static_pointer_cast<CWallODL>(ImpUPtr_->PickingNode_.lock())->SetNeedUpdate();
-					std::static_pointer_cast<CWallODL>(ImpUPtr_->PickingNode_.lock())->UpdateCutShape();
+					//std::static_pointer_cast<WallODL>(ImpUPtr_->PickingNode_.lock())->SetNeedUpdate();
+					//std::static_pointer_cast<WallODL>(ImpUPtr_->PickingNode_.lock())->UpdateCutShape();
 
 					State_ = EDS_NONE;
 					StatusMgr::GetInstance().PuttingState_ = StatusMgr::EPS_NONE;

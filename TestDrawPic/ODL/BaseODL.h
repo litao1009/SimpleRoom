@@ -19,15 +19,9 @@ class CBaseODL : public TSceneNode<CBaseODL>, public ShapeSceneNode
 {
 public:
 
-	CBaseODL(void);
+	CBaseODL(const SRenderContextWPtr& rc);
 	
 	virtual ~CBaseODL(void);
-
-protected:
-
-	virtual void	UpdateSelection() {}
-
-	virtual	void	UpdateSweeping() {}
 
 public:
 
@@ -42,17 +36,13 @@ public:
 	void				UpdateAbsoluteTransform();
 	const gp_Trsf&		GetAbsoluteTransform() const { return AbsoluteTransform_; }
 
-	void				SetSelected(bool val) { Selected_ = val; UpdateSelection(); }
-	bool				IsSelected() const { return Selected_; }
-
-	void				SetSwept(bool val) { Swept_ = val; UpdateSweeping(); }
-	bool				IsSwept() const { return Swept_; }
+	bool				IsDirty() const { return Dirty_; }
+	void				SetDirty() { Dirty_ = true; }
 
 private:
 
 	gp_Trsf				AbsoluteTransform_;
-	bool				Selected_;
-	bool				Swept_;
+	bool				Dirty_;
 };
 
 #endif // BaseODL_h__

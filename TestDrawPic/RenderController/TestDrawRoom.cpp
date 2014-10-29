@@ -3,32 +3,23 @@
 #include "TestDrawRoom.h"
 #include "SMeshBuffer.h"
 #include "irrEngine/SRenderContext.h"
+#include "irrEngine/irrEngine.h"
 #include "RenderController/FloorPlan/GraphController.h"
 #include "RenderController/FloorPlan/Corner.h"
 #include "RenderController/FloorPlan/Wall.h"
 #include "StatusMgr.h"
 
-#include "TopExp.hxx"
-#include "TopTools_IndexedMapOfShape.hxx"
-#include "TopTools_IndexedDataMapOfShapeListOfShape.hxx"
-#include "BRepBuilderAPI_MakePolygon.hxx"
-#include "TopoDS_Shape.hxx"
 #include "gp_Pnt.hxx"
-#include "BRepTools_WireExplorer.hxx"
-#include "TopoDS.hxx"
-#include "BRep_Tool.hxx"
-#include "BRepExtrema_ExtPC.hxx"
-#include "BRepBuilderAPI_MakeVertex.hxx"
-#include "BRepAdaptor_Curve.hxx"
-#include "GeomAPI_ProjectPointOnCurve.hxx"
 #include "gp_Pln.hxx"
 #include "GeomAPI.hxx"
+#include "GeomAPI_ProjectPointOnCurve.hxx"
 #include "Geom2dAPI_InterCurveCurve.hxx"
+#include "BRep_Tool.hxx"
+#include "BRepAdaptor_Curve.hxx"
 #include "BRepBuilderAPI_MakeEdge.hxx"
-#include "BRepExtrema_ExtCC.hxx"
+#include "BRepExtrema_DistShapeShape.hxx"
 
 #include <vector>
-
 
 using namespace irr;
 using namespace scene;
@@ -60,13 +51,21 @@ public:
 		PositionRect_->getMaterial().Lighting = false;
 		PositionRect_->getMaterial().BackfaceCulling = false;
 		PositionRect_->getMaterial().ZWriteEnable = false;
-		PositionRect_->getMaterial().MaterialType = EMT_TRANSPARENT_ALPHA_CHANNEL;
+		PositionRect_->getMaterial().MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_VERTEX_ALPHA);//EMT_TRANSPARENT_ALPHA_CHANNEL;
+		PositionRect_->getMaterial().MaterialTypeParam = 0.65f;
 
 		FloatingLine_ = new SMeshBuffer;
 		FloatingLine_->getMaterial().Lighting = false;
 		FloatingLine_->getMaterial().BackfaceCulling = false;
 		FloatingLine_->getMaterial().ZWriteEnable = false;
 		FloatingLine_->getMaterial().Thickness = 4;
+		FloatingLine_->getMaterial().MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_LINE);
+
+		DrawingPath_ = new SMeshBuffer;
+		DrawingPath_->getMaterial().Lighting = false;
+		DrawingPath_->getMaterial().BackfaceCulling = false;
+		DrawingPath_->getMaterial().ZWriteEnable = false;
+		DrawingPath_->getMaterial().MaterialType = EMT_TRANSPARENT_ALPHA_CHANNEL;
 
 		PressDown_ = false;
 		Finish_ = false;
@@ -88,6 +87,11 @@ public:
 		{
 			PositionRect_->drop();
 		}
+
+		if ( DrawingPath_ )
+		{
+			DrawingPath_->drop();
+		}
 	}
 
 public:
@@ -104,6 +108,10 @@ public:
 	SMeshBuffer*				PositionRect_;
 	matrix4						PositionRectScaleMat_;
 	matrix4						PositionRectTransMat_;
+
+	SMeshBuffer*				DrawingPath_;
+	std::vector<vector3df>		DrawingPathList_;
+	matrix4						DrawingPathScaleMat_;
 
 	CornerSPtr					BeginCorner_;
 	vector2di					CursorIPos_;
@@ -279,6 +287,8 @@ bool TestDrawRoomCtrller::PreRender3D()
 					}
 				}
 
+				auto& pos = imp_.BeginCorner_->GetPosition();
+				imp_.DrawingPathList_.emplace_back(static_cast<float>(pos.X()), static_cast<float>(pos.Y()), static_cast<float>(pos.Z()));
 				imp_.State_ = EState::ES_DRAWING;
 			}
 		}
@@ -287,9 +297,6 @@ bool TestDrawRoomCtrller::PreRender3D()
 		{
 			bool valid = true;
 			{//checkValid
-
-				//目前的路径
-				auto pathCorners = GraphController::GetInstance().GetAllCorners();
 
 				//与起始点点重合
 				if ( imp_.BeginCorner_ == foundCorner )
@@ -305,70 +312,81 @@ bool TestDrawRoomCtrller::PreRender3D()
 					//与边的夹角小于15度
 					if ( valid )
 					{
-						if ( pathCorners.size() >= 2 )
+						for ( auto& curWall : GraphController::GetInstance().GetWallsOnCorner(imp_.BeginCorner_) )
 						{
-							auto lastCorner = pathCorners.back();
-							for ( auto& curWall : GraphController::GetInstance().GetWallsOnCorner(lastCorner) )
+							auto beginCorner = curWall->GetFirstCorner().lock();
+							auto endCorner = curWall->GetSecondCorner().lock();
+
+							if ( beginCorner != imp_.BeginCorner_ )
 							{
-								auto curWallEdge = curWall->GetEdge();
-								BRepAdaptor_Curve wallBC(curWallEdge);
-
-								auto curAngle = floatingBC.Line().Direction().Angle(wallBC.Line().Direction());
-								if ( curAngle > M_PI_2 )
-								{
-									curAngle = M_PI - curAngle;
-								}
-
-								static auto rad15 = 15 * M_PI / 180.f;
-
-								if ( curAngle < rad15 )
-								{
-									GeomAPI_ProjectPointOnCurve ppc(cursorPnt, wallBC.Curve().Curve());
-
-									auto par = ppc.LowerDistanceParameter();
-									if ( par < wallBC.FirstParameter() || par > wallBC.LastParameter() )
-									{
-										continue;
-									}
-
-									valid = false;
-									break;
-								}
-
+								beginCorner.swap(endCorner);
 							}
+
+							auto curWallEdge = BRepBuilderAPI_MakeEdge(beginCorner->GetPosition(), endCorner->GetPosition()).Edge();
+							BRepAdaptor_Curve wallBC(curWallEdge);
+
+							auto curAngle = floatingBC.Line().Direction().Angle(wallBC.Line().Direction());
+
+							static auto rad15 = 15 * M_PI / 180.f;
+
+							if ( curAngle < rad15 )
+							{
+								valid = false;
+								break;
+							}
+
 						}
 					}
 
 					//是否有交叉
 					if ( valid )
 					{
+						gp_Pln pln(gp_Ax3(gp::Origin(), gp::DY().Reversed(), gp::DX()));
+
 						//目前的边
 						auto floatingEdge = BRepBuilderAPI_MakeEdge(imp_.BeginCorner_->GetPosition(), cursorPnt).Edge();
-						BRepAdaptor_Curve floatingBC(floatingEdge);
-
-						BRepExtrema_ExtCC becc;
-						becc.Initialize(floatingEdge);
-						Standard_Real firstP,lastP;
-						BRep_Tool::Range(floatingEdge, firstP, lastP);
+						Standard_Real floatingFirstPar,floatingLastPar;
+						BRep_Tool::Range(floatingEdge, floatingFirstPar, floatingLastPar);
 
 						for ( auto& curWall : GraphController::GetInstance().GetAllWalls() )
 						{
-							auto wallEdge = curWall->GetEdge();
-
-							becc.Perform(wallEdge);
-
-							if ( 0 == becc.NbExt() )
+							if ( curWall->GetFirstCorner().lock() == imp_.BeginCorner_ || curWall->GetSecondCorner().lock() == imp_.BeginCorner_ )
 							{
 								continue;
+							}
+
+							auto curThickness = curWall->GetThickness();
+
+							auto wallEdge = curWall->GetEdge();							
+
+							BRepExtrema_DistShapeShape dss(floatingEdge, wallEdge);
+
+							if ( dss.NbSolution() == 0 )
+							{
+								continue;
+							}
+
+							if ( dss.Value() > curThickness/2 )
+							{
+								continue;
+							}
+
+							//平行
+							if ( dss.NbSolution() != 1 )
+							{
+								valid = false;
+								break;
 							}
 
 							Standard_Real firstCurP,lastCurP;
 							BRep_Tool::Range(wallEdge, firstCurP, lastCurP);
 
-							auto par1 = becc.ParameterOnE1(1);
-							auto par2 = becc.ParameterOnE2(1);
-
-							if ( par1 > firstP && par1 < lastP && par2 > firstCurP && par2 < lastCurP )
+							auto pnt = dss.PointOnShape2(1);
+							
+							GeomAPI_ProjectPointOnCurve ppc(pnt, BRepAdaptor_Curve(floatingEdge).Curve().Curve());
+							auto parOnFloating = ppc.LowerDistanceParameter();
+							
+							if ( parOnFloating < floatingLastPar - curThickness/2 )
 							{
 								valid = false;
 								break;
@@ -376,6 +394,15 @@ bool TestDrawRoomCtrller::PreRender3D()
 						}
 					}
 				}
+			}
+
+			if ( valid )
+			{
+				imp_.FloatingLine_->getMaterial().DiffuseColor = 0xFF0000FF; 
+			}
+			else
+			{
+				imp_.FloatingLine_->getMaterial().DiffuseColor = 0xFFFF0000; 
 			}
 
 			if ( imp_.PressDown_ )
@@ -405,13 +432,15 @@ bool TestDrawRoomCtrller::PreRender3D()
 						}
 					}
 
+					auto& pos = imp_.BeginCorner_->GetPosition();
+					imp_.DrawingPathList_.emplace_back(static_cast<float>(pos.X()), static_cast<float>(pos.Y()), static_cast<float>(pos.Z()));
+
 					needUpdateMesh = true;
 				}
 			}
 
 			if ( imp_.Finish_ )
 			{
-				//imp_.PressDown_ = false;
 				imp_.Finish_ = false;
 
 				auto walls = GraphController::GetInstance().GetWallsOnCorner(imp_.BeginCorner_);
@@ -421,6 +450,7 @@ bool TestDrawRoomCtrller::PreRender3D()
 				}
 				imp_.BeginCorner_ = nullptr;
 
+				imp_.DrawingPathList_.clear();
 				imp_.State_ = EState::ES_READY;
 			}
 		}
@@ -541,9 +571,23 @@ void TestDrawRoomCtrller::PostRender3D()
 				driver->drawVertexPrimitiveList(imp_.FloatingLine_->getVertices(), imp_.FloatingLine_->getVertexCount(), imp_.FloatingLine_->getIndices(), imp_.FloatingLine_->getIndexCount()/2, EVT_STANDARD, EPT_LINES);
 			}
 
+			if ( !imp_.DrawingPathList_.empty() )
+			{
+				driver->setMaterial(imp_.DrawingPath_->getMaterial());
+			}
+			matrix4 mat;
+			for ( auto& curPos : imp_.DrawingPathList_ )
+			{
+				mat.setTranslation(curPos);
+				driver->setTransform(ETS_WORLD, mat*imp_.DrawingPathScaleMat_);
+				driver->drawVertexPrimitiveList(imp_.DrawingPath_->getVertices(), imp_.DrawingPath_->getVertexCount(), imp_.DrawingPath_->getIndices(), imp_.DrawingPath_->getIndexCount()/2, EVT_STANDARD, EPT_TRIANGLE_FAN);
+			}
+
 			driver->setTransform(ETS_WORLD, imp_.PositionRectTransMat_*imp_.PositionRectScaleMat_);
 			driver->setMaterial(imp_.PositionRect_->getMaterial());
 			driver->drawVertexPrimitiveList(imp_.PositionRect_->getVertices(), imp_.PositionRect_->getVertexCount(), imp_.PositionRect_->getIndices(), imp_.PositionRect_->getIndexCount()/2, EVT_STANDARD, EPT_TRIANGLE_FAN);
+
+			
 		}
 		break;
 	default:
@@ -588,8 +632,8 @@ void TestDrawRoomCtrller::Init()
 		imp_.FloatingLine_->Vertices.reallocate(2);
 		imp_.FloatingLine_->Indices.reallocate(2);
 
-		imp_.FloatingLine_->Vertices.push_back(S3DVertex(vector3df(0), vector3df(0,1,0), SColor(0xFF0000FF), vector2df(0,0)));
-		imp_.FloatingLine_->Vertices.push_back(S3DVertex(vector3df(0), vector3df(0,1,0), SColor(0xFF0000FF), vector2df(0,0)));
+		imp_.FloatingLine_->Vertices.push_back(S3DVertex(vector3df(0), vector3df(0,1,0), SColor(~0), vector2df(0,0)));
+		imp_.FloatingLine_->Vertices.push_back(S3DVertex(vector3df(0), vector3df(0,1,0), SColor(~0), vector2df(0,0)));
 		imp_.FloatingLine_->Indices.push_back(0);
 		imp_.FloatingLine_->Indices.push_back(1);
 	}
@@ -613,6 +657,26 @@ void TestDrawRoomCtrller::Init()
 		imp_.PositionRectScaleMat_.setScale(vector3df(radius, 1, radius));
 
 		imp_.PositionRect_->getMaterial().setTexture(0, GetRenderContextSPtr()->Smgr_->getVideoDriver()->getTexture("../Data/Resource/3D/dot.png"));
+	}
+
+	{
+		imp_.DrawingPath_->Vertices.reallocate(4);
+		imp_.DrawingPath_->Indices.reallocate(4);
+
+		auto radius = 50.f;
+
+		imp_.DrawingPath_->Vertices.push_back(S3DVertex(vector3df(-1, 0, -1), vector3df(0,1,0), SColor(~0), vector2df(0,0)));
+		imp_.DrawingPath_->Vertices.push_back(S3DVertex(vector3df(1, 0, -1), vector3df(0,1,0), SColor(~0), vector2df(1,0)));
+		imp_.DrawingPath_->Vertices.push_back(S3DVertex(vector3df(1, 0, 1), vector3df(0,1,0), SColor(~0), vector2df(1,1)));
+		imp_.DrawingPath_->Vertices.push_back(S3DVertex(vector3df(-1, 0, 1), vector3df(0,1,0), SColor(~0), vector2df(0,1)));
+
+		imp_.DrawingPath_->Indices.push_back(0);
+		imp_.DrawingPath_->Indices.push_back(1);
+		imp_.DrawingPath_->Indices.push_back(2);
+		imp_.DrawingPath_->Indices.push_back(3);
+
+		imp_.DrawingPathScaleMat_.setScale(vector3df(radius, 1, radius));
+		imp_.DrawingPath_->getMaterial().setTexture(0, GetRenderContextSPtr()->Smgr_->getVideoDriver()->getTexture("../Data/Resource/3D/dot.png"));
 	}
 	
 	{

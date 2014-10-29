@@ -97,6 +97,13 @@ IrrEngine::IrrEngine(const irr::SIrrlichtCreationParameters& params):ImpUPtr_(ne
 		blueLine->drop();
 		imp_.ShaderMap_[EST_LINE] = material;
 	}
+
+	{
+		auto vertexAlpha = new VertexAlphaCB;
+		auto material = rawDevice->getVideoDriver()->getGPUProgrammingServices()->addHighLevelShaderMaterial(VertexAlphaCB::GetVertexShader(), VertexAlphaCB::GetPixelShader(), vertexAlpha, irr::video::EMT_TRANSPARENT_VERTEX_ALPHA);
+		vertexAlpha->drop();
+		imp_.ShaderMap_[EST_VERTEX_ALPHA] = material;
+	}
 }
 
 IrrEngine::~IrrEngine()

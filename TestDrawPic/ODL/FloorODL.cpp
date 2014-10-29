@@ -41,19 +41,6 @@ void CFloorODL::SetDefaultTexture()
 	meshBufferPtr->getMaterial().setTextureMatrix(0, texMat);
 }
 
-void CFloorODL::UpdateSweeping()
-{
-	if ( IsSwept() )
-	{
-		GetDataSceneNode()->GetSceneNode3D()->SaveMaterialType();
-		GetDataSceneNode()->GetSceneNode3D()->SetMaterialType(IrrEngine::GetInstance()->GetShaderType(EST_LUMINANCE));
-	}
-	else
-	{
-		GetDataSceneNode()->GetSceneNode3D()->ResetMaterialType();
-	}
-}
-
 CFloorODLSPtr CFloorODL::CreateByFace( SRenderContextWPtr renderContext, const TopoDS_Shape& wallFace, const TopoDS_Shape& floorFace )
 {
 	BRepAlgoAPI_Cut bc(floorFace, wallFace);

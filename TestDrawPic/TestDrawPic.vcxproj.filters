@@ -172,12 +172,6 @@
     <ClCompile Include="ODL\WallODL.cpp">
       <Filter>ODL</Filter>
     </ClCompile>
-    <ClCompile Include="ODL\GroupODL.cpp">
-      <Filter>ODL</Filter>
-    </ClCompile>
-    <ClCompile Include="ODL\WallFaceODL.cpp">
-      <Filter>ODL</Filter>
-    </ClCompile>
     <ClCompile Include="irrEngine\IrrExtension\ExtShaders.cpp">
       <Filter>IrrEngine\IrrExtension</Filter>
     </ClCompile>
@@ -199,18 +193,6 @@
     <ClCompile Include="RenderController\ResizeController.cpp">
       <Filter>RenderController</Filter>
     </ClCompile>
-    <ClCompile Include="RenderController\2D\DrawingLineCtrller.cpp">
-      <Filter>RenderController\2D</Filter>
-    </ClCompile>
-    <ClCompile Include="RenderController\2D\DrawingLineWallCtrller.cpp">
-      <Filter>RenderController\2D</Filter>
-    </ClCompile>
-    <ClCompile Include="RenderController\2D\DrawingRectWallCtrller.cpp">
-      <Filter>RenderController\2D</Filter>
-    </ClCompile>
-    <ClCompile Include="ODL\FloorODL.cpp">
-      <Filter>ODL</Filter>
-    </ClCompile>
     <ClCompile Include="RenderController\TopPickingController.cpp">
       <Filter>RenderController</Filter>
     </ClCompile>
@@ -229,20 +211,8 @@
     <ClCompile Include="ODL\MeshSceneNode\DoorMeshNode2D.cpp">
       <Filter>ODL\MeshSceneNode</Filter>
     </ClCompile>
-    <ClCompile Include="ODL\DoorODL.cpp">
-      <Filter>ODL</Filter>
-    </ClCompile>
-    <ClCompile Include="RenderController\DoorController.cpp">
-      <Filter>RenderController</Filter>
-    </ClCompile>
     <ClCompile Include="ODL\MeshSceneNode\WindowMeshNode2D.cpp">
       <Filter>ODL\MeshSceneNode</Filter>
-    </ClCompile>
-    <ClCompile Include="RenderController\WindowController.cpp">
-      <Filter>RenderController</Filter>
-    </ClCompile>
-    <ClCompile Include="ODL\WindowODL.cpp">
-      <Filter>ODL</Filter>
     </ClCompile>
     <ClCompile Include="RenderController\TestDrawRoom.cpp">
       <Filter>RenderController</Filter>
@@ -252,6 +222,12 @@
     </ClCompile>
     <ClCompile Include="RenderController\FloorPlan\Wall.cpp">
       <Filter>RenderController\FloorPlan</Filter>
+    </ClCompile>
+    <ClCompile Include="ODL\GraphODL.cpp">
+      <Filter>ODL</Filter>
+    </ClCompile>
+    <ClCompile Include="ODL\CornerODL.cpp">
+      <Filter>ODL</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -471,12 +447,6 @@
     <ClInclude Include="ODL\WallODL.h">
       <Filter>ODL</Filter>
     </ClInclude>
-    <ClInclude Include="ODL\GroupODL.h">
-      <Filter>ODL</Filter>
-    </ClInclude>
-    <ClInclude Include="ODL\WallFaceODL.h">
-      <Filter>ODL</Filter>
-    </ClInclude>
     <ClInclude Include="StatusMgr.h">
       <Filter>src</Filter>
     </ClInclude>
@@ -507,18 +477,6 @@
     <ClInclude Include="RenderController\ResizeController.h">
       <Filter>RenderController</Filter>
     </ClInclude>
-    <ClInclude Include="RenderController\2D\DrawingLineCtrller.h">
-      <Filter>RenderController\2D</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderController\2D\DrawingLineWallCtrller.h">
-      <Filter>RenderController\2D</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderController\2D\DrawingRectWallCtrller.h">
-      <Filter>RenderController\2D</Filter>
-    </ClInclude>
-    <ClInclude Include="ODL\FloorODL.h">
-      <Filter>ODL</Filter>
-    </ClInclude>
     <ClInclude Include="RenderController\TopPickingController.h">
       <Filter>RenderController</Filter>
     </ClInclude>
@@ -537,20 +495,8 @@
     <ClInclude Include="ODL\MeshSceneNode\DoorMeshNode2D.h">
       <Filter>ODL\MeshSceneNode</Filter>
     </ClInclude>
-    <ClInclude Include="ODL\DoorODL.h">
-      <Filter>ODL</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderController\DoorController.h">
-      <Filter>RenderController</Filter>
-    </ClInclude>
     <ClInclude Include="ODL\MeshSceneNode\WindowMeshNode2D.h">
       <Filter>ODL\MeshSceneNode</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderController\WindowController.h">
-      <Filter>RenderController</Filter>
-    </ClInclude>
-    <ClInclude Include="ODL\WindowODL.h">
-      <Filter>ODL</Filter>
     </ClInclude>
     <ClInclude Include="RenderController\TestDrawRoom.h">
       <Filter>RenderController</Filter>
@@ -578,6 +524,21 @@
     </ClInclude>
     <ClInclude Include="RenderController\FloorPlan\GraphController.h">
       <Filter>RenderController\FloorPlan</Filter>
+    </ClInclude>
+    <ClInclude Include="ODL\CornerODLFwd.h">
+      <Filter>ODL</Filter>
+    </ClInclude>
+    <ClInclude Include="ODL\CornerODL.h">
+      <Filter>ODL</Filter>
+    </ClInclude>
+    <ClInclude Include="ODL\GraphODL.h">
+      <Filter>ODL</Filter>
+    </ClInclude>
+    <ClInclude Include="ODL\WallODLFwd.h">
+      <Filter>ODL</Filter>
+    </ClInclude>
+    <ClInclude Include="ODL\GraphODLFwd.h">
+      <Filter>ODL</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

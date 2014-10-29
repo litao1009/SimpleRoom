@@ -7,6 +7,8 @@ enum EShaderType
 	EST_LUMINANCE,
 
 	EST_LINE,
+
+	EST_VERTEX_ALPHA,
 	
 	EST_COUNT
 };

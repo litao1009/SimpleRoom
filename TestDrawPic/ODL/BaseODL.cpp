@@ -4,9 +4,9 @@
 
 #include "gp_Quaternion.hxx"
 
-CBaseODL::CBaseODL( void )
+CBaseODL::CBaseODL( const SRenderContextWPtr& rc ):TSceneNode(rc)
 {
-	Selected_ = false;
+	Dirty_ = false;
 }
 
 CBaseODL::~CBaseODL( void )

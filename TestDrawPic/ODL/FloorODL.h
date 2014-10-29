@@ -26,8 +26,6 @@ public:
 	
 	virtual	EObjectDisplayLayerType	GetType() const { return EODLT_FLOOR; }
 
-	virtual void	UpdateSweeping();
-
 public:
 
 	void SetDefaultTexture();

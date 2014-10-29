@@ -43,6 +43,9 @@ public:
 		auto angle1 = d1.AngleWithRef(gp::DX(), gp::DY().Reversed());
 		auto angle2 = d2.AngleWithRef(gp::DX(), gp::DY().Reversed());
 
+		angle1 = angle1 < 0 ? M_PI * 2 + angle1 : angle1;
+		angle2 = angle2 < 0 ? M_PI * 2 + angle2 : angle2;
+		
 		return angle1 < angle2;
 	}
 
@@ -132,7 +135,11 @@ public:
 			}
 		}
 
-		gp_Pnt p1,p3;
+		gp_Pnt p1,p3,p0,p4;
+		p1 = meshPoints_[1];
+		p3 = meshPoints_[3];
+		p0 = meshPoints_[0];
+		p4 = meshPoints_[4];
 
 		{//Top
 			auto otherBeginCorner = otherTopWall->GetFirstCorner().lock();
@@ -167,21 +174,15 @@ public:
 
 				auto pnt2D = icc.Point(1);
 				gp_Pnt pnt(pnt2D.X(), 0, pnt2D.Y());
-				p1 = pnt;
-			}
-			else
-			{
+
 				if ( corner == wall->GetFirstCorner().lock() )
 				{
-					p1 = meshPoints_[0];
-					p3 = meshPoints_[4];
+					p0 = pnt;
 				}
 				else
 				{
-					p1 = meshPoints_[3];
-					p3 = meshPoints_[1];
+					p3 = pnt;
 				}
-				
 			}
 		}
 
@@ -218,35 +219,22 @@ public:
 
 				auto pnt2D = icc.Point(1);
 				gp_Pnt pnt(pnt2D.X(), 0, pnt2D.Y());
-				p3 = pnt;
-			}
-			else
-			{
+
 				if ( corner == wall->GetFirstCorner().lock() )
 				{
-					p1 = meshPoints_[0];
-					p3 = meshPoints_[4];
+					p4 = pnt;
 				}
 				else
 				{
-					p1 = meshPoints_[3];
-					p3 = meshPoints_[1];
+					p1 = pnt;
 				}
 			}
 		}
 
-		if ( corner == wall->GetFirstCorner().lock() )
-		{
-			meshPoints_[0] = p1;
-			meshPoints_[5] = corner->GetPosition();
-			meshPoints_[4] = p3;
-		}
-		else
-		{
-			meshPoints_[3] = p1;
-			meshPoints_[2] = corner->GetPosition();
-			meshPoints_[1] = p3;
-		}
+		meshPoints_[0] = p0;
+		meshPoints_[1] = p1;
+		meshPoints_[3] = p3;
+		meshPoints_[4] = p4;
 	}
 };
 

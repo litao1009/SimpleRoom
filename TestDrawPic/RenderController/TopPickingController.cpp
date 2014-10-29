@@ -136,11 +136,6 @@ bool TopPickingController::PreRender3D()
 
 					if ( allowSweeping->GetType() == EODLT_WALL || allowSweeping->GetType() == EODLT_FLOOR )//分组里的墙或地板
 					{
-						if ( allowSweeping->IsSelected() )
-						{
-							continue;
-						}
-
 						if ( allowSweeping->GetBaseBndBox().IsOut(curGpLine.Transformed(curAbsoluteTransform.Inverted())) )
 						{
 							continue;
@@ -180,7 +175,6 @@ bool TopPickingController::PreRender3D()
 			return false;
 		}
 
-		nodes.begin()->second.lock()->SetSwept(true);
 		SweepingNode_ = nodes.begin()->second;
 
 		if ( !Picking_ )
@@ -202,7 +196,6 @@ void TopPickingController::PostRender3D()
 		return;
 	}
 
-	SweepingNode_.lock()->SetSwept(false);
 	SweepingNode_.reset();
 }
 

@@ -20,10 +20,10 @@
 #include "RenderController/CameraController.h"
 #include "RenderController/FlyCameraController.h"
 #include "RenderController/UpdateTransformingCtrller.h"
-#include "RenderController/2D/DrawingLineWallCtrller.h"
-#include "RenderController/2D/DrawingRectWallCtrller.h"
-#include "RenderController/DoorController.h"
-#include "RenderController/WindowController.h"
+//#include "RenderController/2D/DrawingLineWallCtrller.h"
+//#include "RenderController/2D/DrawingRectWallCtrller.h"
+//#include "RenderController/DoorController.h"
+//#include "RenderController/WindowController.h"
 
 //--test
 #include "RenderController/TestDecorGUIBoard.h"
@@ -42,16 +42,16 @@ class	CDesignODL::Imp : public IRenderController
 public:
 
 	CBaseODLWPtr						DesignODL_;
-	DrawingLineWallCtrllerSPtr			DrawLineWallCtrller_;
-	DrawingRectWallCtrllerSPtr			DrawRectWallCtrller_;
+	//DrawingLineWallCtrllerSPtr			DrawLineWallCtrller_;
+	//DrawingRectWallCtrllerSPtr			DrawRectWallCtrller_;
 	TopPickingControllerSPtr			TopPickingController_;
 	StatesControllerSPtr				StatesController_;
 	GUIControllerSPtr					GUIController_;
 	CameraControllerSPtr				CameraController_;
 	FlyCameraControllerSPtr				FlyCameraController_;
 	UpdateTransformingCtrllerSPtr		UpdateTransformingCtrller_;
-	DoorControllerSPtr					DoorController_;
-	WindowControllerSPtr				WindowController_;
+	//DoorControllerSPtr					DoorController_;
+	//WindowControllerSPtr				WindowController_;
 
 public:
 
@@ -335,7 +335,7 @@ public:
 	CDesignODLSPtr	GetDesignSPtr() const { return std::static_pointer_cast<CDesignODL>(DesignODL_.lock()); }
 };
 
-CDesignODL::CDesignODL(HWND Hwnd):ImpSPtr_(new Imp)
+CDesignODL::CDesignODL(HWND Hwnd):ImpSPtr_(new Imp),CBaseODL(SRenderContextWPtr())
 {
 	Hwnd_ = Hwnd;
 }
@@ -356,24 +356,24 @@ void CDesignODL::Init()
 	}
 
 	{//Imp
-		imp_.DrawLineWallCtrller_ = std::make_shared<DrawingLineWallCtrller>();
-		imp_.DrawRectWallCtrller_ = std::make_shared<DrawingRectWallCtrller>();
+		//imp_.DrawLineWallCtrller_ = std::make_shared<DrawingLineWallCtrller>();
+		//imp_.DrawRectWallCtrller_ = std::make_shared<DrawingRectWallCtrller>();
 		imp_.TopPickingController_ = std::make_shared<TopPickingController>();
 		imp_.StatesController_ = std::make_shared<StatesController>();
 		imp_.GUIController_ = std::make_shared<GUIController>();
 		imp_.CameraController_ = std::make_shared<CameraController>();
 		imp_.FlyCameraController_ = std::make_shared<FlyCameraController>();
 		imp_.UpdateTransformingCtrller_ = std::make_shared<UpdateTransformingCtrller>();
-		imp_.DoorController_ = std::make_shared<DoorController>();
-		imp_.WindowController_ = std::make_shared<WindowController>();
+		//imp_.DoorController_ = std::make_shared<DoorController>();
+		//imp_.WindowController_ = std::make_shared<WindowController>();
 
 		ImpSPtr_->DesignODL_ = shared_from_this();
-		ImpSPtr_->DrawLineWallCtrller_->SetRootODL(shared_from_this());
-		ImpSPtr_->DrawRectWallCtrller_->SetRootODL(shared_from_this());
+		//ImpSPtr_->DrawLineWallCtrller_->SetRootODL(shared_from_this());
+		//ImpSPtr_->DrawRectWallCtrller_->SetRootODL(shared_from_this());
 		ImpSPtr_->TopPickingController_->SetRootODL(shared_from_this());
 		ImpSPtr_->UpdateTransformingCtrller_->SetRootODL(shared_from_this());
-		ImpSPtr_->DoorController_->SetRootODL(shared_from_this());
-		ImpSPtr_->WindowController_->SetRootODL(shared_from_this());
+		//ImpSPtr_->DoorController_->SetRootODL(shared_from_this());
+		//ImpSPtr_->WindowController_->SetRootODL(shared_from_this());
 	}
 
 	{//Controller
@@ -391,13 +391,13 @@ void CDesignODL::Init()
 			ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->UpdateTransformingCtrller_);
 			ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->CameraController_);
 			ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, gridCtrller);
-			ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->DrawLineWallCtrller_);
-			ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->DrawRectWallCtrller_);
+			//ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->DrawLineWallCtrller_);
+			//ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->DrawRectWallCtrller_);
 			ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->TopPickingController_);
 			ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, std::make_shared<TestDecorGUIBoard>());
 			ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, std::make_shared<TestDrawRoomCtrller>());
-			ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->DoorController_);
-			ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->WindowController_);
+			//ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->DoorController_);
+			//ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->WindowController_);
 		}
 
 		{//MayaView
