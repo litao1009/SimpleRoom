@@ -4,9 +4,11 @@
 #include "SMeshBuffer.h"
 #include "irrEngine/SRenderContext.h"
 #include "irrEngine/irrEngine.h"
-#include "RenderController/FloorPlan/GraphController.h"
-#include "RenderController/FloorPlan/Corner.h"
-#include "RenderController/FloorPlan/Wall.h"
+
+#include "ODL/GraphODL.h"
+#include "ODL/CornerODL.h"
+#include "ODL/WallODL.h"
+
 #include "StatusMgr.h"
 
 #include "gp_Pnt.hxx"
@@ -41,12 +43,6 @@ public:
 	{
 		State_ = ES_READY;
 
-		TestRoomLine_ = new SMeshBuffer;
-		TestRoomLine_->getMaterial().Lighting = false;
-		TestRoomLine_->getMaterial().BackfaceCulling = false;
-		TestRoomLine_->getMaterial().Thickness = 2;
-		TestRoomLine_->getMaterial().ZWriteEnable = false;
-
 		PositionRect_ = new SMeshBuffer;
 		PositionRect_->getMaterial().Lighting = false;
 		PositionRect_->getMaterial().BackfaceCulling = false;
@@ -67,17 +63,20 @@ public:
 		DrawingPath_->getMaterial().ZWriteEnable = false;
 		DrawingPath_->getMaterial().MaterialType = EMT_TRANSPARENT_ALPHA_CHANNEL;
 
+		AuxiliaryLine_ = new SMeshBuffer;
+		AuxiliaryLine_->getMaterial().Lighting = false;
+		AuxiliaryLine_->getMaterial().BackfaceCulling = false;
+		AuxiliaryLine_->getMaterial().ZWriteEnable = false;
+		AuxiliaryLine_->getMaterial().MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_LINE);
+		AuxiliaryLine_->getMaterial().DiffuseColor = 0xFF000000;
+		FloatingLine_->getMaterial().Thickness = 2;
+
 		PressDown_ = false;
 		Finish_ = false;
 	}
 
 	~Imp()
 	{
-		if ( TestRoomLine_ )
-		{
-			TestRoomLine_->drop();
-		}
-
 		if ( FloatingLine_ )
 		{
 			FloatingLine_->drop();
@@ -92,14 +91,24 @@ public:
 		{
 			DrawingPath_->drop();
 		}
+
+		if ( AuxiliaryLine_ )
+		{
+			AuxiliaryLine_->drop();
+		}
+	}
+
+	void	SetNeedUpdateMeshOnCorner(const CornerODLSPtr& corner)
+	{
+		for ( auto& curWall : Graph_.lock()->GetWallsOnCorner(corner) )
+		{
+			curWall->SetDirty(true);
+		}
 	}
 
 public:
 
 	EState						State_;
-
-	//画好的线
-	SMeshBuffer*				TestRoomLine_;
 	
 	//目前的线
 	SMeshBuffer*				FloatingLine_;
@@ -109,20 +118,27 @@ public:
 	matrix4						PositionRectScaleMat_;
 	matrix4						PositionRectTransMat_;
 
+	//绘制路径点
 	SMeshBuffer*				DrawingPath_;
 	std::vector<vector3df>		DrawingPathList_;
 	matrix4						DrawingPathScaleMat_;
 
-	CornerSPtr					BeginCorner_;
+	//Floating的起始点
+	CornerODLSPtr				BeginCorner_;
 	vector2di					CursorIPos_;
+
+	//辅助线
+	SMeshBuffer*				AuxiliaryLine_;
 	
 	bool						PressDown_;
 	bool						Finish_;
+
+	GraphODLWPtr				Graph_;
 };
 
-TestDrawRoomCtrller::TestDrawRoomCtrller():ImpUPtr_(new Imp)
+TestDrawRoomCtrller::TestDrawRoomCtrller(const GraphODLWPtr& graphODL):ImpUPtr_(new Imp)
 {
-
+	ImpUPtr_->Graph_ = graphODL;
 }
 
 TestDrawRoomCtrller::~TestDrawRoomCtrller()
@@ -132,6 +148,8 @@ TestDrawRoomCtrller::~TestDrawRoomCtrller()
 
 bool TestDrawRoomCtrller::PreRender3D()
 {
+	CCombineSceneNode::SetRenderMode(CBaseSceneNode::ESNT_2D);
+
 	auto& imp_ = *ImpUPtr_;
 
 	plane3df plan(0,0,0,0,1,0);
@@ -139,12 +157,12 @@ bool TestDrawRoomCtrller::PreRender3D()
 	auto line = GetRenderContextSPtr()->Smgr_->getSceneCollisionManager()->getRayFromScreenCoordinates(imp_.CursorIPos_);
 	plan.getIntersectionWithLine(line.start, line.getVector(), planPos);
 
-	gp_Pnt cursorPnt(planPos.X, planPos.Y, planPos.Z);
+	gp_Pnt cursorPnt(planPos.X, 0, planPos.Z);
 	auto alignDistance = 200.f;
 
-	CornerSPtr foundCorner;
+	CornerODLSPtr foundCorner;
 
-	for ( auto& curCorner : GraphController::GetInstance().GetAllCorners() )
+	for ( auto& curCorner : imp_.Graph_.lock()->GetAllCorners() )
 	{
 		if ( curCorner->GetPosition().SquareDistance(cursorPnt) < alignDistance * alignDistance )
 		{
@@ -154,22 +172,15 @@ bool TestDrawRoomCtrller::PreRender3D()
 			break;
 		}
 	}
-	
-	//在边延长线上
-	auto foundPosWithLine = false;
-	//在边上
-	auto foundPosInEdge = false;
 
-	auto foundLinesCount = 0;
-
+	std::vector<BRepAdaptor_Curve> lineGroup;
+	WallODLSPtr toSplit;
+	BRepAdaptor_Curve ontoCurve;
 	BRepAdaptor_Curve firstCurve,secondCurve;
-	WallSPtr firstWall,secondWall;
-	Standard_Real firstPar,secondPar;
-	WallSPtr toSplit;
 
 	if ( !foundCorner )
 	{		
-		for ( auto& curWall : GraphController::GetInstance().GetAllWalls() )
+		for ( auto& curWall : imp_.Graph_.lock()->GetAllWalls() )
 		{
 			if ( curWall->IsBezierCurve() )
 			{
@@ -178,90 +189,95 @@ bool TestDrawRoomCtrller::PreRender3D()
 
 			auto curEdge = curWall->GetEdge();
 			BRepAdaptor_Curve bc(curEdge);
+			
 			GeomAPI_ProjectPointOnCurve ppc(cursorPnt, bc.Curve().Curve());
 			if ( ppc.LowerDistance() > alignDistance )
 			{
 				continue;
 			}
 
-			if ( 0 == foundLinesCount )
+			auto curPar = ppc.LowerDistanceParameter();
+			auto isOnCurve = curPar > bc.FirstParameter() + curWall->GetThickness()/2 && curPar < bc.LastParameter()-curWall->GetThickness()/2;
+			
+			if ( !toSplit && isOnCurve)
 			{
-				firstCurve = bc;
-				firstPar = ppc.LowerDistanceParameter();
-				firstWall = curWall;
-
-				++foundLinesCount;
+				toSplit = curWall;
+				ontoCurve = bc;
+				continue;
 			}
-			else
+
+			auto itor = std::find_if(lineGroup.begin(), lineGroup.end(), [&bc](const BRepAdaptor_Curve& curBC)
 			{
-				if ( bc.Line().Direction().IsParallel(firstCurve.Line().Direction(), Precision::Confusion()) )
-				{
-					continue;
-				}
+				return Standard_True == bc.Line().Direction().IsParallel(curBC.Line().Direction(), Precision::Angular());
+			});
 
-				gp_Pln pln(gp_Ax3(gp::Origin(), gp::DY().Reversed(), gp::DX()));
-				
-				auto firstline2D = GeomAPI::To2d(firstCurve.Curve().Curve(), pln);
-				auto secondline2D = GeomAPI::To2d(bc.Curve().Curve(), pln);
-
-				Geom2dAPI_InterCurveCurve icc(firstline2D, secondline2D);
-				if ( 0 == icc.NbPoints() )
-				{
-					continue;
-				}
-
-				assert(icc.NbPoints() == 1);
-
-				auto iccPnt = icc.Point(1);
-				gp_Pnt iccPnt3D(iccPnt.X(), 0, iccPnt.Y());
-				
-				if ( iccPnt3D.SquareDistance(cursorPnt) > alignDistance * alignDistance )
-				{
-					continue;
-				}
-
-				secondCurve = bc;
-
-				GeomAPI_ProjectPointOnCurve ppc1(iccPnt3D, firstCurve.Curve().Curve());
-				firstPar = ppc1.LowerDistanceParameter();
-
-				GeomAPI_ProjectPointOnCurve ppc2(iccPnt3D, secondCurve.Curve().Curve());
-				secondPar = ppc2.LowerDistanceParameter();
-
-				secondWall = curWall;
-				
-				++foundLinesCount;
-
-				break;
+			if ( itor == lineGroup.end() )
+			{
+				lineGroup.push_back(bc);
 			}
 		}
 
-		if ( 0 != foundLinesCount )
+		if ( toSplit )
 		{
-			foundPosWithLine = true;
-
-			firstCurve.D0(firstPar, cursorPnt);
-
-			auto wallThick = 200.f;
-
-			if ( firstPar > firstCurve.FirstParameter() + wallThick && firstPar < firstCurve.LastParameter() - wallThick )
+			auto itor = std::remove_if(lineGroup.begin(), lineGroup.end(), [&ontoCurve](const BRepAdaptor_Curve& curBC)
 			{
-				toSplit = firstWall;
+				return ontoCurve.Line().Direction().IsParallel(curBC.Line().Direction(), Precision::Angular());
+			});
+			lineGroup.erase(itor, lineGroup.end());
+		}
+
+		if ( toSplit )
+		{
+			firstCurve = ontoCurve;
+		}
+		else if ( !lineGroup.empty() )
+		{
+			firstCurve = lineGroup.front();
+			lineGroup.erase(lineGroup.begin());
+		}
+		
+		if ( GeomAbs_OtherCurve != firstCurve.GetType() )
+		{
+			auto foundSecond = false;
+			
+			if ( !lineGroup.empty() )
+			{
+				gp_Pln pln(gp_Ax3(gp::Origin(), gp::DY().Reversed(), gp::DX()));
+				auto firstline2D = GeomAPI::To2d(firstCurve.Curve().Curve(), pln);
+
+				for ( auto& curBC : lineGroup )
+				{
+					auto secondline2D = GeomAPI::To2d(curBC.Curve().Curve(), pln);
+
+					Geom2dAPI_InterCurveCurve icc(firstline2D, secondline2D);
+					assert(icc.NbPoints() == 1);
+
+					auto iccPnt = icc.Point(1);
+					gp_Pnt iccPnt3D(iccPnt.X(), 0, iccPnt.Y());
+
+					if ( cursorPnt.SquareDistance(iccPnt3D) < alignDistance * alignDistance )
+					{
+						cursorPnt = iccPnt3D;
+						secondCurve = curBC;
+						foundSecond = true;
+						break;
+					}
+				}				
 			}
-			if ( 2 == foundLinesCount && secondPar > secondCurve.FirstParameter() + wallThick && secondPar < secondCurve.LastParameter() - wallThick )
+
+			if ( !foundSecond )
 			{
-				toSplit = secondWall;
+				GeomAPI_ProjectPointOnCurve ppc(cursorPnt, firstCurve.Curve().Curve());
+				cursorPnt = ppc.Point(1);
 			}
 		}
 	}
 
-	if ( !foundCorner && 0 == foundLinesCount && StatusMgr::GetInstance().GridAlign_ )
+	if ( !foundCorner && !toSplit && lineGroup.empty() && StatusMgr::GetInstance().GridAlign_ )
 	{
 		auto pos = *StatusMgr::GetInstance().GridAlign_;
-		cursorPnt = gp_Pnt(pos.X, pos.Y, pos.Z);
+		cursorPnt = gp_Pnt(pos.X, 0, pos.Z);
 	}
-
-	auto needUpdateMesh = false;
 
 	switch (imp_.State_)
 	{
@@ -278,12 +294,15 @@ bool TestDrawRoomCtrller::PreRender3D()
 				{
 					if ( toSplit )
 					{
-						imp_.BeginCorner_ = GraphController::GetInstance().CreateCornerBySplitWall(toSplit, cursorPnt);
-						needUpdateMesh = true;
+						imp_.BeginCorner_ = imp_.Graph_.lock()->CreateCornerBySplitWall(toSplit, cursorPnt);
+						for ( auto& curWall : imp_.Graph_.lock()->GetWallsOnCorner(imp_.BeginCorner_) )
+						{
+							curWall->UpdateMesh();
+						}
 					}
 					else
 					{
-						imp_.BeginCorner_ = GraphController::GetInstance().CreateCorner(cursorPnt);
+						imp_.BeginCorner_ = imp_.Graph_.lock()->CreateCorner(cursorPnt);
 					}
 				}
 
@@ -312,7 +331,7 @@ bool TestDrawRoomCtrller::PreRender3D()
 					//与边的夹角小于15度
 					if ( valid )
 					{
-						for ( auto& curWall : GraphController::GetInstance().GetWallsOnCorner(imp_.BeginCorner_) )
+						for ( auto& curWall : imp_.Graph_.lock()->GetWallsOnCorner(imp_.BeginCorner_) )
 						{
 							auto beginCorner = curWall->GetFirstCorner().lock();
 							auto endCorner = curWall->GetSecondCorner().lock();
@@ -348,7 +367,7 @@ bool TestDrawRoomCtrller::PreRender3D()
 						Standard_Real floatingFirstPar,floatingLastPar;
 						BRep_Tool::Range(floatingEdge, floatingFirstPar, floatingLastPar);
 
-						for ( auto& curWall : GraphController::GetInstance().GetAllWalls() )
+						for ( auto& curWall : imp_.Graph_.lock()->GetAllWalls() )
 						{
 							if ( curWall->GetFirstCorner().lock() == imp_.BeginCorner_ || curWall->GetSecondCorner().lock() == imp_.BeginCorner_ )
 							{
@@ -411,23 +430,25 @@ bool TestDrawRoomCtrller::PreRender3D()
 
 				if ( valid )
 				{
+					imp_.SetNeedUpdateMeshOnCorner(imp_.BeginCorner_);
+
 					if ( foundCorner )
 					{
-						GraphController::GetInstance().AddWall(imp_.BeginCorner_, foundCorner);
+						imp_.Graph_.lock()->AddWall(imp_.BeginCorner_, foundCorner);
 						imp_.BeginCorner_ = foundCorner;
 					}
 					else
 					{
 						if ( toSplit )
 						{
-							auto newCorner = GraphController::GetInstance().CreateCornerBySplitWall(toSplit, cursorPnt);
-							GraphController::GetInstance().AddWall(imp_.BeginCorner_, newCorner);
+							auto newCorner = imp_.Graph_.lock()->CreateCornerBySplitWall(toSplit, cursorPnt);
+							imp_.Graph_.lock()->AddWall(imp_.BeginCorner_, newCorner);
 							imp_.BeginCorner_ = newCorner;
 						}
 						else
 						{
-							auto newCorner = GraphController::GetInstance().CreateCorner(cursorPnt);
-							GraphController::GetInstance().AddWall(imp_.BeginCorner_, newCorner);
+							auto newCorner = imp_.Graph_.lock()->CreateCorner(cursorPnt);
+							imp_.Graph_.lock()->AddWall(imp_.BeginCorner_, newCorner);
 							imp_.BeginCorner_ = newCorner;
 						}
 					}
@@ -435,7 +456,7 @@ bool TestDrawRoomCtrller::PreRender3D()
 					auto& pos = imp_.BeginCorner_->GetPosition();
 					imp_.DrawingPathList_.emplace_back(static_cast<float>(pos.X()), static_cast<float>(pos.Y()), static_cast<float>(pos.Z()));
 
-					needUpdateMesh = true;
+					imp_.SetNeedUpdateMeshOnCorner(imp_.BeginCorner_);
 				}
 			}
 
@@ -443,10 +464,10 @@ bool TestDrawRoomCtrller::PreRender3D()
 			{
 				imp_.Finish_ = false;
 
-				auto walls = GraphController::GetInstance().GetWallsOnCorner(imp_.BeginCorner_);
+				auto walls = imp_.Graph_.lock()->GetWallsOnCorner(imp_.BeginCorner_);
 				if ( walls.empty() )
 				{
-					GraphController::GetInstance().RemoveCorner(imp_.BeginCorner_);
+					imp_.Graph_.lock()->RemoveCorner(imp_.BeginCorner_);
 				}
 				imp_.BeginCorner_ = nullptr;
 
@@ -459,67 +480,40 @@ bool TestDrawRoomCtrller::PreRender3D()
 		break;
 	}
 
-	if ( needUpdateMesh )
+	for ( auto& curWall : imp_.Graph_.lock()->GetAllWalls() )
 	{
-		auto allWalls = GraphController::GetInstance().GetAllWalls();
-
-		imp_.TestRoomLine_->Vertices.clear();
-		imp_.TestRoomLine_->Vertices.reallocate(allWalls.size()*6);
-		imp_.TestRoomLine_->Indices.clear();
-		imp_.TestRoomLine_->Indices.reallocate(allWalls.size()*6*4);
-
-		for ( auto& curWall : allWalls )
+		if ( curWall->IsDirty() )
 		{
 			curWall->UpdateMesh();
-
-			auto& meshPoints = curWall->GetMeshPoints();
-
-			using namespace irr;
-			using namespace video;
-			using namespace core;
-
-			vector3df normal(0,1,0);
-			SColor clr(0xFF000000);
-			vector2df coord(0,0);
-
-			auto curVertexSize = imp_.TestRoomLine_->Vertices.size();
-
-			imp_.TestRoomLine_->Vertices.push_back(S3DVertex(vector3df(static_cast<float>(meshPoints[0].X()), static_cast<float>(meshPoints[0].Y()), static_cast<float>(meshPoints[0].Z())), normal, clr, coord));
-			imp_.TestRoomLine_->Vertices.push_back(S3DVertex(vector3df(static_cast<float>(meshPoints[1].X()), static_cast<float>(meshPoints[1].Y()), static_cast<float>(meshPoints[1].Z())), normal, clr, coord));
-			imp_.TestRoomLine_->Vertices.push_back(S3DVertex(vector3df(static_cast<float>(meshPoints[2].X()), static_cast<float>(meshPoints[2].Y()), static_cast<float>(meshPoints[2].Z())), normal, clr, coord));
-			imp_.TestRoomLine_->Vertices.push_back(S3DVertex(vector3df(static_cast<float>(meshPoints[3].X()), static_cast<float>(meshPoints[3].Y()), static_cast<float>(meshPoints[3].Z())), normal, clr, coord));
-			imp_.TestRoomLine_->Vertices.push_back(S3DVertex(vector3df(static_cast<float>(meshPoints[4].X()), static_cast<float>(meshPoints[4].Y()), static_cast<float>(meshPoints[4].Z())), normal, clr, coord));
-			imp_.TestRoomLine_->Vertices.push_back(S3DVertex(vector3df(static_cast<float>(meshPoints[5].X()), static_cast<float>(meshPoints[5].Y()), static_cast<float>(meshPoints[5].Z())), normal, clr, coord));
-
-// 			imp_.TestRoomLine_->Indices.push_back(curVertexSize);
-// 			imp_.TestRoomLine_->Indices.push_back(curVertexSize + 1);
-// 			imp_.TestRoomLine_->Indices.push_back(curVertexSize + 2);
-// 
-// 			imp_.TestRoomLine_->Indices.push_back(curVertexSize);
-// 			imp_.TestRoomLine_->Indices.push_back(curVertexSize + 2);
-// 			imp_.TestRoomLine_->Indices.push_back(curVertexSize + 3);
-// 
-// 			imp_.TestRoomLine_->Indices.push_back(curVertexSize);
-// 			imp_.TestRoomLine_->Indices.push_back(curVertexSize + 3);
-// 			imp_.TestRoomLine_->Indices.push_back(curVertexSize + 4);
-// 
-// 			imp_.TestRoomLine_->Indices.push_back(curVertexSize);
-// 			imp_.TestRoomLine_->Indices.push_back(curVertexSize + 4);
-// 			imp_.TestRoomLine_->Indices.push_back(curVertexSize + 5);
-
-			imp_.TestRoomLine_->Indices.push_back(curVertexSize);
-			imp_.TestRoomLine_->Indices.push_back(curVertexSize+1);
-			imp_.TestRoomLine_->Indices.push_back(curVertexSize+1);
-			imp_.TestRoomLine_->Indices.push_back(curVertexSize+2);
-			imp_.TestRoomLine_->Indices.push_back(curVertexSize+2);
-			imp_.TestRoomLine_->Indices.push_back(curVertexSize+3);
-			imp_.TestRoomLine_->Indices.push_back(curVertexSize+3);
-			imp_.TestRoomLine_->Indices.push_back(curVertexSize+4);
-			imp_.TestRoomLine_->Indices.push_back(curVertexSize+4);
-			imp_.TestRoomLine_->Indices.push_back(curVertexSize+5);
-			imp_.TestRoomLine_->Indices.push_back(curVertexSize+5);
-			imp_.TestRoomLine_->Indices.push_back(curVertexSize+0);
+			curWall->SetDirty(false);
 		}
+	}
+
+	imp_.AuxiliaryLine_->getPosition(0) = vector3df(static_cast<float>(cursorPnt.X()), static_cast<float>(cursorPnt.Y()), static_cast<float>(cursorPnt.Z()));
+	imp_.AuxiliaryLine_->getPosition(1) = vector3df(static_cast<float>(cursorPnt.X()), static_cast<float>(cursorPnt.Y()), static_cast<float>(cursorPnt.Z()));
+	imp_.AuxiliaryLine_->getPosition(2) = vector3df(static_cast<float>(cursorPnt.X()), static_cast<float>(cursorPnt.Y()), static_cast<float>(cursorPnt.Z()));
+	imp_.AuxiliaryLine_->getPosition(3) = vector3df(static_cast<float>(cursorPnt.X()), static_cast<float>(cursorPnt.Y()), static_cast<float>(cursorPnt.Z()));
+
+	if ( GeomAbs_OtherCurve != firstCurve.GetType() )
+	{
+		gp_Pnt p1,p2;
+
+		firstCurve.D0(-100000, p1);
+		firstCurve.D0(100000, p2);
+
+		imp_.AuxiliaryLine_->getPosition(0) = vector3df(static_cast<float>(p1.X()), static_cast<float>(p1.Y()), static_cast<float>(p1.Z()));
+		imp_.AuxiliaryLine_->getPosition(1) = vector3df(static_cast<float>(p2.X()), static_cast<float>(p2.Y()), static_cast<float>(p2.Z()));
+	}
+
+	if ( GeomAbs_OtherCurve != secondCurve.GetType() )
+	{
+		gp_Pnt p1,p2;
+
+		secondCurve.D0(-100000, p1);
+		secondCurve.D0(100000, p2);
+
+		imp_.AuxiliaryLine_->getPosition(2) = vector3df(static_cast<float>(p1.X()), static_cast<float>(p1.Y()), static_cast<float>(p1.Z()));
+		imp_.AuxiliaryLine_->getPosition(3) = vector3df(static_cast<float>(p2.X()), static_cast<float>(p2.Y()), static_cast<float>(p2.Z()));
 	}
 
 	{
@@ -549,21 +543,17 @@ void TestDrawRoomCtrller::PostRender3D()
 	{
 	case EState::ES_READY:
 		{
-			driver->setTransform(ETS_WORLD, matrix4());
-			driver->setMaterial(imp_.TestRoomLine_->getMaterial());
-			driver->drawVertexPrimitiveList(imp_.TestRoomLine_->getVertices(), imp_.TestRoomLine_->getVertexCount(), imp_.TestRoomLine_->getIndices(), imp_.TestRoomLine_->getIndexCount()/2, EVT_STANDARD, EPT_LINES);
-
 			driver->setTransform(ETS_WORLD, imp_.PositionRectTransMat_*imp_.PositionRectScaleMat_);
 			driver->setMaterial(imp_.PositionRect_->getMaterial());
 			driver->drawVertexPrimitiveList(imp_.PositionRect_->getVertices(), imp_.PositionRect_->getVertexCount(), imp_.PositionRect_->getIndices(), imp_.PositionRect_->getIndexCount()/2, EVT_STANDARD, EPT_TRIANGLE_FAN);
+
+			driver->setTransform(ETS_WORLD, matrix4());
+			driver->setMaterial(imp_.AuxiliaryLine_->getMaterial());
+			driver->drawVertexPrimitiveList(imp_.AuxiliaryLine_->getVertices(), imp_.AuxiliaryLine_->getVertexCount(), imp_.AuxiliaryLine_->getIndices(), imp_.AuxiliaryLine_->getIndexCount()/2, EVT_STANDARD, EPT_LINES);
 		}
 		break;
 	case EState::ES_DRAWING:
 		{
-			driver->setTransform(ETS_WORLD, matrix4());
-			driver->setMaterial(imp_.TestRoomLine_->getMaterial());
-			driver->drawVertexPrimitiveList(imp_.TestRoomLine_->getVertices(), imp_.TestRoomLine_->getVertexCount(), imp_.TestRoomLine_->getIndices(), imp_.TestRoomLine_->getIndexCount()/2, EVT_STANDARD, EPT_LINES);
-
 			if ( imp_.BeginCorner_ )
 			{
 				driver->setTransform(ETS_WORLD, matrix4());
@@ -587,7 +577,9 @@ void TestDrawRoomCtrller::PostRender3D()
 			driver->setMaterial(imp_.PositionRect_->getMaterial());
 			driver->drawVertexPrimitiveList(imp_.PositionRect_->getVertices(), imp_.PositionRect_->getVertexCount(), imp_.PositionRect_->getIndices(), imp_.PositionRect_->getIndexCount()/2, EVT_STANDARD, EPT_TRIANGLE_FAN);
 
-			
+			driver->setTransform(ETS_WORLD, matrix4());
+			driver->setMaterial(imp_.AuxiliaryLine_->getMaterial());
+			driver->drawVertexPrimitiveList(imp_.AuxiliaryLine_->getVertices(), imp_.AuxiliaryLine_->getVertexCount(), imp_.AuxiliaryLine_->getIndices(), imp_.AuxiliaryLine_->getIndexCount()/2, EVT_STANDARD, EPT_LINES);
 		}
 		break;
 	default:
@@ -684,5 +676,16 @@ void TestDrawRoomCtrller::Init()
 		imp_.FloatingLine_->Vertices.push_back(S3DVertex(vector3df(0), vector3df(0,1,0), SColor(0xFF0000FF), vector2df(0,0)));
 		imp_.FloatingLine_->Indices.push_back(0);
 		imp_.FloatingLine_->Indices.push_back(1);
+	}
+
+	{
+		imp_.AuxiliaryLine_->Vertices.push_back(S3DVertex(vector3df(0), vector3df(0,1,0), SColor(~0), vector2df(0,0)));
+		imp_.AuxiliaryLine_->Vertices.push_back(S3DVertex(vector3df(0), vector3df(0,1,0), SColor(~0), vector2df(0,0)));
+		imp_.AuxiliaryLine_->Vertices.push_back(S3DVertex(vector3df(0), vector3df(0,1,0), SColor(~0), vector2df(0,0)));
+		imp_.AuxiliaryLine_->Vertices.push_back(S3DVertex(vector3df(0), vector3df(0,1,0), SColor(~0), vector2df(0,0)));
+		imp_.AuxiliaryLine_->Indices.push_back(0);
+		imp_.AuxiliaryLine_->Indices.push_back(1);
+		imp_.AuxiliaryLine_->Indices.push_back(2);
+		imp_.AuxiliaryLine_->Indices.push_back(3);
 	}
 }

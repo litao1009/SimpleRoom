@@ -1,9 +1,7 @@
 #include "stdafx.h"
 
 #include "DesignODL.h"
-#include "ODL/GroupODL.h"
-#include "ODL/WallODL.h"
-#include "ODL/FloorODL.h"
+#include "ODL/GraphODL.h"
 
 #include "irrEngine/irrEngine.h"
 #include "irrEngine/SRenderContext.h"
@@ -376,6 +374,14 @@ void CDesignODL::Init()
 		//ImpSPtr_->WindowController_->SetRootODL(shared_from_this());
 	}
 
+	{//DataSceneNode
+		auto spNewNode = CCombineSceneNode::Create(RenderContext_, shared_from_this());
+		SetDataSceneNode(spNewNode);
+		RenderContext_->Smgr_->getRootSceneNode()->addChild(spNewNode.get());
+	}
+
+	auto graph = CreateChild<GraphODL>(RenderContext_);
+
 	{//Controller
 		ImpSPtr_->StatesController_->SetRenderState(ERS_TOP_VIEW);
 
@@ -393,9 +399,9 @@ void CDesignODL::Init()
 			ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, gridCtrller);
 			//ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->DrawLineWallCtrller_);
 			//ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->DrawRectWallCtrller_);
-			ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->TopPickingController_);
+			//ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->TopPickingController_);
 			ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, std::make_shared<TestDecorGUIBoard>());
-			ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, std::make_shared<TestDrawRoomCtrller>());
+			ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, std::make_shared<TestDrawRoomCtrller>(graph));
 			//ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->DoorController_);
 			//ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->WindowController_);
 		}
@@ -418,11 +424,5 @@ void CDesignODL::Init()
 			ImpSPtr_->StatesController_->AddController(ERS_ANIMATION, ImpSPtr_->FlyCameraController_);
 			ImpSPtr_->StatesController_->AddController(ERS_ANIMATION, ImpSPtr_->UpdateTransformingCtrller_);
 		}
-	}
-	
-	{//DataSceneNode
-		auto spNewNode = CCombineSceneNode::Create(RenderContext_, shared_from_this());
-		RenderContext_->Smgr_->getRootSceneNode()->addChild(spNewNode.get());
-		SetDataSceneNode(spNewNode);
 	}
 }

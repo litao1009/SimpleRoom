@@ -3,10 +3,114 @@
 #include "GraphODL.h"
 #include "CornerODL.h"
 #include "WallODL.h"
+#include "RoomODL.h"
 
 #include <boost/graph/property_iter_range.hpp>
+#include <boost/graph/planar_face_traversal.hpp>
+#include <boost/graph/boyer_myrvold_planar_test.hpp>
 
-GraphODL::GraphODL(const SRenderContextWPtr& rc):CBaseODL(rc)
+class	GraphODL::Imp
+{
+public:
+
+	class RoomVisitor : public boost::planar_face_traversal_visitor
+	{
+	public:
+
+		RoomVisitor(const GraphODLSPtr& graphODL)
+		{
+			GraphODL_ = graphODL;
+			Dirty_ = false;
+		}
+
+	public:
+
+		void begin_face()
+		{
+			auto newRoom = std::make_shared<RoomODL>(GraphODL_->GetRenderContextWPtr());
+			Rooms_.push_back(newRoom);
+		}
+
+		void end_face()
+		{
+			if ( !Dirty_ )
+			{
+				Rooms_.back()->SetWallList(CurWalls_);
+				Rooms_.back()->SetCornerList(CurCorners_);
+			}
+			else
+			{
+				Rooms_.pop_back();
+			}
+			
+			CurCorners_.clear();
+			CurWalls_.clear();
+			Dirty_ = false;
+		}
+
+		template <typename Vertex> 
+		void next_vertex(Vertex v) 
+		{ 
+			if ( Dirty_ )
+			{
+				return;
+			}
+
+			auto corner = boost::get(CornerTag(), GraphODL_->Graph_, v);
+			if ( std::find(CurCorners_.rbegin(), CurCorners_.rend(), corner) == CurCorners_.rend() )
+			{
+				CurCorners_.push_back(corner);
+			}
+			else
+			{
+				Dirty_ = true;
+			}
+		}
+
+		template <typename Edge>
+		void next_edge(Edge e)
+		{
+			if ( Dirty_ )
+			{
+				return;
+			}
+
+			CurWalls_.push_back(boost::get(WallTag(), GraphODL_->Graph_, e));
+		}
+
+
+		bool			Dirty_;
+		WallODLList		CurWalls_;
+		CornerODLList	CurCorners_;
+		RoomODLList		Rooms_;
+		GraphODLSPtr	GraphODL_;
+	};
+
+public:
+
+	static void	SearchRoom(GraphODLSPtr graphODL)
+	{
+		auto edgeCount = 0;
+		auto& indexMap = boost::get(boost::edge_index, graphODL->Graph_);
+		for( auto itors=boost::edges(graphODL->Graph_); itors.first!=itors.second; ++itors.first,++edgeCount )
+		{
+			boost::put(indexMap, *itors.first, edgeCount);
+		}
+
+		std::vector<std::vector<WallODL::EdgeIndex>> embedding(boost::num_vertices(graphODL->Graph_));
+
+		boost::boyer_myrvold_planarity_test(graphODL->Graph_, embedding.data());
+
+		RoomVisitor vv(graphODL);
+		boost::planar_face_traversal(graphODL->Graph_, embedding.data(), vv);
+	}
+
+public:
+
+
+};
+
+GraphODL::GraphODL(const SRenderContextWPtr& rc):CBaseODL(rc),ImpUPtr_(new Imp)
 {
 
 }
@@ -80,6 +184,7 @@ CornerODLSPtr GraphODL::CreateCornerBySplitWall( const WallODLSPtr& toSplit, con
 	auto target = boost::target(edgeIndex, Graph_);
 
 	boost::remove_edge(edgeIndex, Graph_);
+	RemoveChild(toSplit);
 
 	auto newCorner = CreateCorner(position);
 
@@ -96,6 +201,7 @@ bool GraphODL::RemoveCorner( const CornerODLSPtr& corner )
 {
 	boost::clear_vertex(corner->GetIndex(), Graph_);
 	boost::remove_vertex(corner->GetIndex(), Graph_);
+	RemoveChild(corner);
 
 	return true;
 }
@@ -115,6 +221,8 @@ WallODLSPtr GraphODL::AddWall( const CornerODLSPtr& corner1, const CornerODLSPtr
 	newWall->SetIndex(index.first);
 
 	newWall->UpdateMesh();
+
+	Imp::SearchRoom(std::static_pointer_cast<GraphODL>(shared_from_this()));
 
 	return newWall;
 }
@@ -140,5 +248,26 @@ bool GraphODL::RemoveWall( const WallODLSPtr& wall )
 		boost::remove_vertex(target, Graph_);
 	}
 
+	RemoveChild(wall);
+
+	Imp::SearchRoom(std::static_pointer_cast<GraphODL>(shared_from_this()));
+
 	return true;
+}
+
+RoomODLList GraphODL::GetAllRooms()
+{
+	RoomODLList ret;
+
+	for ( auto& curChild : GetChildrenList() )
+	{
+		if ( EODLT_ROOM != curChild->GetType() )
+		{
+			continue;
+		}
+
+		ret.push_back(std::static_pointer_cast<RoomODL>(curChild));
+	}
+
+	return ret;
 }

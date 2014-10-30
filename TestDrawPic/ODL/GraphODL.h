@@ -8,11 +8,14 @@
 
 #include "CornerODLFwd.h"
 #include "WallODLFwd.h"
-//#include "RoomFwd.h"
+#include "RoomODLFwd.h"
 
 
 class	GraphODL : public CBaseODL
 {
+	class	Imp;
+	std::unique_ptr<Imp>	ImpUPtr_;
+
 public:
 
 	GraphODL(const SRenderContextWPtr& rc);
@@ -21,9 +24,15 @@ public:
 
 public:
 
+	virtual	EObjectDisplayLayerType	GetType() const { return EODLT_GRAPH; }
+
+public:
+
 	CornerODLList	GetAllCorners();
 
 	WallODLList		GetAllWalls();
+
+	RoomODLList		GetAllRooms();
 
 	WallODLList		GetWallsOnCorner(const CornerODLSPtr& corner);
 

@@ -9,6 +9,8 @@
 
 #include "IrrEngine/IrrEngine.h"
 
+#include "MeshSceneNode/WallMeshNode2D.h"
+
 #include "gp_Lin.hxx"
 #include "gp_Pln.hxx"
 #include "gp_Ax3.hxx"
@@ -16,6 +18,11 @@
 #include "Geom2dAPI_InterCurveCurve.hxx"
 #include "BRepBuilderAPI_MakeEdge.hxx"
 #include "BRepAdaptor_Curve.hxx"
+#include "TopoDS_Shape.hxx"
+#include "BRepBuilderAPI_MakePolygon.hxx"
+#include "BRepBuilderAPI_MakeFace.hxx"
+#include "BRepPrimAPI_MakePrism.hxx"
+#include "BRepBndLib.hxx"
 
 class	WallODL::Imp
 {
@@ -79,9 +86,8 @@ public:
 		}
 		else
 		{
-			Imp ws;
-			ws.RefCorner_ = beginCorner;
-			std::sort(wallsAtCorner.begin(), wallsAtCorner.end(), ws);
+			wall->ImpUPtr_->RefCorner_ = beginCorner;
+			std::sort(wallsAtCorner.begin(), wallsAtCorner.end(), *(wall->ImpUPtr_));
 
 			auto curItor = std::find(wallsAtCorner.begin(), wallsAtCorner.end(), wall);
 			if ( curItor == wallsAtCorner.begin() )
@@ -237,12 +243,18 @@ public:
 	}
 
 	CornerODLSPtr		RefCorner_;
+	WallMeshNode2D*		Node2D_;
 };
 
-WallODL::WallODL( const GraphODLWPtr graphODL, const CornerODLSPtr& firstCorner, const CornerODLSPtr& secondCorner, float wallThickness /*= 200.f*/ )
+WallODL::WallODL( const GraphODLWPtr graphODL, const CornerODLSPtr& firstCorner, const CornerODLSPtr& secondCorner, float wallThickness /*= 200.f*/, float height )
 	:ImpUPtr_(new Imp),CBaseODL(graphODL.lock()->GetRenderContextWPtr())
 {
 	GraphODL_ = graphODL;
+	Thickness_ = wallThickness;
+	Height_ = height;
+	FirstCorner_ = firstCorner;
+	SecondCorner_ = secondCorner;
+	ImpUPtr_->Node2D_ = nullptr;
 }
 
 WallODL::~WallODL( void )
@@ -252,7 +264,9 @@ WallODL::~WallODL( void )
 
 void WallODL::Init()
 {
-
+	auto wall2DNode = new WallMeshNode2D(GetDataSceneNode()->GetSceneNode2D());
+	wall2DNode->drop();
+	ImpUPtr_->Node2D_ = wall2DNode;
 }
 
 bool WallODL::IsBezierCurve() const
@@ -281,5 +295,94 @@ void WallODL::UpdateMesh()
 		Imp::CalculateSideMesh(thisSPtr, FirstCorner_.lock());
 		Imp::CalculateSideMesh(thisSPtr, SecondCorner_.lock());
 	}
+
+	BRepBuilderAPI_MakePolygon mp;
+	for ( auto& curPnt : MeshPoints_ )
+	{
+		mp.Add(curPnt);
+	}
+	mp.Close();
+
+	assert(mp.IsDone());
+	
+	auto bottomFace = BRepBuilderAPI_MakeFace(mp.Wire()).Face();
+	auto solid = BRepPrimAPI_MakePrism(bottomFace, gp_Vec(gp::Origin(), gp_Pnt(0, Height_, 0))).Shape();
+
+	gp_Trsf absoluteToRelation;
+	{//设置位置
+		gp_Trsf rotToDZ;
+		gp_Trsf transToCenter;
+
+		gp_Dir wallDir = gp_Vec(FirstCorner_.lock()->GetPosition(), SecondCorner_.lock()->GetPosition());
+		rotToDZ.SetRotation(gp_Quaternion(wallDir, gp::DZ()));
+		solid.Move(rotToDZ);
+
+		Bnd_Box wallBox;
+		gp_Pnt wallCenter;
+		{
+			BRepBndLib::Add(solid, wallBox);
+			Standard_Real xMin,yMin,zMin,xMax,yMax,zMax;
+			wallBox.Get(xMin, yMin, zMin, xMax, yMax, zMax);
+			wallCenter.SetXYZ(gp_XYZ((xMin+xMax)/2, (yMin+yMax)/2, (zMin+zMax)/2));
+		}
+
+		transToCenter.SetTranslationPart(gp_Vec(gp::Origin(), wallCenter).Reversed());
+
+		solid.Move(transToCenter);
+
+		absoluteToRelation = transToCenter * rotToDZ;
+
+		auto relationToAbsolute = absoluteToRelation.Inverted();
+		auto translation = relationToAbsolute.TranslationPart();
+		auto rotation = relationToAbsolute.GetRotation();
+
+		SetBaseShape(solid);
+
+		SetTranslation(translation);
+		GetDataSceneNode()->setPosition(irr::core::vector3df(static_cast<float>(translation.X()), static_cast<float>(translation.Y()), static_cast<float>(translation.Z())));
+
+		SetRoration(rotation);
+		Standard_Real rX,rY,rZ;
+		rotation.GetEulerAngles(gp_Extrinsic_XYZ, rX, rY, rZ);
+		GetDataSceneNode()->setRotation(irr::core::vector3df(static_cast<float>(irr::core::radToDeg(rX)), static_cast<float>(irr::core::radToDeg(rY)), static_cast<float>(irr::core::radToDeg(rZ))));
+	}
+
+	{//3D模型
+		auto meshBuf = ODLTools::NEW_CreateMeshBuffer(solid);
+		assert(meshBuf);
+		auto newMesh = new irr::scene::SMesh;
+		newMesh->addMeshBuffer(meshBuf);
+		newMesh->recalculateBoundingBox();
+
+		GetDataSceneNode()->setMesh(newMesh);
+		newMesh->drop();
+		meshBuf->drop();
+	}
+	
+	{//2D模型
+		auto transformedFace = bottomFace.Moved(absoluteToRelation);
+		ImpUPtr_->Node2D_->UpdateMesh(transformedFace);
+	}
+	
+	{//设置效果
+		GetDataSceneNode()->setMaterialFlag(irr::video::EMF_LIGHTING, false);
+		GetDataSceneNode()->AddToDepthPass();
+		SetDefaultTexture();
+	}
 }
 
+void WallODL::SetDefaultTexture()
+{
+	auto tex = GetDataSceneNode()->getSceneManager()->getVideoDriver()->getTexture("../Data/Resource/3D/wall.jpg");
+	assert(tex);
+
+	auto uLen = 4000.f;//tex->getSize().Width;
+	auto vLen = 3000.f;//tex->getSize().Height;
+
+	irr::core::matrix4 texMat;
+	texMat.setScale(irr::core::vector3df(1/uLen, 1/vLen, 1));
+	auto meshBufferPtr = GetDataSceneNode()->getMesh()->getMeshBuffer(0);
+
+	meshBufferPtr->getMaterial().setTextureMatrix(0, texMat);
+	GetDataSceneNode()->setMaterialTexture(0, tex);
+}

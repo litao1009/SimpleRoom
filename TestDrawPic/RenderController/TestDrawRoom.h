@@ -4,6 +4,7 @@
 #pragma once
 
 #include "irrEngine/IRenderController.h"
+#include "ODL/GraphODLFwd.h"
 
 
 class	TestDrawRoomCtrller : public IRenderController
@@ -13,7 +14,7 @@ class	TestDrawRoomCtrller : public IRenderController
 
 public:
 
-	TestDrawRoomCtrller();
+	TestDrawRoomCtrller(const GraphODLWPtr& graphODL);
 	~TestDrawRoomCtrller();
 
 public:

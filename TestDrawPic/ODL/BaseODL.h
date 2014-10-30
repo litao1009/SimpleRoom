@@ -37,7 +37,7 @@ public:
 	const gp_Trsf&		GetAbsoluteTransform() const { return AbsoluteTransform_; }
 
 	bool				IsDirty() const { return Dirty_; }
-	void				SetDirty() { Dirty_ = true; }
+	void				SetDirty(bool val) { Dirty_ = val; }
 
 private:
 

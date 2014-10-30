@@ -664,9 +664,12 @@ irr::scene::IMeshBuffer* ODLTools::NEW_CreateMeshBuffer( const TopoDS_Shape& sha
 			GeomAPI_ProjectPointOnSurf projpnta(pnt, surf);
 			Quantity_Parameter u,v;
 			projpnta.LowerDistanceParameters(u, v);
+			gp_Pnt UV(u-umin, 0, v-vmin);
+			UV.Transform(shape.Location().Transformation().Inverted());
 
 			vector3df pos(static_cast<f32>(pnt.X()), static_cast<f32>(pnt.Y()), static_cast<f32>(pnt.Z()));
-			vector2df coord(static_cast<f32>(u-umin),static_cast<f32>(v-vmin));
+			vector2df coord(static_cast<f32>(UV.X()),static_cast<f32>(UV.Z()));
+			
 			S3DVertex meshVertex(pos, normal, clr, coord);
 
 			meshBufferPtr->getVertexBuffer().push_back(meshVertex);

@@ -22,7 +22,7 @@ public:
 
 public:
 
-	WallODL(const GraphODLWPtr graphODL, const CornerODLSPtr& firstCorner, const CornerODLSPtr& secondCorner,  float wallThickness = 200.f);
+	WallODL(const GraphODLWPtr graphODL, const CornerODLSPtr& firstCorner, const CornerODLSPtr& secondCorner,  float wallThickness = 200.f, float height = 2800.f);
 	~WallODL(void);
 
 public:
@@ -49,9 +49,15 @@ public:
 
 	float				GetThickness() const { return Thickness_; }
 
+	void				SetHeight(float val) { Height_ = val; }
+
+	float				GetHeight() const { return Height_; }
+
 	void				UpdateMesh();
 
 	const MeshPoints&	GetMeshPoints() { return MeshPoints_; }
+
+	void				SetDefaultTexture();
 
 private:
 
@@ -61,6 +67,7 @@ private:
 	CornerODLWPtr	SecondCorner_;
 
 	float			Thickness_;
+	float			Height_;
 	MeshPoints		MeshPoints_;
 
 	GraphODLWPtr	GraphODL_;

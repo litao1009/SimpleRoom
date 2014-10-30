@@ -18,6 +18,12 @@ enum EObjectDisplayLayerType
 	//设计方案
 	EODLT_DESIGN,
 
+	//图
+	EODLT_GRAPH,
+
+	//房间
+	EODLT_ROOM,
+
 	//墙角
 	EODLT_CORNER,
 

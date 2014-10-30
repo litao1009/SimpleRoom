@@ -217,16 +217,13 @@
     <ClCompile Include="RenderController\TestDrawRoom.cpp">
       <Filter>RenderController</Filter>
     </ClCompile>
-    <ClCompile Include="RenderController\FloorPlan\GraphController.cpp">
-      <Filter>RenderController\FloorPlan</Filter>
-    </ClCompile>
-    <ClCompile Include="RenderController\FloorPlan\Wall.cpp">
-      <Filter>RenderController\FloorPlan</Filter>
-    </ClCompile>
     <ClCompile Include="ODL\GraphODL.cpp">
       <Filter>ODL</Filter>
     </ClCompile>
     <ClCompile Include="ODL\CornerODL.cpp">
+      <Filter>ODL</Filter>
+    </ClCompile>
+    <ClCompile Include="ODL\RoomODL.cpp">
       <Filter>ODL</Filter>
     </ClCompile>
   </ItemGroup>
@@ -501,30 +498,6 @@
     <ClInclude Include="RenderController\TestDrawRoom.h">
       <Filter>RenderController</Filter>
     </ClInclude>
-    <ClInclude Include="RenderController\FloorPlan\Graph.h">
-      <Filter>RenderController\FloorPlan</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderController\FloorPlan\Room.h">
-      <Filter>RenderController\FloorPlan</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderController\FloorPlan\Wall.h">
-      <Filter>RenderController\FloorPlan</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderController\FloorPlan\Corner.h">
-      <Filter>RenderController\FloorPlan</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderController\FloorPlan\CornerFwd.h">
-      <Filter>RenderController\FloorPlan</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderController\FloorPlan\RoomFwd.h">
-      <Filter>RenderController\FloorPlan</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderController\FloorPlan\WallFwd.h">
-      <Filter>RenderController\FloorPlan</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderController\FloorPlan\GraphController.h">
-      <Filter>RenderController\FloorPlan</Filter>
-    </ClInclude>
     <ClInclude Include="ODL\CornerODLFwd.h">
       <Filter>ODL</Filter>
     </ClInclude>
@@ -538,6 +511,12 @@
       <Filter>ODL</Filter>
     </ClInclude>
     <ClInclude Include="ODL\GraphODLFwd.h">
+      <Filter>ODL</Filter>
+    </ClInclude>
+    <ClInclude Include="ODL\RoomODLFwd.h">
+      <Filter>ODL</Filter>
+    </ClInclude>
+    <ClInclude Include="ODL\RoomODL.h">
       <Filter>ODL</Filter>
     </ClInclude>
   </ItemGroup>
@@ -650,9 +629,6 @@
     </Filter>
     <Filter Include="ODL\MeshSceneNode">
       <UniqueIdentifier>{b22615fd-ddca-4d24-bf1b-d41a4c14d9d3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="RenderController\FloorPlan">
-      <UniqueIdentifier>{5db0adf6-a3fe-4073-b1f8-5571a322dba2}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
