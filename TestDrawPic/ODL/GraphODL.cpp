@@ -51,19 +51,17 @@ public:
 		template <typename Vertex> 
 		void next_vertex(Vertex v) 
 		{ 
-			if ( Dirty_ )
-			{
-				return;
-			}
-
 			auto corner = boost::get(CornerTag(), GraphODL_->Graph_, v);
-			if ( std::find(CurCorners_.rbegin(), CurCorners_.rend(), corner) == CurCorners_.rend() )
+
+			if ( CurCorners_.size() > 2 && CurCorners_[CurCorners_.size()-2] == corner )
 			{
-				CurCorners_.push_back(corner);
+				CurCorners_.pop_back();
+				Dirty_ = true;
 			}
 			else
 			{
-				Dirty_ = true;
+				CurCorners_.push_back(corner);
+				Dirty_ = false;
 			}
 		}
 
@@ -72,10 +70,12 @@ public:
 		{
 			if ( Dirty_ )
 			{
-				return;
+				CurWalls_.pop_back();
 			}
-
-			CurWalls_.push_back(boost::get(WallTag(), GraphODL_->Graph_, e));
+			else
+			{
+				CurWalls_.push_back(boost::get(WallTag(), GraphODL_->Graph_, e));
+			}
 		}
 
 
