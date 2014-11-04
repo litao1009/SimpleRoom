@@ -19,7 +19,7 @@
 #include "BRep_Tool.hxx"
 #include "BRepAdaptor_Curve.hxx"
 #include "BRepBuilderAPI_MakeEdge.hxx"
-#include "BRepExtrema_DistShapeShape.hxx"
+#include "gce_MakeLin.hxx"
 
 #include <vector>
 
@@ -27,6 +27,8 @@ using namespace irr;
 using namespace scene;
 using namespace video;
 using namespace core;
+
+static	gp_Pln	compareIntCCPln(gp_Ax3(gp::Origin(), gp::DY().Reversed(), gp::DX()));
 
 enum EState
 {
@@ -47,7 +49,7 @@ public:
 		PositionRect_->getMaterial().Lighting = false;
 		PositionRect_->getMaterial().BackfaceCulling = false;
 		PositionRect_->getMaterial().ZWriteEnable = false;
-		PositionRect_->getMaterial().MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_VERTEX_ALPHA);//EMT_TRANSPARENT_ALPHA_CHANNEL;
+		PositionRect_->getMaterial().MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_VERTEX_ALPHA);
 		PositionRect_->getMaterial().MaterialTypeParam = 0.65f;
 
 		FloatingLine_ = new SMeshBuffer;
@@ -63,7 +65,7 @@ public:
 		AuxiliaryLine_->getMaterial().ZWriteEnable = false;
 		AuxiliaryLine_->getMaterial().MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_LINE);
 		AuxiliaryLine_->getMaterial().DiffuseColor = 0xFF000000;
-		FloatingLine_->getMaterial().Thickness = 2;
+		AuxiliaryLine_->getMaterial().Thickness = 2;
 
 		PressDown_ = false;
 		Finish_ = false;
@@ -104,9 +106,16 @@ public:
 
 	EState						State_;
 
+	//极轴角度
 	float						Polar_;
+	
+	//极轴范围
 	float						PolarRange_;
+	
+	//极轴追踪
 	bool						AllowPolar_;
+	
+	//垂线追踪
 	bool						AllowPerpendicular_;
 	
 	//目前的线
@@ -117,17 +126,17 @@ public:
 	matrix4						PositionRectScaleMat_;
 	matrix4						PositionRectTransMat_;
 
+	//辅助线
+	SMeshBuffer*				AuxiliaryLine_;
+
 	//绘制路径点
 	std::vector<CornerODLSPtr>	DrawingPathList_;
 
 	//Floating的起始点
-	CornerODLSPtr				BeginCorner_;
-	vector2di					CursorIPos_;
-
+	CornerODLSPtr				LastCorner_;
 	WallODLSPtr					LastWall_;
 
-	//辅助线
-	SMeshBuffer*				AuxiliaryLine_;
+	vector2di					CursorIPos_;
 	
 	bool						PressDown_;
 	bool						Finish_;
@@ -143,6 +152,14 @@ TestDrawRoomCtrller::TestDrawRoomCtrller(const GraphODLWPtr& graphODL):ImpUPtr_(
 TestDrawRoomCtrller::~TestDrawRoomCtrller()
 {
 
+}
+
+double	GetDeg(const gp_Dir& dir)
+{
+	auto rad = dir.AngleWithRef(gp::DX(), gp::DY().Reversed());
+	rad = rad < 0 ? M_PI * 2 + rad : rad;
+
+	return 180 * rad * M_1_PI;
 }
 
 bool TestDrawRoomCtrller::PreRender3D()
@@ -168,6 +185,12 @@ bool TestDrawRoomCtrller::PreRender3D()
 	//只有一个墙的墙角
 	std::vector<CornerODLSPtr>	lonelyCorners;
 
+	//需要拆分的墙
+	WallODLSPtr toSplit;
+
+	//两条辅助线
+	BRepAdaptor_Curve firstAuxiliaryLine,secondAuxiliaryLine;
+
 	//寻找最近的墙角和一个墙的墙角
 	for ( auto& curCorner : imp_.Graph_.lock()->GetAllCorners() )
 	{
@@ -186,19 +209,17 @@ bool TestDrawRoomCtrller::PreRender3D()
 		}
 	}
 
-	WallODLSPtr toSplit;
-	BRepAdaptor_Curve firstCurve,secondCurve;
-
 	//寻找线
 	if ( !nearestCorner )
 	{
+		std::vector<BRepAdaptor_Curve>	lineGroup;
+
 		//满足条件的线
-		std::vector<BRepAdaptor_Curve> lineGroup;
 		BRepAdaptor_Curve ontoCurve;
 
 		auto allWalls = imp_.Graph_.lock()->GetAllWalls();
 
-		//寻找线和点
+		//延长线和拆分点
 		for ( auto& curWall : allWalls )
 		{
 			//暂时只考虑直线
@@ -211,6 +232,8 @@ bool TestDrawRoomCtrller::PreRender3D()
 			BRepAdaptor_Curve curBC(curEdge);
 			
 			GeomAPI_ProjectPointOnCurve projCursorToWall(cursorPnt, curBC.Curve().Curve());
+
+			//排除未发生吸附的
 			if ( projCursorToWall.LowerDistance() > alignDistance )
 			{
 				continue;
@@ -219,131 +242,156 @@ bool TestDrawRoomCtrller::PreRender3D()
 			auto curPar = projCursorToWall.LowerDistanceParameter();
 			auto isOnCurve = curPar > curBC.FirstParameter() + curWall->GetThickness()/2 && curPar < curBC.LastParameter()-curWall->GetThickness()/2;
 			
+			//检查是否为拆分边
 			if ( !toSplit && isOnCurve)
 			{
 				toSplit = curWall;
 				ontoCurve = curBC;
 				continue;
 			}
+			
+			lineGroup.push_back(curBC);
 
-			auto itor = std::find_if(lineGroup.begin(), lineGroup.end(), [&curBC](const BRepAdaptor_Curve& curSaveBC)
+			//墙边垂线
+			if ( imp_.AllowPerpendicular_ )
 			{
-				return Standard_True == curBC.Line().Direction().IsParallel(curSaveBC.Line().Direction(), Precision::Angular());
+				if ( imp_.LastCorner_ )
+				{
+					GeomAPI_ProjectPointOnCurve projLastCornerToWall(imp_.LastCorner_->GetPosition(), curBC.Curve().Curve());
+					auto pnt = projLastCornerToWall.NearestPoint();
+					if ( pnt.SquareDistance(cursorPnt) < alignDistance * alignDistance )
+					{
+						BRepAdaptor_Curve bc(BRepBuilderAPI_MakeEdge(imp_.LastCorner_->GetPosition(), pnt).Edge());
+						lineGroup.push_back(bc);
+					}
+				}
+			}
+		}
+
+		//墙角垂线
+		if ( lineGroup.size() < 2 )
+		{
+			for ( auto& curCorner : lonelyCorners )
+			{
+				auto curWalls = imp_.Graph_.lock()->GetWallsOnCorner(curCorner);
+				assert(curWalls.size() == 1);
+
+				auto& curWall = curWalls.front();
+				gp_Dir curDir = gp_Vec(curWall->GetFirstCorner().lock()->GetPosition(), curWall->GetSecondCorner().lock()->GetPosition());
+				curDir.Rotate(gp::OY(), M_PI_2);
+				
+				auto curLin = gce_MakeLin(curCorner->GetPosition(), curDir).Value();
+				if ( curLin.Distance(cursorPnt) < alignDistance )
+				{
+					BRepAdaptor_Curve curBC(BRepBuilderAPI_MakeEdge(curLin).Edge());
+					lineGroup.push_back(curBC);
+				}
+			}
+		}
+
+		{//排序、归并已找到的边
+			std::sort(lineGroup.begin(), lineGroup.end(), [](const BRepAdaptor_Curve& bc1, const BRepAdaptor_Curve& bc2)
+			{
+				auto angle1 = bc1.Line().Direction().AngleWithRef(gp::DX(), gp::DY().Reversed());
+				angle1 = angle1 < 0 ? 2 * M_PI + angle1 : angle1;
+
+				auto angle2 = bc2.Line().Direction().AngleWithRef(gp::DX(), gp::DY().Reversed());
+				angle2 = angle2 < 0 ? 2 * M_PI + angle2 : angle2;
+
+				return angle1 < angle2;
 			});
 
-			if ( itor == lineGroup.end() )
+			std::unique(lineGroup.begin(), lineGroup.end(), [](const BRepAdaptor_Curve& bc1, const BRepAdaptor_Curve& bc2)
 			{
-				lineGroup.push_back(curBC);
+				auto angle1 = bc1.Line().Direction();
+				auto angle2 = bc2.Line().Direction();
+
+				return Standard_True == angle1.IsParallel(angle2, Precision::Angular());
+			});
+
+			if ( toSplit )
+			{
+				auto splitDir = ontoCurve.Line().Direction();
+				auto itor = std::remove_if(lineGroup.begin(), lineGroup.end(), [&splitDir](const BRepAdaptor_Curve& bc)
+				{
+					return Standard_True == splitDir.IsParallel(bc.Line().Direction(), Precision::Angular()); 
+				});
+				lineGroup.erase(itor, lineGroup.end());
 			}
 		}
 
 		if ( toSplit )
 		{
-			auto itor = std::remove_if(lineGroup.begin(), lineGroup.end(), [&ontoCurve](const BRepAdaptor_Curve& curBC)
-			{
-				return ontoCurve.Line().Direction().IsParallel(curBC.Line().Direction(), Precision::Angular());
-			});
-			lineGroup.erase(itor, lineGroup.end());
-		}
+			firstAuxiliaryLine = ontoCurve;
+			
+			auto ontoCurve2D = GeomAPI::To2d(ontoCurve.Curve().Curve(), compareIntCCPln);
 
-		if ( toSplit )
-		{
-			firstCurve = ontoCurve;
+			for ( auto& curBC : lineGroup )
+			{
+				auto cur2D = GeomAPI::To2d(curBC.Curve().Curve(), compareIntCCPln);
+				Geom2dAPI_InterCurveCurve icc(ontoCurve2D, cur2D);
+
+				assert(1 == icc.NbPoints());
+
+				auto iccPnt2D = icc.Point(1);
+				gp_Pnt iccPnt(iccPnt2D.X(), 0, iccPnt2D.Y());
+
+				if ( iccPnt.SquareDistance(cursorPnt) < alignDistance * alignDistance )
+				{
+					cursorPnt = iccPnt;
+					secondAuxiliaryLine = curBC;
+					break;
+				}
+			}
 		}
 		else if ( !lineGroup.empty() )
 		{
-			firstCurve = lineGroup.front();
-			lineGroup.erase(lineGroup.begin());
-		}
+			firstAuxiliaryLine = lineGroup.front();
 
-		if ( GeomAbs_OtherCurve == firstCurve.GetType() )
-		{
-			auto foundPolar = false;
-
-			if ( imp_.AllowPolar_ && imp_.State_ == EState::ES_DRAWING )
+			do
 			{
-				auto lastDir = imp_.LastWall_ ? BRepAdaptor_Curve(imp_.LastWall_->GetEdge()).Line().Direction() : gp::DX();
-				gp_Vec curVec(imp_.BeginCorner_->GetPosition(), cursorPnt);
-				gp_Dir curDir = curVec;
+				auto tmpFirstLine = lineGroup.front();
+				auto tmpFirstLine2D = GeomAPI::To2d(tmpFirstLine.Curve().Curve(), compareIntCCPln);
 
-				auto rad = lastDir.AngleWithRef(curDir, gp::DY());
-				rad = rad < 0 ? M_PI * 2 + rad : rad;
-				auto angle = irr::core::radToDeg(rad);
-
-				auto rest = std::fmod(angle, imp_.Polar_);
-				if ( rest < imp_.PolarRange_/2 )
-				{
-					foundPolar = true;
-					angle -= rest;
-				}
-				if ( imp_.Polar_-rest < imp_.PolarRange_/2 )
-				{
-					foundPolar = true;
-					angle += imp_.Polar_ - rest;
-				}
-
-				if ( foundPolar )
-				{
-					auto newDir = lastDir.Rotated(gp::OY(), irr::core::degToRad(angle));
-					cursorPnt = imp_.BeginCorner_->GetPosition().XYZ() + newDir.XYZ() * std::sqrt(curVec.SquareMagnitude());
-					firstCurve = BRepAdaptor_Curve(BRepBuilderAPI_MakeEdge(imp_.BeginCorner_->GetPosition(), cursorPnt));
-				}
-			}
-		}
-		else
-		{
-			auto foundSecond = false;
-			
-			if ( !lineGroup.empty() )
-			{
-				gp_Pln pln(gp_Ax3(gp::Origin(), gp::DY().Reversed(), gp::DX()));
-				auto firstline2D = GeomAPI::To2d(firstCurve.Curve().Curve(), pln);
-
+				lineGroup.erase(lineGroup.begin());
+				auto needBreak = false;
 				for ( auto& curBC : lineGroup )
 				{
-					auto secondline2D = GeomAPI::To2d(curBC.Curve().Curve(), pln);
+					auto cur2D = GeomAPI::To2d(curBC.Curve().Curve(), compareIntCCPln);
+					Geom2dAPI_InterCurveCurve icc(tmpFirstLine2D, cur2D);
 
-					Geom2dAPI_InterCurveCurve icc(firstline2D, secondline2D);
-					assert(icc.NbPoints() == 1);
-
-					auto iccPnt = icc.Point(1);
-					gp_Pnt iccPnt3D(iccPnt.X(), 0, iccPnt.Y());
-
-					if ( cursorPnt.SquareDistance(iccPnt3D) < alignDistance * alignDistance )
+					if ( 1 != icc.NbPoints() )
 					{
-						cursorPnt = iccPnt3D;
-						secondCurve = curBC;
-						foundSecond = true;
+						continue;
+					}
+
+					auto iccPnt2D = icc.Point(1);
+					gp_Pnt iccPnt(iccPnt2D.X(), 0, iccPnt2D.Y());
+
+					if ( iccPnt.SquareDistance(cursorPnt) < alignDistance * alignDistance )
+					{
+						cursorPnt = iccPnt;
+						firstAuxiliaryLine = tmpFirstLine;
+						secondAuxiliaryLine = curBC;
+						needBreak = true;
 						break;
 					}
-				}				
-			}
-
-			if ( !foundSecond )
-			{
-				//尝试找垂线
-				auto foundPerpendicular = false;
-				if ( imp_.AllowPerpendicular_ && imp_.BeginCorner_ )
-				{
-					GeomAPI_ProjectPointOnCurve ppc(imp_.BeginCorner_->GetPosition(), firstCurve.Curve().Curve());
-					auto ppcPnt = ppc.Point(1);
-					if ( ppcPnt.SquareDistance(cursorPnt) < alignDistance * alignDistance )
-					{
-						cursorPnt = ppcPnt;
-						foundPerpendicular = true;
-						secondCurve = BRepAdaptor_Curve(BRepBuilderAPI_MakeEdge(imp_.BeginCorner_->GetPosition(), ppcPnt));
-					}
 				}
 
-				if ( !foundPerpendicular )
+				if ( needBreak )
 				{
-					GeomAPI_ProjectPointOnCurve ppc(cursorPnt, firstCurve.Curve().Curve());
-					cursorPnt = ppc.Point(1);
+					break;
 				}
-			}
+			}while ( !lineGroup.empty() );
 		}
 
-		if ( !nearestCorner && GeomAbs_OtherCurve == firstCurve.GetType() && StatusMgr::GetInstance().GridAlign_ )
+		if ( GeomAbs_OtherCurve != firstAuxiliaryLine.GetType() && GeomAbs_OtherCurve == secondAuxiliaryLine.GetType() )
+		{
+			GeomAPI_ProjectPointOnCurve ppc(cursorPnt, firstAuxiliaryLine.Curve().Curve());
+			cursorPnt = ppc.NearestPoint();
+		}
+
+		if ( GeomAbs_OtherCurve == firstAuxiliaryLine.GetType() && StatusMgr::GetInstance().GridAlign_ )
 		{
 			auto pos = *StatusMgr::GetInstance().GridAlign_;
 			cursorPnt = gp_Pnt(pos.X, 0, pos.Z);
@@ -359,25 +407,25 @@ bool TestDrawRoomCtrller::PreRender3D()
 				imp_.PressDown_ = false;
 				if ( nearestCorner )
 				{
-					imp_.BeginCorner_ = nearestCorner;
+					imp_.LastCorner_ = nearestCorner;
 				}
 				else
 				{
 					if ( toSplit )
 					{
-						imp_.BeginCorner_ = imp_.Graph_.lock()->CreateCornerBySplitWall(toSplit, cursorPnt);
-						for ( auto& curWall : imp_.Graph_.lock()->GetWallsOnCorner(imp_.BeginCorner_) )
+						imp_.LastCorner_ = imp_.Graph_.lock()->CreateCornerBySplitWall(toSplit, cursorPnt);
+						for ( auto& curWall : imp_.Graph_.lock()->GetWallsOnCorner(imp_.LastCorner_) )
 						{
 							curWall->UpdateMesh();
 						}
 					}
 					else
 					{
-						imp_.BeginCorner_ = imp_.Graph_.lock()->CreateCorner(cursorPnt);
+						imp_.LastCorner_ = imp_.Graph_.lock()->CreateCorner(cursorPnt);
 					}
 				}
 
-				imp_.DrawingPathList_.push_back(imp_.BeginCorner_);
+				imp_.DrawingPathList_.push_back(imp_.LastCorner_);
 				imp_.State_ = EState::ES_DRAWING;
 			}
 		}
@@ -388,25 +436,25 @@ bool TestDrawRoomCtrller::PreRender3D()
 			{//checkValid
 
 				//与起始点点重合
-				if ( imp_.BeginCorner_ == nearestCorner )
+				if ( imp_.LastCorner_ == nearestCorner )
 				{
 					valid = false;
 				}
 				else
 				{
 					//目前的边
-					auto floatingEdge = BRepBuilderAPI_MakeEdge(imp_.BeginCorner_->GetPosition(), cursorPnt).Edge();
+					auto floatingEdge = BRepBuilderAPI_MakeEdge(imp_.LastCorner_->GetPosition(), cursorPnt).Edge();
 					BRepAdaptor_Curve floatingBC(floatingEdge);
 
 					//与边的夹角小于15度
 					if ( valid )
 					{
-						for ( auto& curWall : imp_.Graph_.lock()->GetWallsOnCorner(imp_.BeginCorner_) )
+						for ( auto& curWall : imp_.Graph_.lock()->GetWallsOnCorner(imp_.LastCorner_) )
 						{
 							auto beginCorner = curWall->GetFirstCorner().lock();
 							auto endCorner = curWall->GetSecondCorner().lock();
 
-							if ( beginCorner != imp_.BeginCorner_ )
+							if ( beginCorner != imp_.LastCorner_ )
 							{
 								beginCorner.swap(endCorner);
 							}
@@ -433,13 +481,13 @@ bool TestDrawRoomCtrller::PreRender3D()
 						gp_Pln pln(gp_Ax3(gp::Origin(), gp::DY().Reversed(), gp::DX()));
 
 						//目前的边
-						auto floatingEdge = BRepBuilderAPI_MakeEdge(imp_.BeginCorner_->GetPosition(), cursorPnt).Edge();
+						auto floatingEdge = BRepBuilderAPI_MakeEdge(imp_.LastCorner_->GetPosition(), cursorPnt).Edge();
 						Standard_Real floatingFirstPar,floatingLastPar;
 						BRep_Tool::Range(floatingEdge, floatingFirstPar, floatingLastPar);
 
 						for ( auto& curWall : imp_.Graph_.lock()->GetAllWalls() )
 						{
-							if ( curWall->GetFirstCorner().lock() == imp_.BeginCorner_ || curWall->GetSecondCorner().lock() == imp_.BeginCorner_ )
+							if ( curWall->GetFirstCorner().lock() == imp_.LastCorner_ || curWall->GetSecondCorner().lock() == imp_.LastCorner_ )
 							{
 								continue;
 							}
@@ -500,32 +548,32 @@ bool TestDrawRoomCtrller::PreRender3D()
 
 				if ( valid )
 				{
-					imp_.SetNeedUpdateMeshOnCorner(imp_.BeginCorner_);
+					imp_.SetNeedUpdateMeshOnCorner(imp_.LastCorner_);
 
 					if ( nearestCorner )
 					{
-						imp_.LastWall_ = imp_.Graph_.lock()->AddWall(imp_.BeginCorner_, nearestCorner);
-						imp_.BeginCorner_ = nearestCorner;
+						imp_.LastWall_ = imp_.Graph_.lock()->AddWall(imp_.LastCorner_, nearestCorner);
+						imp_.LastCorner_ = nearestCorner;
 					}
 					else
 					{
 						if ( toSplit )
 						{
 							auto newCorner = imp_.Graph_.lock()->CreateCornerBySplitWall(toSplit, cursorPnt);
-							imp_.LastWall_ = imp_.Graph_.lock()->AddWall(imp_.BeginCorner_, newCorner);
-							imp_.BeginCorner_ = newCorner;
+							imp_.LastWall_ = imp_.Graph_.lock()->AddWall(imp_.LastCorner_, newCorner);
+							imp_.LastCorner_ = newCorner;
 						}
 						else
 						{
 							auto newCorner = imp_.Graph_.lock()->CreateCorner(cursorPnt);
-							imp_.LastWall_ = imp_.Graph_.lock()->AddWall(imp_.BeginCorner_, newCorner);
-							imp_.BeginCorner_ = newCorner;
+							imp_.LastWall_ = imp_.Graph_.lock()->AddWall(imp_.LastCorner_, newCorner);
+							imp_.LastCorner_ = newCorner;
 						}
 					}
 
-					imp_.DrawingPathList_.push_back(imp_.BeginCorner_);
+					imp_.DrawingPathList_.push_back(imp_.LastCorner_);
 
-					imp_.SetNeedUpdateMeshOnCorner(imp_.BeginCorner_);
+					imp_.SetNeedUpdateMeshOnCorner(imp_.LastCorner_);
 				}
 			}
 
@@ -533,12 +581,12 @@ bool TestDrawRoomCtrller::PreRender3D()
 			{
 				imp_.Finish_ = false;
 
-				auto walls = imp_.Graph_.lock()->GetWallsOnCorner(imp_.BeginCorner_);
+				auto walls = imp_.Graph_.lock()->GetWallsOnCorner(imp_.LastCorner_);
 				if ( walls.empty() )
 				{
-					imp_.Graph_.lock()->RemoveCorner(imp_.BeginCorner_);
+					imp_.Graph_.lock()->RemoveCorner(imp_.LastCorner_);
 				}
-				imp_.BeginCorner_ = nullptr;
+				imp_.LastCorner_ = nullptr;
 				imp_.LastWall_ = nullptr;
 
 				for ( auto& curCorner : imp_.DrawingPathList_ )
@@ -568,23 +616,23 @@ bool TestDrawRoomCtrller::PreRender3D()
 	imp_.AuxiliaryLine_->getPosition(2) = vector3df(static_cast<float>(cursorPnt.X()), static_cast<float>(cursorPnt.Y()), static_cast<float>(cursorPnt.Z()));
 	imp_.AuxiliaryLine_->getPosition(3) = vector3df(static_cast<float>(cursorPnt.X()), static_cast<float>(cursorPnt.Y()), static_cast<float>(cursorPnt.Z()));
 
-	if ( GeomAbs_OtherCurve != firstCurve.GetType() )
+	if ( GeomAbs_OtherCurve != firstAuxiliaryLine.GetType() )
 	{
 		gp_Pnt p1,p2;
 
-		firstCurve.D0(-100000, p1);
-		firstCurve.D0(100000, p2);
+		firstAuxiliaryLine.D0(-100000, p1);
+		firstAuxiliaryLine.D0(100000, p2);
 
 		imp_.AuxiliaryLine_->getPosition(0) = vector3df(static_cast<float>(p1.X()), static_cast<float>(p1.Y()), static_cast<float>(p1.Z()));
 		imp_.AuxiliaryLine_->getPosition(1) = vector3df(static_cast<float>(p2.X()), static_cast<float>(p2.Y()), static_cast<float>(p2.Z()));
 	}
 
-	if ( GeomAbs_OtherCurve != secondCurve.GetType() )
+	if ( GeomAbs_OtherCurve != secondAuxiliaryLine.GetType() )
 	{
 		gp_Pnt p1,p2;
 
-		secondCurve.D0(-100000, p1);
-		secondCurve.D0(100000, p2);
+		secondAuxiliaryLine.D0(-100000, p1);
+		secondAuxiliaryLine.D0(100000, p2);
 
 		imp_.AuxiliaryLine_->getPosition(2) = vector3df(static_cast<float>(p1.X()), static_cast<float>(p1.Y()), static_cast<float>(p1.Z()));
 		imp_.AuxiliaryLine_->getPosition(3) = vector3df(static_cast<float>(p2.X()), static_cast<float>(p2.Y()), static_cast<float>(p2.Z()));
@@ -595,9 +643,9 @@ bool TestDrawRoomCtrller::PreRender3D()
 		imp_.PositionRectTransMat_.setTranslation(center);
 	}
 
-	if ( imp_.BeginCorner_ )
+	if ( imp_.LastCorner_ )
 	{
-		auto beginPnt = imp_.BeginCorner_->GetPosition();
+		auto beginPnt = imp_.LastCorner_->GetPosition();
 		vector3df beginVec(static_cast<float>(beginPnt.X()), static_cast<float>(beginPnt.Y()), static_cast<float>(beginPnt.Z()));
 		vector3df curVec(static_cast<float>(cursorPnt.X()), static_cast<float>(cursorPnt.Y()), static_cast<float>(cursorPnt.Z()));
 		imp_.FloatingLine_->getPosition(0) = beginVec;
@@ -628,7 +676,7 @@ void TestDrawRoomCtrller::PostRender3D()
 		break;
 	case EState::ES_DRAWING:
 		{
-			if ( imp_.BeginCorner_ )
+			if ( imp_.LastCorner_ )
 			{
 				driver->setTransform(ETS_WORLD, matrix4());
 				driver->setMaterial(imp_.FloatingLine_->getMaterial());
