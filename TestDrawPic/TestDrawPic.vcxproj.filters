@@ -226,6 +226,12 @@
     <ClCompile Include="ODL\RoomODL.cpp">
       <Filter>ODL</Filter>
     </ClCompile>
+    <ClCompile Include="ODL\MeshSceneNode\CornerMeshNode2D.cpp">
+      <Filter>ODL\MeshSceneNode</Filter>
+    </ClCompile>
+    <ClCompile Include="ODL\FloorODL.cpp">
+      <Filter>ODL</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BLL\BaseBLL.h">
@@ -517,6 +523,15 @@
       <Filter>ODL</Filter>
     </ClInclude>
     <ClInclude Include="ODL\RoomODL.h">
+      <Filter>ODL</Filter>
+    </ClInclude>
+    <ClInclude Include="ODL\MeshSceneNode\CornerMeshNode2D.h">
+      <Filter>ODL\MeshSceneNode</Filter>
+    </ClInclude>
+    <ClInclude Include="ODL\FloorODL.h">
+      <Filter>ODL</Filter>
+    </ClInclude>
+    <ClInclude Include="ODL\FloorODLFwd.h">
       <Filter>ODL</Filter>
     </ClInclude>
   </ItemGroup>

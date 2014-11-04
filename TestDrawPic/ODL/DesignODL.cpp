@@ -98,7 +98,7 @@ public://IRenderController
 		}
 		else
 		{
-			CBaseSceneNode::SetRenderMode(CBaseSceneNode::ESNT_3D);
+			CBaseSceneNode::SetRenderMode(CBaseSceneNode::ESNT_2D);
 			GetRenderContextSPtr()->EnableDepthPass(true);
 		}
 

@@ -20,7 +20,6 @@ public:
 		RoomVisitor(const GraphODLSPtr& graphODL)
 		{
 			GraphODL_ = graphODL;
-			Dirty_ = false;
 		}
 
 	public:
@@ -28,61 +27,58 @@ public:
 		void begin_face()
 		{
 			auto newRoom = std::make_shared<RoomODL>(GraphODL_->GetRenderContextWPtr());
-			Rooms_.push_back(newRoom);
+			newRoom->CreateEmptyDataSceneNode();
+			FoundRooms_.push_back(newRoom);
 		}
 
 		void end_face()
 		{
-			if ( !Dirty_ )
-			{
-				Rooms_.back()->SetWallList(CurWalls_);
-				Rooms_.back()->SetCornerList(CurCorners_);
-			}
-			else
-			{
-				Rooms_.pop_back();
-			}
-			
+			FoundRooms_.back()->SetWallList(CurWalls_);
+			FoundRooms_.back()->SetCornerList(CurCorners_);
+
 			CurCorners_.clear();
 			CurWalls_.clear();
-			Dirty_ = false;
 		}
 
 		template <typename Vertex> 
 		void next_vertex(Vertex v) 
 		{ 
 			auto corner = boost::get(CornerTag(), GraphODL_->Graph_, v);
+			auto wallsOnCorner = GraphODL_->GetWallsOnCorner(corner);
+			if ( 1 == wallsOnCorner.size() )
+			{
+				return;
+			}
 
-			if ( CurCorners_.size() > 2 && CurCorners_[CurCorners_.size()-2] == corner )
+			if ( !CurCorners_.empty() && CurCorners_.back() == corner )
 			{
 				CurCorners_.pop_back();
-				Dirty_ = true;
 			}
 			else
 			{
+				
 				CurCorners_.push_back(corner);
-				Dirty_ = false;
 			}
 		}
 
 		template <typename Edge>
 		void next_edge(Edge e)
 		{
-			if ( Dirty_ )
+			auto curWall = boost::get(WallTag(), GraphODL_->Graph_, e);
+
+			if ( !CurWalls_.empty() && CurWalls_.back() == curWall )
 			{
 				CurWalls_.pop_back();
 			}
 			else
 			{
-				CurWalls_.push_back(boost::get(WallTag(), GraphODL_->Graph_, e));
+				CurWalls_.push_back(curWall);
 			}
 		}
 
-
-		bool			Dirty_;
 		WallODLList		CurWalls_;
 		CornerODLList	CurCorners_;
-		RoomODLList		Rooms_;
+		RoomODLList		FoundRooms_;
 		GraphODLSPtr	GraphODL_;
 	};
 
@@ -103,11 +99,28 @@ public:
 
 		RoomVisitor vv(graphODL);
 		boost::planar_face_traversal(graphODL->Graph_, embedding.data(), vv);
+
+		for ( auto& curRoom : graphODL->ImpUPtr_->Rooms_ )
+		{
+			graphODL->RemoveChild(curRoom);
+		}
+		graphODL->ImpUPtr_->Rooms_.clear();
+
+		for ( auto& toAdd : vv.FoundRooms_ )
+		{
+			if ( !toAdd->Build() )
+			{
+				continue;
+			}
+
+			graphODL->AddChild(toAdd);
+			graphODL->ImpUPtr_->Rooms_.push_back(toAdd);
+		}
 	}
 
 public:
 
-
+	RoomODLList		Rooms_;
 };
 
 GraphODL::GraphODL(const SRenderContextWPtr& rc):CBaseODL(rc),ImpUPtr_(new Imp)
@@ -167,7 +180,7 @@ WallODLList GraphODL::GetWallsOnCorner( const CornerODLSPtr& corner )
 CornerODLSPtr GraphODL::CreateCorner( const gp_Pnt& position )
 {
 	auto newCorner = CreateChild<CornerODL>(GetRenderContextWPtr());
-	
+
 	auto index = boost::add_vertex(newCorner, Graph_);
 
 	newCorner->SetIndex(index);

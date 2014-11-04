@@ -361,6 +361,9 @@ void WallODL::UpdateMesh()
 	
 	{//2DÄ£ÐÍ
 		auto transformedFace = bottomFace.Moved(absoluteToRelation);
+		gp_Trsf tfs;
+		tfs.SetTranslationPart(gp_Vec(gp::Origin(), gp_Pnt(0, Height_/2, 0)));
+		transformedFace.Move(tfs);
 		ImpUPtr_->Node2D_->UpdateMesh(transformedFace);
 	}
 	

@@ -155,8 +155,11 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClInclude Include="ODL\CornerODL.h" />
     <ClInclude Include="ODL\CornerODLFwd.h" />
     <ClInclude Include="ODL\DesignODL.h" />
+    <ClInclude Include="ODL\FloorODL.h" />
+    <ClInclude Include="ODL\FloorODLFwd.h" />
     <ClInclude Include="ODL\GraphODL.h" />
     <ClInclude Include="ODL\GraphODLFwd.h" />
+    <ClInclude Include="ODL\MeshSceneNode\CornerMeshNode2D.h" />
     <ClInclude Include="ODL\MeshSceneNode\DoorMeshNode2D.h" />
     <ClInclude Include="ODL\MeshSceneNode\WallMeshNode2D.h" />
     <ClInclude Include="ODL\MeshSceneNode\WindowMeshNode2D.h" />
@@ -249,7 +252,9 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClCompile Include="DragDataListCtrl.cpp" />
     <ClCompile Include="ODL\CornerODL.cpp" />
     <ClCompile Include="ODL\DesignODL.cpp" />
+    <ClCompile Include="ODL\FloorODL.cpp" />
     <ClCompile Include="ODL\GraphODL.cpp" />
+    <ClCompile Include="ODL\MeshSceneNode\CornerMeshNode2D.cpp" />
     <ClCompile Include="ODL\MeshSceneNode\DoorMeshNode2D.cpp" />
     <ClCompile Include="ODL\MeshSceneNode\WallMeshNode2D.cpp" />
     <ClCompile Include="ODL\MeshSceneNode\WindowMeshNode2D.cpp" />

@@ -16,17 +16,17 @@
 
 #include "irrEngine/irrEngine.h"
 
-CFloorODL::CFloorODL()
+FloorODL::FloorODL(const SRenderContextWPtr& rc):CBaseODL(rc)
 {
 
 }
 
-CFloorODL::~CFloorODL( void )
+FloorODL::~FloorODL( void )
 {
 
 }
 
-void CFloorODL::SetDefaultTexture()
+void FloorODL::SetDefaultTexture()
 {
 	auto tex = GetDataSceneNode()->getSceneManager()->getVideoDriver()->getTexture("../Data/Resource/3D/floor.jpg");
 	assert(tex);
@@ -41,17 +41,14 @@ void CFloorODL::SetDefaultTexture()
 	meshBufferPtr->getMaterial().setTextureMatrix(0, texMat);
 }
 
-CFloorODLSPtr CFloorODL::CreateByFace( SRenderContextWPtr renderContext, const TopoDS_Shape& wallFace, const TopoDS_Shape& floorFace )
+FloorODLSPtr FloorODL::CreateByFace( SRenderContextWPtr renderContext, const TopoDS_Shape& floorFace )
 {
-	BRepAlgoAPI_Cut bc(floorFace, wallFace);
-	auto newfloorFace = bc.Shape();
+	auto newFloor = FloorODL::Create<FloorODL>(renderContext);
 
-	auto newFloor = CFloorODL::Create<CFloorODL>(renderContext);
-
-	newFloor->SetBaseShape(newfloorFace);
+	newFloor->SetBaseShape(floorFace);
 
 	{//3D
-		auto meshBuf = ODLTools::NEW_CreateMeshBuffer(newfloorFace);
+		auto meshBuf = ODLTools::NEW_CreateMeshBuffer(floorFace);
 		assert(meshBuf);
 
 		auto mesh = new irr::scene::SMesh;
@@ -69,7 +66,7 @@ CFloorODLSPtr CFloorODL::CreateByFace( SRenderContextWPtr renderContext, const T
 	}
 
 	{//2D
-		auto meshBuf = ODLTools::NEW_CreateMeshBuffer(newfloorFace);
+		auto meshBuf = ODLTools::NEW_CreateMeshBuffer(floorFace);
 		assert(meshBuf);
 
 		auto smgr = newFloor->GetDataSceneNode()->getSceneManager();

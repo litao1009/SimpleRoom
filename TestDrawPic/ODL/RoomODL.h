@@ -9,6 +9,8 @@
 
 class	RoomODL : public CBaseODL
 {
+	class	Imp;
+	std::unique_ptr<Imp>	ImpUPtr_;
 public:
 
 	RoomODL(const SRenderContextWPtr& rc);
@@ -27,6 +29,10 @@ public:
 	WallODLList	GetWallList() const;
 
 	CornerODLList	GetCornerList() const;
+
+	bool			Build();
+
+	double			GetArea() const;
 
 private:
 

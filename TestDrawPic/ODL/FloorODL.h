@@ -4,23 +4,19 @@
 #pragma once
 
 #include "BaseODL.h"
+#include "FloorODLFwd.h"
 
-#include "TopoDS_Shape.hxx"
 
-class	CFloorODL;
-typedef	std::shared_ptr<CFloorODL>	CFloorODLSPtr;
-typedef	std::weak_ptr<CFloorODL>	CFloorODLWPtr;
-
-class CFloorODL : public CBaseODL
+class FloorODL : public CBaseODL
 {
 public:
 
-	CFloorODL();
-	~CFloorODL(void);
+	FloorODL(const SRenderContextWPtr& rc);
+	~FloorODL(void);
 
 public:
 
-	static	CFloorODLSPtr	CreateByFace(SRenderContextWPtr renderContext, const TopoDS_Shape& wallFace, const TopoDS_Shape& floorFace);
+	static	FloorODLSPtr	CreateByFace(SRenderContextWPtr renderContext, const TopoDS_Shape& floorFace);
 
 public:
 	
