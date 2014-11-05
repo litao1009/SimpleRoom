@@ -239,10 +239,11 @@ bool TestDrawRoomCtrller::PreRender3D()
 			{
 				toSplit = curWall;
 				ontoCurve = curBC;
-				continue;
 			}
-			
-			lineGroup.push_back(curBC);
+			else
+			{
+				lineGroup.push_back(curBC);
+			}
 
 			//Ç½±ß´¹Ïß
 			if ( imp_.AllowPerpendicular_ )
@@ -381,6 +382,18 @@ bool TestDrawRoomCtrller::PreRender3D()
 		{
 			GeomAPI_ProjectPointOnCurve ppc(cursorPnt, firstAuxiliaryLine.Curve().Curve());
 			cursorPnt = ppc.NearestPoint();
+
+			if ( StatusMgr::GetInstance().GridAlign_ )
+			{
+				auto pos = *StatusMgr::GetInstance().GridAlign_;
+				GeomAPI_ProjectPointOnCurve ppcGrid(gp_Pnt(pos.X, 0, pos.Z), firstAuxiliaryLine.Curve().Curve());
+
+				auto gridPnt = ppcGrid.NearestPoint();
+				if ( gridPnt.SquareDistance(cursorPnt) < alignDistance * alignDistance )
+				{
+					cursorPnt = gridPnt;
+				}
+			}
 		}
 
 		if ( GeomAbs_OtherCurve == firstAuxiliaryLine.GetType() && StatusMgr::GetInstance().GridAlign_ )

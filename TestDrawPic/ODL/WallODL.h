@@ -22,7 +22,7 @@ public:
 
 public:
 
-	WallODL(const GraphODLWPtr graphODL, const CornerODLSPtr& firstCorner, const CornerODLSPtr& secondCorner,  float wallThickness = 200.f, float height = 2800.f);
+	WallODL(const GraphODLWPtr graphODL, const CornerODLSPtr& firstCorner, const CornerODLSPtr& secondCorner,  float wallThickness = 200.f, float height = 2400.f);
 	~WallODL(void);
 
 public:

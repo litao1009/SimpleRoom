@@ -120,53 +120,8 @@ public:
 			return false;
 		}
 
-		void	CalculateOrder()
-		{
-			auto count = 0;
-
-			for ( auto itor=Corners_.begin(); itor!=Corners_.end(); ++itor )
-			{
-				gp_Pnt cur,pre,next;
-
-				cur = (*itor)->GetPosition();
-
-				if ( itor == Corners_.begin() )
-				{
-					pre = Corners_.back()->GetPosition();
-					next = (*(itor+1))->GetPosition();
-				}
-				else if ( itor+1 == Corners_.end() )
-				{
-					pre = (*(itor-1))->GetPosition();
-					next = Corners_.front()->GetPosition();
-				}
-				else
-				{
-					pre = (*(itor-1))->GetPosition();
-					next = (*(itor+1))->GetPosition();
-				}
-
-				gp_Vec v1(pre,cur);
-				gp_Vec v2(cur,next);
-
-				auto ret = v1.X() * v2.Z() - v1.Z() * v2.X();
-
-				if ( ret > 0 )
-				{
-					++count;
-				}
-				else if ( ret < 0 )
-				{
-					--count;
-				}
-			}
-
-			Order_ = count < 0;
-		}
-
 		CornerODLList	Corners_;
 		RoomODLSPtr		Room_;
-		bool			Order_;
 	};
 
 public:
@@ -202,15 +157,11 @@ public:
 
 		if ( !vv.FoundRooms_.empty() )
 		{
-			auto posCount = 0, negCount = 0;
-
 			for ( auto& curRoom : vv.FoundRooms_ )
 			{
 				SortedRoom item;
 				item.Corners_ = curRoom->GetCornerList();
 				item.Room_ = curRoom;
-				item.CalculateOrder();
-				item.Order_ ? ++posCount : ++negCount;
 
 				std::sort(item.Corners_.begin(), item.Corners_.end());
 
@@ -221,51 +172,64 @@ public:
 				}
 			}
 
-			assert( !(posCount != 1 && negCount != 1) );
-
-			if ( posCount == 1 && negCount != 1 )
-			{
-				auto itor = std::remove_if(newRooms.begin(), newRooms.end(), [](const SortedRoom& item)
-				{
-					return true == item.Order_;
-				});
-
-				newRooms.erase(itor, newRooms.end());
-			}
-			else if ( posCount != 1 && negCount == 1 )
-			{
-				auto itor = std::remove_if(newRooms.begin(), newRooms.end(), [](const SortedRoom& item)
-				{
-					return false == item.Order_;
-				});
-
-				newRooms.erase(itor, newRooms.end());
-			}
-			else
-			{
-				auto itorPos = std::find_if(newRooms.begin(), newRooms.end(), [](const SortedRoom& item)
-				{
-					return true == item.Order_;
-				});
-
-				auto itorNeg = std::find_if(newRooms.begin(), newRooms.end(), [](const SortedRoom& item)
-				{
-					return false == item.Order_;
-				});
-
-				if ( itorPos != newRooms.end() && itorNeg != newRooms.end() )
-				{
-					newRooms.erase(itorPos);
-				}
-
-			}
-
 			std::sort(newRooms.begin(), newRooms.end());
+
+			auto itor = std::unique(newRooms.begin(), newRooms.end(), [](const SortedRoom& lhs, const SortedRoom& rhs)
+			{
+				return !(lhs < rhs) && !(rhs < lhs);
+			});
+			newRooms.erase(itor, newRooms.end());
 		}
 
 		std::set_intersection(originalRooms.begin(), originalRooms.end(), newRooms.begin(), newRooms.end(), std::back_inserter(intersection));
 		std::set_difference(originalRooms.begin(), originalRooms.end(), intersection.begin(), intersection.end(), std::back_inserter(toRemove));
 		std::set_difference(newRooms.begin(), newRooms.end(), intersection.begin(), intersection.end(), std::back_inserter(toAdd));
+
+#ifdef _DEBUG
+		TRACE("RoomTestBegin:\n");
+		if ( !intersection.empty() )
+		{
+			TRACE("-------------Intersection:\n");
+			for ( auto& curRoom : intersection )
+			{
+				TRACE("\tRoom:\n");
+				for ( auto& curCorner : curRoom.Room_->GetCornerList() )
+				{
+					TRACE((std::string("\t")+std::to_string(curCorner->GetIndex())+"\n").c_str());
+				}
+			}
+			TRACE("++++++++++++++Intersection:\n");
+		}
+		
+		if ( !toAdd.empty() )
+		{
+			TRACE("-------------Add:\n");
+			for ( auto& curRoom : toAdd )
+			{
+				TRACE("\tRoom:\n");
+				for ( auto& curCorner : curRoom.Room_->GetCornerList() )
+				{
+					TRACE((std::string("\t")+std::to_string(curCorner->GetIndex())+"\n").c_str());
+				}
+			}
+			TRACE("++++++++++++++Add:\n");
+		}
+
+		if ( !toRemove.empty() )
+		{
+			TRACE("-------------toRemove:\n");
+			for ( auto& curRoom : toRemove )
+			{
+				TRACE("\tRoom:\n");
+				for ( auto& curCorner : curRoom.Room_->GetCornerList() )
+				{
+					TRACE((std::string("\t")+std::to_string(curCorner->GetIndex())+"\n").c_str());
+				}
+			}
+			TRACE("++++++++++++++toRemove:\n");
+		}
+		TRACE("RoomTestEnd:\n");
+#endif
 
 		for ( auto& curRoom : toRemove )
 		{
