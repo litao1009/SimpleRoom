@@ -8,6 +8,7 @@
 #include "BRepBuilderAPI_MakeFace.hxx"
 #include "GProp_GProps.hxx"
 #include "BRepGProp.hxx"
+#include "StlAPI.hxx"
 
 class	RoomODL::Imp
 {

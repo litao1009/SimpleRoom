@@ -33,6 +33,12 @@ public:
 
 		void end_face()
 		{
+			if ( CurWalls_.empty() || CurCorners_.empty() )
+			{
+				FoundRooms_.pop_back();
+				return;
+			}
+
 			FoundRooms_.back()->SetWallList(CurWalls_);
 			FoundRooms_.back()->SetCornerList(CurCorners_);
 
@@ -56,7 +62,7 @@ public:
 			}
 			else
 			{
-				
+
 				CurCorners_.push_back(corner);
 			}
 		}
@@ -82,6 +88,87 @@ public:
 		GraphODLSPtr	GraphODL_;
 	};
 
+	class	SortedRoom
+	{
+	public:
+
+		bool	operator < ( const SortedRoom& rhs) const
+		{
+			if ( Corners_.size() < rhs.Corners_.size() )
+			{
+				return true;
+			}
+
+			if ( Corners_.size() > rhs.Corners_.size() )
+			{
+				return false;
+			}
+
+			for ( auto itor1=Corners_.begin(),itor2=rhs.Corners_.begin(); itor1!=Corners_.end(); ++itor1,++itor2 )
+			{
+				if ( *itor1 < *itor2 )
+				{
+					return true;
+				}
+
+				if ( *itor1 > *itor2 )
+				{
+					return false;
+				}
+			}
+
+			return false;
+		}
+
+		void	CalculateOrder()
+		{
+			auto count = 0;
+
+			for ( auto itor=Corners_.begin(); itor!=Corners_.end(); ++itor )
+			{
+				gp_Pnt cur,pre,next;
+
+				cur = (*itor)->GetPosition();
+
+				if ( itor == Corners_.begin() )
+				{
+					pre = Corners_.back()->GetPosition();
+					next = (*(itor+1))->GetPosition();
+				}
+				else if ( itor+1 == Corners_.end() )
+				{
+					pre = (*(itor-1))->GetPosition();
+					next = Corners_.front()->GetPosition();
+				}
+				else
+				{
+					pre = (*(itor-1))->GetPosition();
+					next = (*(itor+1))->GetPosition();
+				}
+
+				gp_Vec v1(pre,cur);
+				gp_Vec v2(cur,next);
+
+				auto ret = v1.X() * v2.Z() - v1.Z() * v2.X();
+
+				if ( ret > 0 )
+				{
+					++count;
+				}
+				else if ( ret < 0 )
+				{
+					--count;
+				}
+			}
+
+			Order_ = count < 0;
+		}
+
+		CornerODLList	Corners_;
+		RoomODLSPtr		Room_;
+		bool			Order_;
+	};
+
 public:
 
 	static void	SearchRoom(GraphODLSPtr graphODL)
@@ -100,21 +187,102 @@ public:
 		RoomVisitor vv(graphODL);
 		boost::planar_face_traversal(graphODL->Graph_, embedding.data(), vv);
 
+		std::vector<SortedRoom>	originalRooms,newRooms;
+		std::vector<SortedRoom> intersection,toRemove,toAdd;
+
 		for ( auto& curRoom : graphODL->ImpUPtr_->Rooms_ )
 		{
-			graphODL->RemoveChild(curRoom);
+			SortedRoom item;
+			item.Corners_ = curRoom->GetCornerList();
+			item.Room_ = curRoom;
+			std::sort(item.Corners_.begin(), item.Corners_.end());
+			originalRooms.push_back(item);
 		}
-		graphODL->ImpUPtr_->Rooms_.clear();
+		std::sort(originalRooms.begin(), originalRooms.end());
 
-		for ( auto& toAdd : vv.FoundRooms_ )
+		if ( !vv.FoundRooms_.empty() )
 		{
-			if ( !toAdd->Build() )
+			auto posCount = 0, negCount = 0;
+
+			for ( auto& curRoom : vv.FoundRooms_ )
+			{
+				SortedRoom item;
+				item.Corners_ = curRoom->GetCornerList();
+				item.Room_ = curRoom;
+				item.CalculateOrder();
+				item.Order_ ? ++posCount : ++negCount;
+
+				std::sort(item.Corners_.begin(), item.Corners_.end());
+
+				auto itor = std::adjacent_find(item.Corners_.begin(), item.Corners_.end());
+				if ( itor == item.Corners_.end() )
+				{
+					newRooms.push_back(item);
+				}
+			}
+
+			assert( !(posCount != 1 && negCount != 1) );
+
+			if ( posCount == 1 && negCount != 1 )
+			{
+				auto itor = std::remove_if(newRooms.begin(), newRooms.end(), [](const SortedRoom& item)
+				{
+					return true == item.Order_;
+				});
+
+				newRooms.erase(itor, newRooms.end());
+			}
+			else if ( posCount != 1 && negCount == 1 )
+			{
+				auto itor = std::remove_if(newRooms.begin(), newRooms.end(), [](const SortedRoom& item)
+				{
+					return false == item.Order_;
+				});
+
+				newRooms.erase(itor, newRooms.end());
+			}
+			else
+			{
+				auto itorPos = std::find_if(newRooms.begin(), newRooms.end(), [](const SortedRoom& item)
+				{
+					return true == item.Order_;
+				});
+
+				auto itorNeg = std::find_if(newRooms.begin(), newRooms.end(), [](const SortedRoom& item)
+				{
+					return false == item.Order_;
+				});
+
+				if ( itorPos != newRooms.end() && itorNeg != newRooms.end() )
+				{
+					newRooms.erase(itorPos);
+				}
+
+			}
+
+			std::sort(newRooms.begin(), newRooms.end());
+		}
+
+		std::set_intersection(originalRooms.begin(), originalRooms.end(), newRooms.begin(), newRooms.end(), std::back_inserter(intersection));
+		std::set_difference(originalRooms.begin(), originalRooms.end(), intersection.begin(), intersection.end(), std::back_inserter(toRemove));
+		std::set_difference(newRooms.begin(), newRooms.end(), intersection.begin(), intersection.end(), std::back_inserter(toAdd));
+
+		for ( auto& curRoom : toRemove )
+		{
+			curRoom.Room_->RemoveFromParent();
+			auto itor = std::find(graphODL->ImpUPtr_->Rooms_.begin(), graphODL->ImpUPtr_->Rooms_.end(), curRoom.Room_);
+			graphODL->ImpUPtr_->Rooms_.erase(itor);
+		}
+
+		for ( auto& curRoom : toAdd )
+		{
+			if ( !curRoom.Room_->Build() )
 			{
 				continue;
 			}
 
-			graphODL->AddChild(toAdd);
-			graphODL->ImpUPtr_->Rooms_.push_back(toAdd);
+			graphODL->AddChild(curRoom.Room_);
+			graphODL->ImpUPtr_->Rooms_.push_back(curRoom.Room_);
 		}
 	}
 

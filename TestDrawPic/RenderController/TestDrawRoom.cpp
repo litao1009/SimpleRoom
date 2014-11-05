@@ -154,14 +154,6 @@ TestDrawRoomCtrller::~TestDrawRoomCtrller()
 
 }
 
-double	GetDeg(const gp_Dir& dir)
-{
-	auto rad = dir.AngleWithRef(gp::DX(), gp::DY().Reversed());
-	rad = rad < 0 ? M_PI * 2 + rad : rad;
-
-	return 180 * rad * M_1_PI;
-}
-
 bool TestDrawRoomCtrller::PreRender3D()
 {
 	CCombineSceneNode::SetRenderMode(CBaseSceneNode::ESNT_2D);
@@ -535,11 +527,11 @@ bool TestDrawRoomCtrller::PreRender3D()
 
 			if ( valid )
 			{
-				imp_.FloatingLine_->getMaterial().DiffuseColor = 0xFF0000FF; 
+				imp_.FloatingLine_->getMaterial().DiffuseColor = 0xFF0000FF;//Blue
 			}
 			else
 			{
-				imp_.FloatingLine_->getMaterial().DiffuseColor = 0xFFFF0000; 
+				imp_.FloatingLine_->getMaterial().DiffuseColor = 0xFFFF0000;//Read
 			}
 
 			if ( imp_.PressDown_ )
