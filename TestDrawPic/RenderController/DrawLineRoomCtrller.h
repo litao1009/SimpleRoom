@@ -1,5 +1,5 @@
-#ifndef TestDrawRoom_h__
-#define TestDrawRoom_h__
+#ifndef DrawLineRoomCtrller_h__
+#define DrawLineRoomCtrller_h__
 
 #pragma once
 
@@ -7,15 +7,15 @@
 #include "ODL/GraphODLFwd.h"
 
 
-class	TestDrawRoomCtrller : public IRenderController
+class	DrawLineRoomCtrller : public IRenderController
 {
 	class	Imp;
 	std::unique_ptr<Imp>	ImpUPtr_;
 
 public:
 
-	TestDrawRoomCtrller(const GraphODLWPtr& graphODL);
-	~TestDrawRoomCtrller();
+	DrawLineRoomCtrller(const GraphODLWPtr& graphODL);
+	~DrawLineRoomCtrller();
 
 public:
 
@@ -31,4 +31,4 @@ public:
 
 	void	Reset();
 };
-#endif // TestDrawRoom_h__
+#endif // DrawLineRoomCtrller_h__

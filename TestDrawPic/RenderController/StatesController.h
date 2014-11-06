@@ -4,56 +4,85 @@
 #pragma once
 
 #include "irrEngine/IRenderController.h"
+#include "irrEngine/MetaRenderController.h"
 
-enum ERenderState
-{
-	ERS_TOP_VIEW,
-	ERS_MAYA_VIEW,
-	ERS_FPS_VIEW,
-	ERS_ANIMATION,
-	ERS_EDIT,
-	ERS_COUNT
-};
+#include <map>
 
+template<typename State>
 class	StatesController : public IRenderController
 {
-	class	Imp;
-	std::unique_ptr<Imp>	ImpUPtr_;
-
 public:
 
-	StatesController();
-	~StatesController();
+	typedef	typename std::shared_ptr<StatesController<State>>	SPtr;
 
 public://IRenderController
 
-	virtual	void	Init();
+	virtual	void	Init()
+	{
 
-	virtual	bool	OnGUIEvent(const irr::SEvent& evt);
+	}
 
-	virtual bool	OnPreEvent(const irr::SEvent& evt);
+	virtual	bool	OnGUIEvent(const irr::SEvent& evt)
+	{
+		return StateControllers_[CurrentState_]->OnGUIEvent(evt);
+	}
 
-	virtual	bool	OnPostEvent(const irr::SEvent& evt);
+	virtual bool	OnPreEvent(const irr::SEvent& evt)
+	{
+		return StateControllers_[CurrentState_]->OnPreEvent(evt);
+	}
 
-	virtual	void	OnResize();
+	virtual	bool	OnPostEvent(const irr::SEvent& evt)
+	{
+		return StateControllers_[CurrentState_]->OnPostEvent(evt);
+	}
 
-	virtual bool	PreRender3D();
+	virtual	void	OnResize()
+	{
+		StateControllers_[CurrentState_]->OnResize();
+	}
 
-	virtual void	PostRender3D();
+	virtual bool	PreRender3D()
+	{
+		return StateControllers_[CurrentState_]->PreRender3D();
+	}
 
-	virtual bool	PreRender2D();
+	virtual void	PostRender3D()
+	{
+		StateControllers_[CurrentState_]->PostRender3D();
+	}
 
-	virtual void	PostRender2D();
+	virtual bool	PreRender2D()
+	{
+		return StateControllers_[CurrentState_]->PreRender2D();
+	}
+
+	virtual void	PostRender2D()
+	{
+		StateControllers_[CurrentState_]->PostRender2D();
+	}
 
 public:
 
-	void	AddController(const ERenderState& state, const IRenderControllerSPtr& controller);
+	void			AddController(const State& state, const IRenderControllerSPtr& controller)
+	{
+		if ( !StateControllers_[state] )
+		{
+			StateControllers_[state] = std::make_shared<MetaRenderController>();
+			StateControllers_[state]->SetRenderContextWPtr(GetRenderContextSPtr());
+		}
 
-	ERenderState	GetRenderState() const;
+		StateControllers_[state]->PushController(controller);
+	}
 
-	void			SetRenderState(ERenderState ers);
+	State			GetCurrentState() const { return CurrentState_; }
+
+	void			SetCurrentState(const State& state) { CurrentState_ = state; }
+
+private:
+
+	State											CurrentState_;
+	std::map<State,MetaRenderControllerSPtr>		StateControllers_;
 };
-
-typedef	std::shared_ptr<StatesController>	StatesControllerSPtr;
 
 #endif // StatesController_h__

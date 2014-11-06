@@ -10,7 +10,6 @@
 #include "irrEngine/IrrExtension/CameraFollowSplineAnimator.h"
 #include "irrEngine/IrrExtension/CombineSceneNode.h"
 
-#include "RenderController/ResizeController.h"
 #include "RenderController/GridController.h"
 #include "RenderController/TopPickingController.h"
 #include "RenderController/GUIController.h"
@@ -22,10 +21,11 @@
 //#include "RenderController/2D/DrawingRectWallCtrller.h"
 //#include "RenderController/DoorController.h"
 //#include "RenderController/WindowController.h"
+#include "RenderController/DrawLineRoomCtrller.h"
 
 //--test
 #include "RenderController/TestDecorGUIBoard.h"
-#include "RenderController/TestDrawRoom.h"
+
 //--test
 
 #include "BRepBuilderAPI_MakeEdge.hxx"
@@ -35,21 +35,31 @@
 
 #include "StatusMgr.h"
 
+enum class ERenderState
+{
+	ERS_TOP_VIEW,
+	ERS_MAYA_VIEW,
+	ERS_FPS_VIEW,
+	ERS_ANIMATION,
+	ERS_EDIT,
+	ERS_COUNT
+};
+
 class	CDesignODL::Imp : public IRenderController
 {
 public:
 
-	CBaseODLWPtr						DesignODL_;
+	CBaseODLWPtr							DesignODL_;
 	//DrawingLineWallCtrllerSPtr			DrawLineWallCtrller_;
 	//DrawingRectWallCtrllerSPtr			DrawRectWallCtrller_;
-	TopPickingControllerSPtr			TopPickingController_;
-	StatesControllerSPtr				StatesController_;
-	GUIControllerSPtr					GUIController_;
-	CameraControllerSPtr				CameraController_;
-	FlyCameraControllerSPtr				FlyCameraController_;
-	UpdateTransformingCtrllerSPtr		UpdateTransformingCtrller_;
+	TopPickingControllerSPtr				TopPickingController_;
+	StatesController<ERenderState>::SPtr	StatesController_;
+	GUIControllerSPtr						GUIController_;
+	CameraControllerSPtr					CameraController_;
+	FlyCameraControllerSPtr					FlyCameraController_;
+	UpdateTransformingCtrllerSPtr			UpdateTransformingCtrller_;
 	//DoorControllerSPtr					DoorController_;
-	//WindowControllerSPtr				WindowController_;
+	//WindowControllerSPtr					WindowController_;
 
 public:
 
@@ -67,21 +77,21 @@ public://IRenderController
 
 	virtual	bool	PreRender3D()
 	{
-		if ( StatesController_->GetRenderState() == ERS_ANIMATION )
+		if ( StatesController_->GetCurrentState() == ERenderState::ERS_ANIMATION )
 		{
 			if ( !FlyCameraController_->IsFlying() )
 			{
 				if ( GetRenderContextSPtr()->Smgr_->getActiveCamera() == CameraController_->GetTopCamera().get() )
 				{
-					StatesController_->SetRenderState(ERS_TOP_VIEW);
+					StatesController_->SetCurrentState(ERenderState::ERS_TOP_VIEW);
 				}
 				else if ( GetRenderContextSPtr()->Smgr_->getActiveCamera() == CameraController_->GetMayaCamera().get() )
 				{
-					StatesController_->SetRenderState(ERS_MAYA_VIEW);
+					StatesController_->SetCurrentState(ERenderState::ERS_MAYA_VIEW);
 				}
 				else if ( GetRenderContextSPtr()->Smgr_->getActiveCamera() == CameraController_->GetFPSCamera().get() )
 				{
-					StatesController_->SetRenderState(ERS_FPS_VIEW);
+					StatesController_->SetCurrentState(ERenderState::ERS_FPS_VIEW);
 				}
 			}
 
@@ -104,7 +114,7 @@ public://IRenderController
 
 		SwitchCameraIfNeed();
 
-		if ( StatesController_->GetRenderState() == ERS_TOP_VIEW )
+		if ( StatesController_->GetCurrentState() == ERenderState::ERS_TOP_VIEW )
 		{
 			TopPickingController_->SetEnable(true);
 
@@ -325,7 +335,7 @@ public:
 		}
 
 		FlyCameraController_->SetFlying(toSwitchCamera, camera, animator);
-		StatesController_->SetRenderState(ERS_ANIMATION);
+		StatesController_->SetCurrentState(ERenderState::ERS_ANIMATION);
 
 		return true;
 	}
@@ -357,7 +367,7 @@ void CDesignODL::Init()
 		//imp_.DrawLineWallCtrller_ = std::make_shared<DrawingLineWallCtrller>();
 		//imp_.DrawRectWallCtrller_ = std::make_shared<DrawingRectWallCtrller>();
 		imp_.TopPickingController_ = std::make_shared<TopPickingController>();
-		imp_.StatesController_ = std::make_shared<StatesController>();
+		imp_.StatesController_ = std::make_shared<StatesController<ERenderState>>();
 		imp_.GUIController_ = std::make_shared<GUIController>();
 		imp_.CameraController_ = std::make_shared<CameraController>();
 		imp_.FlyCameraController_ = std::make_shared<FlyCameraController>();
@@ -383,46 +393,42 @@ void CDesignODL::Init()
 	auto graph = CreateChild<GraphODL>(RenderContext_);
 
 	{//Controller
-		ImpSPtr_->StatesController_->SetRenderState(ERS_TOP_VIEW);
+		ImpSPtr_->StatesController_->SetCurrentState(ERenderState::ERS_TOP_VIEW);
 
 		RenderContext_->PushController(ImpSPtr_->StatesController_);
 		RenderContext_->PushController(std::static_pointer_cast<IRenderController>(ImpSPtr_));
 
-		auto resizeCtrller = std::make_shared<ResizeController>(Hwnd_);
 		auto gridCtrller = std::make_shared<GridController>();
 
 		{//TopView
-			ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, resizeCtrller);
-			ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->GUIController_);
-			ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->UpdateTransformingCtrller_);
-			ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->CameraController_);
-			ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, gridCtrller);
+			ImpSPtr_->StatesController_->AddController(ERenderState::ERS_TOP_VIEW, ImpSPtr_->GUIController_);
+			ImpSPtr_->StatesController_->AddController(ERenderState::ERS_TOP_VIEW, ImpSPtr_->UpdateTransformingCtrller_);
+			ImpSPtr_->StatesController_->AddController(ERenderState::ERS_TOP_VIEW, ImpSPtr_->CameraController_);
+			ImpSPtr_->StatesController_->AddController(ERenderState::ERS_TOP_VIEW, gridCtrller);
 			//ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->DrawLineWallCtrller_);
 			//ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->DrawRectWallCtrller_);
 			//ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->TopPickingController_);
-			ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, std::make_shared<TestDecorGUIBoard>());
-			ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, std::make_shared<TestDrawRoomCtrller>(graph));
+			ImpSPtr_->StatesController_->AddController(ERenderState::ERS_TOP_VIEW, std::make_shared<TestDecorGUIBoard>());
+			ImpSPtr_->StatesController_->AddController(ERenderState::ERS_TOP_VIEW, std::make_shared<DrawLineRoomCtrller>(graph));
 			//ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->DoorController_);
 			//ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->WindowController_);
 		}
 
 		{//MayaView
-			ImpSPtr_->StatesController_->AddController(ERS_MAYA_VIEW, resizeCtrller);
-			ImpSPtr_->StatesController_->AddController(ERS_MAYA_VIEW, ImpSPtr_->GUIController_);
-			ImpSPtr_->StatesController_->AddController(ERS_MAYA_VIEW, ImpSPtr_->UpdateTransformingCtrller_);
-			ImpSPtr_->StatesController_->AddController(ERS_MAYA_VIEW, ImpSPtr_->CameraController_);
+			ImpSPtr_->StatesController_->AddController(ERenderState::ERS_MAYA_VIEW, ImpSPtr_->GUIController_);
+			ImpSPtr_->StatesController_->AddController(ERenderState::ERS_MAYA_VIEW, ImpSPtr_->UpdateTransformingCtrller_);
+			ImpSPtr_->StatesController_->AddController(ERenderState::ERS_MAYA_VIEW, ImpSPtr_->CameraController_);
 		}
 
 		{//FPSView
-			ImpSPtr_->StatesController_->AddController(ERS_FPS_VIEW, resizeCtrller);
-			ImpSPtr_->StatesController_->AddController(ERS_FPS_VIEW, ImpSPtr_->GUIController_);
-			ImpSPtr_->StatesController_->AddController(ERS_FPS_VIEW, ImpSPtr_->UpdateTransformingCtrller_);
-			ImpSPtr_->StatesController_->AddController(ERS_FPS_VIEW, ImpSPtr_->CameraController_);
+			ImpSPtr_->StatesController_->AddController(ERenderState::ERS_FPS_VIEW, ImpSPtr_->GUIController_);
+			ImpSPtr_->StatesController_->AddController(ERenderState::ERS_FPS_VIEW, ImpSPtr_->UpdateTransformingCtrller_);
+			ImpSPtr_->StatesController_->AddController(ERenderState::ERS_FPS_VIEW, ImpSPtr_->CameraController_);
 		}
 
 		{//Animator
-			ImpSPtr_->StatesController_->AddController(ERS_ANIMATION, ImpSPtr_->FlyCameraController_);
-			ImpSPtr_->StatesController_->AddController(ERS_ANIMATION, ImpSPtr_->UpdateTransformingCtrller_);
+			ImpSPtr_->StatesController_->AddController(ERenderState::ERS_ANIMATION, ImpSPtr_->FlyCameraController_);
+			ImpSPtr_->StatesController_->AddController(ERenderState::ERS_ANIMATION, ImpSPtr_->UpdateTransformingCtrller_);
 		}
 	}
 }

@@ -49,15 +49,6 @@ private:
 	//鼠标光标
 	irr::gui::ECURSOR_ICON	Icon_;
 
-	//resize图标
-	IGUIImageSPtr			ResizeImage_;
-
-	//最小化图标
-	IGUIImageSPtr			MinimumImage_;
-
-	//恢复图标
-	IGUIImageSPtr			RestoreImage_;
-
 	//相机显隐图标
 	IGUIImageSPtr			ShowCameraImage_;
 	ITextureSPtr			ShowCameraTex_;

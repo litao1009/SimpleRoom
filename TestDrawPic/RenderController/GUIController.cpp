@@ -3,7 +3,6 @@
 #include "GUIController.h"
 #include "irrlicht.h"
 #include "IrrEngine/SRenderContext.h"
-#include "EventUserType.h"
 
 #include "StatusMgr.h"
 
@@ -50,26 +49,6 @@ void GUIController::Init()
 	auto driver = sprc->Smgr_->getVideoDriver();
 
 	sprc->SetOnResize();
-
-	{//resize
-		auto tex = driver->getTexture("../Data/Resource/3D/resize.png");
-		auto guiImage = AddImage(sprc->GUIEnv_.get(), tex);
-		ResizeImage_.reset(guiImage, std::bind([](IGUIElement*){}, std::placeholders::_1));
-		ResizeImage_->SetHoldPressed(true);
-	}
-
-	{//minimum
-		auto tex = driver->getTexture("../Data/Resource/3D/minimum.png");
-		auto guiImage = AddImage(sprc->GUIEnv_.get(), tex);
-		MinimumImage_.reset(guiImage, std::bind([](IGUIElement*){}, std::placeholders::_1));
-	}
-
-	{//restore
-		auto tex = driver->getTexture("../Data/Resource/3D/restore.png");
-		auto guiImage = AddImage(sprc->GUIEnv_.get(), tex);
-		RestoreImage_.reset(guiImage, std::bind([](IGUIElement*){}, std::placeholders::_1));
-		RestoreImage_->setVisible(false);
-	}
 
 	{//camera
 		auto showTex = driver->getTexture("../Data/Resource/3D/camera.png");
@@ -119,21 +98,6 @@ void GUIController::Init()
 
 bool GUIController::OnPreEvent( const irr::SEvent& event )
 {
-	if ( ResizeImage_->GetState() == CGUIImageButton::EIS_PRESSED )
-	{
-		if ( event.EventType == EET_MOUSE_INPUT_EVENT && event.MouseInput.Event == EMIE_MOUSE_MOVED)
-		{
-			SEvent evt;
-			evt.EventType = EET_USER_EVENT;
-			evt.UserEvent.UserData1 = EUT_RESIZE_CHANGE_DURING;
-			auto rc = GetRenderContextSPtr();
-			assert(rc);
-			rc->PostEvent(evt);
-
-			return true;
-		}
-	}
-
 	auto sprc = GetRenderContextSPtr();
 	if ( sprc )
 	{
@@ -154,87 +118,6 @@ bool GUIController::OnGUIEvent( const irr::SEvent& event )
 
 	if ( event.EventType == EET_GUI_EVENT )
 	{
-		//Reisze
-		if ( event.GUIEvent.Caller == ResizeImage_.get() )
-		{
-			if ( event.GUIEvent.EventType == (EGUI_EVENT_TYPE)CGUIImageButton::EIS_NORMAL )
-			{
-				Icon_ = ECI_NORMAL;
-			}
-
-			if ( event.GUIEvent.EventType == (EGUI_EVENT_TYPE)CGUIImageButton::EIS_HOVERD )
-			{
-				Icon_ = ECI_SIZENESW;
-			}
-
-			if ( event.GUIEvent.EventType == (EGUI_EVENT_TYPE)CGUIImageButton::EIS_PRESSED )
-			{
-				SEvent evt;
-				evt.EventType = EET_USER_EVENT;
-				evt.UserEvent.UserData1 = EUT_RESIZE_CHANGE_BEGIN;
-				auto rc = GetRenderContextSPtr();
-				assert(rc);
-				rc->PostEvent(evt);
-
-				Icon_ = ECI_SIZENESW;
-
-				ret = true;
-			}
-
-			if ( event.GUIEvent.EventType == (EGUI_EVENT_TYPE)CGUIImageButton::EIS_LEFTUP )
-			{
-				SEvent evt;
-				evt.EventType = EET_USER_EVENT;
-				evt.UserEvent.UserData1 = EUT_RESIZE_CHANGE_END;
-				auto rc = GetRenderContextSPtr();
-				assert(rc);
-				rc->PostEvent(evt);
-
-				Icon_ = ECI_SIZENESW;
-
-				ret = true;
-			}
-		}
-
-		//Mininum
-		if ( event.GUIEvent.Caller == MinimumImage_.get() )
-		{
-			if ( event.GUIEvent.EventType == (EGUI_EVENT_TYPE)CGUIImageButton::EIS_PRESSED )
-			{
-				Minimum_ = true;
-				CameraRestore_ = CameraVisible_;
-				CameraVisible_ = false;
-
-				SEvent evt;
-				evt.EventType = EET_USER_EVENT;
-				evt.UserEvent.UserData1 = EUT_RESIZE_MINIMUM;
-				auto rc = GetRenderContextSPtr();
-				assert(rc);
-				rc->PostEvent(evt);
-
-				ret = true;
-			}
-		}
-
-		//Restore
-		if ( event.GUIEvent.Caller == RestoreImage_.get() )
-		{
-			if ( event.GUIEvent.EventType == (EGUI_EVENT_TYPE)CGUIImageButton::EIS_PRESSED )
-			{
-				Minimum_ = false;
-				CameraVisible_ = CameraRestore_;
-
-				SEvent evt;
-				evt.EventType = EET_USER_EVENT;
-				evt.UserEvent.UserData1 = EUT_RESIZE_RESTORE;
-				auto rc = GetRenderContextSPtr();
-				assert(rc);
-				rc->PostEvent(evt);
-
-				ret = true;
-			}
-		}
-
 		//CameraVisible
 		if ( event.GUIEvent.Caller == this->ShowCameraImage_.get() )
 		{
@@ -320,14 +203,6 @@ void GUIController::OnResize()
 	auto renderSize = GetRenderContextSPtr()->Smgr_->getVideoDriver()->getScreenSize();
 
 	{
-		auto texSize = ResizeImage_->getImage()->getSize();
-		irr::core::position2di pos;
-		pos.X = renderSize.Width-texSize.Width-ImageBorderX;
-		pos.Y = ImageBorderY;
-		ResizeImage_->setRelativePosition(pos);
-	}
-
-	{
 		auto texSize = ShowCameraImage_->getImage()->getSize();
 		irr::core::position2di pos;
 		if ( renderSize.Width > texSize.Width )
@@ -365,28 +240,11 @@ void GUIController::PostRender3D()
 
 bool GUIController::PreRender2D()
 {
-	if ( Minimum_ )
-	{
-		RestoreImage_->setVisible(true);
-		MinimumImage_->setVisible(false);
-		ResizeImage_->setVisible(false);
-		ShowCameraImage_->setVisible(false);
-		FPSCameraImage_->setVisible(false);
-		MayaCameraImage_->setVisible(false);
-		TopCameraImage_->setVisible(false);
-		RealImage_->setVisible(false);
-	}
-	else
-	{
-		RestoreImage_->setVisible(false);
-		MinimumImage_->setVisible(true);
-		ResizeImage_->setVisible(true);
-		ShowCameraImage_->setVisible(true);
-		FPSCameraImage_->setVisible(true);
-		MayaCameraImage_->setVisible(true);
-		TopCameraImage_->setVisible(true);
-		RealImage_->setVisible(IsTopCameraActive());
-	}
+	ShowCameraImage_->setVisible(true);
+	FPSCameraImage_->setVisible(true);
+	MayaCameraImage_->setVisible(true);
+	TopCameraImage_->setVisible(true);
+	RealImage_->setVisible(IsTopCameraActive());
 
 	if ( CameraVisible_ )
 	{
@@ -396,11 +254,6 @@ bool GUIController::PreRender2D()
 	{
 		ShowCameraImage_->setImage(HideCameraTex_.get());
 	}
-
-	MinimumImage_->setVisible(false);
-	ResizeImage_->setVisible(false);
-	RestoreImage_->setVisible(false);
-	ShowCameraImage_->setVisible(false);
 
 	return false;
 }

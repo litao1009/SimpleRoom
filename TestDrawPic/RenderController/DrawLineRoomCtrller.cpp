@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-#include "TestDrawRoom.h"
+#include "DrawLineRoomCtrller.h"
 #include "SMeshBuffer.h"
 #include "irrEngine/SRenderContext.h"
 #include "irrEngine/irrEngine.h"
@@ -37,7 +37,7 @@ enum EState
 	ES_COUNT
 };
 
-class	TestDrawRoomCtrller::Imp
+class	DrawLineRoomCtrller::Imp
 {
 public:
 
@@ -144,18 +144,18 @@ public:
 	GraphODLWPtr				Graph_;
 };
 
-TestDrawRoomCtrller::TestDrawRoomCtrller(const GraphODLWPtr& graphODL):ImpUPtr_(new Imp)
+DrawLineRoomCtrller::DrawLineRoomCtrller(const GraphODLWPtr& graphODL):ImpUPtr_(new Imp)
 {
 	SetEnable(false);
 	ImpUPtr_->Graph_ = graphODL;
 }
 
-TestDrawRoomCtrller::~TestDrawRoomCtrller()
+DrawLineRoomCtrller::~DrawLineRoomCtrller()
 {
 
 }
 
-bool TestDrawRoomCtrller::PreRender3D()
+bool DrawLineRoomCtrller::PreRender3D()
 {
 	SetEnable(StatusMgr::GetInstance().DrawingState_ == StatusMgr::EDS_LINE_WALL);
 
@@ -655,7 +655,7 @@ bool TestDrawRoomCtrller::PreRender3D()
 	return false;
 }
 
-void TestDrawRoomCtrller::PostRender3D()
+void DrawLineRoomCtrller::PostRender3D()
 {
 	if ( !IsEnable() )
 	{
@@ -702,7 +702,7 @@ void TestDrawRoomCtrller::PostRender3D()
 	}
 }
 
-bool TestDrawRoomCtrller::OnPostEvent( const irr::SEvent& evt )
+bool DrawLineRoomCtrller::OnPostEvent( const irr::SEvent& evt )
 {
 	if ( !IsEnable() )
 	{
@@ -736,7 +736,7 @@ bool TestDrawRoomCtrller::OnPostEvent( const irr::SEvent& evt )
 	return false;
 }
 
-void TestDrawRoomCtrller::Init()
+void DrawLineRoomCtrller::Init()
 {
 	auto& imp_ = *ImpUPtr_;
 
@@ -790,7 +790,7 @@ void TestDrawRoomCtrller::Init()
 	}
 }
 
-void TestDrawRoomCtrller::Reset()
+void DrawLineRoomCtrller::Reset()
 {
 	auto& imp_ = *ImpUPtr_;
 

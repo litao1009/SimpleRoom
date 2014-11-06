@@ -172,9 +172,6 @@
     <ClCompile Include="irrEngine\IrrExtension\ExtShaders.cpp">
       <Filter>IrrEngine\IrrExtension</Filter>
     </ClCompile>
-    <ClCompile Include="RenderController\StatesController.cpp">
-      <Filter>RenderController</Filter>
-    </ClCompile>
     <ClCompile Include="RenderController\CameraController.cpp">
       <Filter>RenderController</Filter>
     </ClCompile>
@@ -185,9 +182,6 @@
       <Filter>RenderController</Filter>
     </ClCompile>
     <ClCompile Include="RenderController\GUIController.cpp">
-      <Filter>RenderController</Filter>
-    </ClCompile>
-    <ClCompile Include="RenderController\ResizeController.cpp">
       <Filter>RenderController</Filter>
     </ClCompile>
     <ClCompile Include="RenderController\TopPickingController.cpp">
@@ -211,9 +205,6 @@
     <ClCompile Include="ODL\MeshSceneNode\WindowMeshNode2D.cpp">
       <Filter>ODL\MeshSceneNode</Filter>
     </ClCompile>
-    <ClCompile Include="RenderController\TestDrawRoom.cpp">
-      <Filter>RenderController</Filter>
-    </ClCompile>
     <ClCompile Include="ODL\GraphODL.cpp">
       <Filter>ODL</Filter>
     </ClCompile>
@@ -228,6 +219,9 @@
     </ClCompile>
     <ClCompile Include="ODL\FloorODL.cpp">
       <Filter>ODL</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderController\DrawLineRoomCtrller.cpp">
+      <Filter>RenderController</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -459,9 +453,6 @@
     <ClInclude Include="RenderController\CameraController.h">
       <Filter>RenderController</Filter>
     </ClInclude>
-    <ClInclude Include="RenderController\EventUserType.h">
-      <Filter>RenderController</Filter>
-    </ClInclude>
     <ClInclude Include="RenderController\FlyCameraController.h">
       <Filter>RenderController</Filter>
     </ClInclude>
@@ -469,9 +460,6 @@
       <Filter>RenderController</Filter>
     </ClInclude>
     <ClInclude Include="RenderController\GUIController.h">
-      <Filter>RenderController</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderController\ResizeController.h">
       <Filter>RenderController</Filter>
     </ClInclude>
     <ClInclude Include="RenderController\TopPickingController.h">
@@ -494,9 +482,6 @@
     </ClInclude>
     <ClInclude Include="ODL\MeshSceneNode\WindowMeshNode2D.h">
       <Filter>ODL\MeshSceneNode</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderController\TestDrawRoom.h">
-      <Filter>RenderController</Filter>
     </ClInclude>
     <ClInclude Include="ODL\CornerODLFwd.h">
       <Filter>ODL</Filter>
@@ -527,6 +512,12 @@
     </ClInclude>
     <ClInclude Include="ODL\FloorODLFwd.h">
       <Filter>ODL</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderController\DrawLineRoomCtrller.h">
+      <Filter>RenderController</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderController\RoomPictureCtrller.h">
+      <Filter>RenderController</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
