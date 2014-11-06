@@ -129,23 +129,28 @@
 #define ID_BTN_ORDER_SAVE               32793
 #define ID_BTN_ORDER_LIST_LOCAL         32794
 #define ID_BTN_EDIT_WALL_SKIN           32795
-#define ID_BTN_EDIT_FLOOR_SKIN          32796
 #define ID_BTN_EDIT_WALL_ZONE           32797
 #define ID_BTN_EDIT_FLOOR_ZONE          32798
 #define ID_BTN_ORDER_DESIGN_NEW         32806
-#define ID_BTN_CREATE_WALL_LINE         32807
 #define ID_BTN_EDIT_ZONE_CUT            32810
 #define ID_BTN_EDIT_ZONE_RECT           32812
 #define ID_BTN_STATE                    32823
 #define ID_BUTTON2                      32824
 #define ID_BTN_VIEW_ZERO                32824
+#define ID_BTN_ROOM_PICTURE_PICTURE     32826
+#define ID_BTN_ROOM_CREATE_DRAW_WALL    32827
+#define ID_BTN_ROOM_CREATE_DRAW_ROOM    32828
+#define ID_ROOM_PICTURE_SHOW            32829
+#define ID_BUTTON4                      32832
+#define ID_SLIDER2                      32833
+#define ID_BUTTON5                      32834
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        327
-#define _APS_NEXT_COMMAND_VALUE         32825
+#define _APS_NEXT_COMMAND_VALUE         32835
 #define _APS_NEXT_CONTROL_VALUE         1031
 #define _APS_NEXT_SYMED_VALUE           321
 #endif

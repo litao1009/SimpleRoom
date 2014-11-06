@@ -214,7 +214,6 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClInclude Include="DAL\SkinDAL.h" />
     <ClInclude Include="StatusMgr.h" />
     <ClInclude Include="stdafx.h" />
-    <ClInclude Include="SubViewer.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="TestDrawPic.h" />
     <ClInclude Include="TestDrawPicDoc.h" />
@@ -300,7 +299,6 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="SubViewer.cpp" />
     <ClCompile Include="TestDrawPic.cpp" />
     <ClCompile Include="TestDrawPicDoc.cpp" />
     <ClCompile Include="TestDrawPicView.cpp" />

@@ -88,9 +88,6 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="SubViewer.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="TestDrawPic.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -334,9 +331,6 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="stdafx.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="SubViewer.h">
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="targetver.h">

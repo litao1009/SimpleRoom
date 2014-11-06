@@ -5,6 +5,10 @@
 #include "WallODL.h"
 #include "RoomODL.h"
 
+#include "BRepBuilderAPI_MakePolygon.hxx"
+#include "BRepBuilderAPI_MakeFace.hxx"
+#include "BRepFeat.hxx"
+
 #include <boost/graph/property_iter_range.hpp>
 #include <boost/graph/planar_face_traversal.hpp>
 #include <boost/graph/boyer_myrvold_planar_test.hpp>
@@ -92,19 +96,26 @@ public:
 	{
 	public:
 
+		SortedRoom()
+		{
+			ToRemove_ = false;
+		}
+
+	public:
+
 		bool	operator < ( const SortedRoom& rhs) const
 		{
-			if ( Corners_.size() < rhs.Corners_.size() )
+			if ( SortedCorners_.size() < rhs.SortedCorners_.size() )
 			{
 				return true;
 			}
 
-			if ( Corners_.size() > rhs.Corners_.size() )
+			if ( SortedCorners_.size() > rhs.SortedCorners_.size() )
 			{
 				return false;
 			}
 
-			for ( auto itor1=Corners_.begin(),itor2=rhs.Corners_.begin(); itor1!=Corners_.end(); ++itor1,++itor2 )
+			for ( auto itor1=SortedCorners_.begin(),itor2=rhs.SortedCorners_.begin(); itor1!=SortedCorners_.end(); ++itor1,++itor2 )
 			{
 				if ( *itor1 < *itor2 )
 				{
@@ -120,8 +131,10 @@ public:
 			return false;
 		}
 
-		CornerODLList	Corners_;
+		CornerODLList	SortedCorners_;
 		RoomODLSPtr		Room_;
+		TopoDS_Face		Face_;
+		bool			ToRemove_;
 	};
 
 public:
@@ -148,9 +161,9 @@ public:
 		for ( auto& curRoom : graphODL->ImpUPtr_->Rooms_ )
 		{
 			SortedRoom item;
-			item.Corners_ = curRoom->GetCornerList();
+			item.SortedCorners_ = curRoom->GetCornerList();
 			item.Room_ = curRoom;
-			std::sort(item.Corners_.begin(), item.Corners_.end());
+			std::sort(item.SortedCorners_.begin(), item.SortedCorners_.end());
 			originalRooms.push_back(item);
 		}
 		std::sort(originalRooms.begin(), originalRooms.end());
@@ -160,13 +173,14 @@ public:
 			for ( auto& curRoom : vv.FoundRooms_ )
 			{
 				SortedRoom item;
-				item.Corners_ = curRoom->GetCornerList();
+				item.SortedCorners_ = curRoom->GetCornerList();
 				item.Room_ = curRoom;
 
-				std::sort(item.Corners_.begin(), item.Corners_.end());
+				std::sort(item.SortedCorners_.begin(), item.SortedCorners_.end());
 
-				auto itor = std::adjacent_find(item.Corners_.begin(), item.Corners_.end());
-				if ( itor == item.Corners_.end() )
+				//去掉有交叉的
+				auto itor = std::adjacent_find(item.SortedCorners_.begin(), item.SortedCorners_.end());
+				if ( itor == item.SortedCorners_.end() )
 				{
 					newRooms.push_back(item);
 				}
@@ -174,9 +188,54 @@ public:
 
 			std::sort(newRooms.begin(), newRooms.end());
 
-			auto itor = std::unique(newRooms.begin(), newRooms.end(), [](const SortedRoom& lhs, const SortedRoom& rhs)
+			{//去掉重复的
+				auto itor = std::unique(newRooms.begin(), newRooms.end(), [](const SortedRoom& lhs, const SortedRoom& rhs)
+				{
+					return !(lhs < rhs) && !(rhs < lhs);
+				});
+				newRooms.erase(itor, newRooms.end());
+			}
+
+			{//去掉最大的面
+				for ( auto& curRoom : newRooms )
+				{
+					BRepBuilderAPI_MakePolygon mp;
+					for ( auto& curCorner : curRoom.Room_->GetCornerList() )
+					{
+						mp.Add(curCorner->GetPosition());
+					}
+					mp.Close();
+
+					curRoom.Face_ = BRepBuilderAPI_MakeFace(mp.Wire()).Face();
+				}
+
+				for ( auto itorBase=newRooms.begin(); itorBase!=newRooms.end(); ++itorBase )
+				{
+					for ( auto itorCompare=newRooms.begin(); itorCompare!=newRooms.end(); ++itorCompare )
+					{
+						if ( itorCompare == itorBase )
+						{
+							continue;
+						}
+
+						if ( itorCompare->ToRemove_ )
+						{
+							continue;
+						}
+
+						auto ret = BRepFeat::IsInside(itorCompare->Face_, itorBase->Face_);
+						if ( Standard_True == ret )
+						{
+							itorBase->ToRemove_ = true;
+						}
+						break;
+					}
+				}
+			}
+
+			auto itor = std::remove_if(newRooms.begin(), newRooms.end(), [](const SortedRoom& val)
 			{
-				return !(lhs < rhs) && !(rhs < lhs);
+				return val.ToRemove_;
 			});
 			newRooms.erase(itor, newRooms.end());
 		}
@@ -186,19 +245,20 @@ public:
 		std::set_difference(newRooms.begin(), newRooms.end(), intersection.begin(), intersection.end(), std::back_inserter(toAdd));
 
 #ifdef _DEBUG
-		TRACE("RoomTestBegin:\n");
+		TRACE("\nRoomTestBegin:\n");
 		if ( !intersection.empty() )
 		{
 			TRACE("-------------Intersection:\n");
 			for ( auto& curRoom : intersection )
 			{
-				TRACE("\tRoom:\n");
+				TRACE("\tRoom:\t");
 				for ( auto& curCorner : curRoom.Room_->GetCornerList() )
 				{
-					TRACE((std::string("\t")+std::to_string(curCorner->GetIndex())+"\n").c_str());
+					TRACE((std::to_string(curCorner->GetIndex())+" ").c_str());
 				}
+				TRACE("\n");
 			}
-			TRACE("++++++++++++++Intersection:\n");
+			TRACE("\n--------------------------:\n");
 		}
 		
 		if ( !toAdd.empty() )
@@ -206,13 +266,14 @@ public:
 			TRACE("-------------Add:\n");
 			for ( auto& curRoom : toAdd )
 			{
-				TRACE("\tRoom:\n");
+				TRACE("\tRoom:\t");
 				for ( auto& curCorner : curRoom.Room_->GetCornerList() )
 				{
-					TRACE((std::string("\t")+std::to_string(curCorner->GetIndex())+"\n").c_str());
+					TRACE((std::to_string(curCorner->GetIndex())+" ").c_str());
 				}
+				TRACE("\n");
 			}
-			TRACE("++++++++++++++Add:\n");
+			TRACE("\n--------------------------:\n");
 		}
 
 		if ( !toRemove.empty() )
@@ -220,15 +281,16 @@ public:
 			TRACE("-------------toRemove:\n");
 			for ( auto& curRoom : toRemove )
 			{
-				TRACE("\tRoom:\n");
+				TRACE("\tRoom:\t");
 				for ( auto& curCorner : curRoom.Room_->GetCornerList() )
 				{
-					TRACE((std::string("\t")+std::to_string(curCorner->GetIndex())+"\n").c_str());
+					TRACE((std::to_string(curCorner->GetIndex())+" ").c_str());
 				}
+				TRACE("\n");
 			}
-			TRACE("++++++++++++++toRemove:\n");
+			TRACE("\n--------------------------:\n");
 		}
-		TRACE("RoomTestEnd:\n");
+		TRACE("RoomTestEnd:\n\n");
 #endif
 
 		for ( auto& curRoom : toRemove )
@@ -336,7 +398,7 @@ CornerODLSPtr GraphODL::CreateCornerBySplitWall( const WallODLSPtr& toSplit, con
 	auto srcProp = boost::get(CornerTag(), Graph_, src);
 	auto targetPorp = boost::get(CornerTag(), Graph_, target);
 
-	AddWall(srcProp, newCorner);
+	AddWall(srcProp, newCorner, false);
 	AddWall(newCorner, targetPorp);
 
 	return newCorner;
@@ -351,7 +413,7 @@ bool GraphODL::RemoveCorner( const CornerODLSPtr& corner )
 	return true;
 }
 
-WallODLSPtr GraphODL::AddWall( const CornerODLSPtr& corner1, const CornerODLSPtr& corner2 )
+WallODLSPtr GraphODL::AddWall( const CornerODLSPtr& corner1, const CornerODLSPtr& corner2, bool researchRomm )
 {
 	auto thisSPtr = std::static_pointer_cast<GraphODL>(shared_from_this());
 	auto newWall = std::make_shared<WallODL>(thisSPtr, corner1, corner2);
@@ -367,7 +429,10 @@ WallODLSPtr GraphODL::AddWall( const CornerODLSPtr& corner1, const CornerODLSPtr
 
 	newWall->UpdateMesh();
 
-	Imp::SearchRoom(std::static_pointer_cast<GraphODL>(shared_from_this()));
+	if ( researchRomm )
+	{
+		Imp::SearchRoom(std::static_pointer_cast<GraphODL>(shared_from_this()));
+	}
 
 	return newWall;
 }

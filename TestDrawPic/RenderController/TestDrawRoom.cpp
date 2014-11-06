@@ -146,6 +146,7 @@ public:
 
 TestDrawRoomCtrller::TestDrawRoomCtrller(const GraphODLWPtr& graphODL):ImpUPtr_(new Imp)
 {
+	SetEnable(false);
 	ImpUPtr_->Graph_ = graphODL;
 }
 
@@ -156,6 +157,14 @@ TestDrawRoomCtrller::~TestDrawRoomCtrller()
 
 bool TestDrawRoomCtrller::PreRender3D()
 {
+	SetEnable(StatusMgr::GetInstance().DrawingState_ == StatusMgr::EDS_LINE_WALL);
+
+	if ( !IsEnable() )
+	{
+		Reset();
+		return false;
+	}
+
 	CCombineSceneNode::SetRenderMode(CBaseSceneNode::ESNT_2D);
 
 	auto& imp_ = *ImpUPtr_;
@@ -584,22 +593,8 @@ bool TestDrawRoomCtrller::PreRender3D()
 
 			if ( imp_.Finish_ )
 			{
-				imp_.Finish_ = false;
-
-				auto walls = imp_.Graph_.lock()->GetWallsOnCorner(imp_.LastCorner_);
-				if ( walls.empty() )
-				{
-					imp_.Graph_.lock()->RemoveCorner(imp_.LastCorner_);
-				}
-				imp_.LastCorner_ = nullptr;
-				imp_.LastWall_ = nullptr;
-
-				for ( auto& curCorner : imp_.DrawingPathList_ )
-				{
-					curCorner->SetVisible(false);
-				}
-				imp_.DrawingPathList_.clear();
-				imp_.State_ = EState::ES_READY;
+				Reset();
+				StatusMgr::GetInstance().DrawingState_ = StatusMgr::EDS_NONE;
 			}
 		}
 		break;
@@ -662,6 +657,11 @@ bool TestDrawRoomCtrller::PreRender3D()
 
 void TestDrawRoomCtrller::PostRender3D()
 {
+	if ( !IsEnable() )
+	{
+		return;
+	}
+
 	auto& imp_ = *ImpUPtr_;
 
 	auto driver = GetRenderContextSPtr()->Smgr_->getVideoDriver();
@@ -704,6 +704,11 @@ void TestDrawRoomCtrller::PostRender3D()
 
 bool TestDrawRoomCtrller::OnPostEvent( const irr::SEvent& evt )
 {
+	if ( !IsEnable() )
+	{
+		return false;
+	}
+
 	auto& imp_ = *ImpUPtr_;
 
 	if ( evt.EventType == EET_MOUSE_INPUT_EVENT )
@@ -783,4 +788,30 @@ void TestDrawRoomCtrller::Init()
 		imp_.AuxiliaryLine_->Indices.push_back(2);
 		imp_.AuxiliaryLine_->Indices.push_back(3);
 	}
+}
+
+void TestDrawRoomCtrller::Reset()
+{
+	auto& imp_ = *ImpUPtr_;
+
+	imp_.Finish_ = false;
+
+	if ( imp_.LastCorner_ )
+	{
+		auto walls = imp_.Graph_.lock()->GetWallsOnCorner(imp_.LastCorner_);
+		if ( walls.empty() )
+		{
+			imp_.Graph_.lock()->RemoveCorner(imp_.LastCorner_);
+		}
+	}
+	
+	imp_.LastCorner_ = nullptr;
+	imp_.LastWall_ = nullptr;
+
+	for ( auto& curCorner : imp_.DrawingPathList_ )
+	{
+		curCorner->SetVisible(false);
+	}
+	imp_.DrawingPathList_.clear();
+	imp_.State_ = EState::ES_READY;
 }

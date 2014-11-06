@@ -26,5 +26,9 @@ public:
 	virtual bool	PreRender3D();
 
 	virtual void	PostRender3D();
+
+public:
+
+	void	Reset();
 };
 #endif // TestDrawRoom_h__

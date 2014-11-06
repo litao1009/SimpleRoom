@@ -750,7 +750,6 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_BTN_EDIT_FLOOR_SKIN  "编辑地板材质纹理"
     ID_BTN_EDIT_FLOOR_ZONE  "设置地板纹理\n操作：鼠标左键点击地板选中，然后点击本按钮，切换到地板视角，然后放置地板纹理。"
 END
 

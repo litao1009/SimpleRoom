@@ -24,6 +24,7 @@
 #include "TestDrawPicView.h"
 #include "MainFrm.h"
 #include "irrEngine/SRenderContext.h"
+
 #include "StatusMgr.h"
 
 // #ifdef _DEBUG
@@ -35,77 +36,14 @@
 IMPLEMENT_DYNCREATE(CTestDrawPicView, CCtrlFuncView)
 
 BEGIN_MESSAGE_MAP(CTestDrawPicView, CCtrlFuncView)
-	// 标准打印命令
-	ON_COMMAND(ID_FILE_PRINT, &CCtrlFuncView::OnFilePrint)
-	ON_COMMAND(ID_FILE_PRINT_DIRECT, &CCtrlFuncView::OnFilePrint)
-	ON_COMMAND(ID_FILE_PRINT_PREVIEW, &CTestDrawPicView::OnFilePrintPreview)
-	ON_WM_CONTEXTMENU()
-	ON_WM_RBUTTONUP()
-	ON_WM_LBUTTONDOWN()
-	ON_WM_LBUTTONUP()
-	ON_WM_MOUSEMOVE()
 	ON_WM_SIZE()
+	ON_WM_TIMER()
 	ON_WM_ERASEBKGND()
-	ON_WM_RBUTTONDOWN()
-	ON_WM_MOUSELEAVE()
-	ON_WM_MOUSEHWHEEL()
-	ON_WM_MOUSEWHEEL()
-	ON_WM_MBUTTONDOWN()
-	ON_WM_MBUTTONUP()
-	ON_COMMAND(ID_BTN_CREATE_WALL_LINE, &CTestDrawPicView::OnBtnCreateWallLine)
-	ON_UPDATE_COMMAND_UI(ID_BTN_CREATE_WALL_LINE, &CTestDrawPicView::OnUpdateBtnCreateWallLine)
-
-	ON_COMMAND(ID_BTN_CREATE_WALL_RECT, &CTestDrawPicView::OnBtnCreateWallRect)
-	ON_UPDATE_COMMAND_UI(ID_BTN_CREATE_WALL_RECT, &CTestDrawPicView::OnUpdateBtnCreateWallRect)
-
-	ON_COMMAND(ID_BTN_CREATE_BEAM_RECT, &CTestDrawPicView::OnBtnCreateBeamRect)
-	ON_UPDATE_COMMAND_UI(ID_BTN_CREATE_BEAM_RECT, &CTestDrawPicView::OnUpdateBtnCreateBeamRect)
-
-	ON_COMMAND(ID_BTN_CREATE_PILLAR_RECT, &CTestDrawPicView::OnBtnCreatePillarRect)
-	ON_UPDATE_COMMAND_UI(ID_BTN_CREATE_PILLAR_RECT, &CTestDrawPicView::OnUpdateBtnCreatePillarRect)
-
-	ON_COMMAND(ID_BTN_CREATE_ROOM_AUTO, &CTestDrawPicView::OnBtnCreateRoomAuto)
-	ON_UPDATE_COMMAND_UI(ID_BTN_CREATE_ROOM_AUTO, &CTestDrawPicView::OnUpdateBtnCreateRoomAuto)
-
-	ON_COMMAND(ID_BTN_CREATE_ROOM_STYLE, &CTestDrawPicView::OnBtnCreateRoomStyle)
-	ON_UPDATE_COMMAND_UI(ID_BTN_CREATE_ROOM_STYLE, &CTestDrawPicView::OnUpdateBtnCreateRoomStyle)
-
-	//////////////////////////////////////////////////////////////////////////
-	//编辑
-
-	ON_COMMAND(ID_BTN_EDIT_WALL_SKIN, &CTestDrawPicView::OnBtnEditWallSkin)
-	ON_UPDATE_COMMAND_UI(ID_BTN_EDIT_WALL_SKIN, &CTestDrawPicView::OnUpdateBtnEditWallSkin)
-
-	ON_COMMAND(ID_BTN_EDIT_FLOOR_SKIN, &CTestDrawPicView::OnBtnEditFloorSkin)
-	ON_UPDATE_COMMAND_UI(ID_BTN_EDIT_FLOOR_SKIN, &CTestDrawPicView::OnUpdateBtnEditFloorSkin)
-
-	ON_COMMAND(ID_BTN_EDIT_WALL_ZONE, &CTestDrawPicView::OnBtnEditWallZone)
-	ON_UPDATE_COMMAND_UI(ID_BTN_EDIT_WALL_ZONE, &CTestDrawPicView::OnUpdateBtnEditWallZone)
-
-	ON_COMMAND(ID_BTN_EDIT_FLOOR_ZONE, &CTestDrawPicView::OnBtnEditFloorZone)
-	ON_UPDATE_COMMAND_UI(ID_BTN_EDIT_FLOOR_ZONE, &CTestDrawPicView::OnUpdateBtnEditFloorZone)
-
-	//////////////////////////////////////////////////////////////////////////
-	//查看
-
-	ON_COMMAND(ID_BTN_VIEW_SHOW, &CTestDrawPicView::OnBtnViewShow)
-	ON_UPDATE_COMMAND_UI(ID_BTN_VIEW_SHOW, &CTestDrawPicView::OnUpdateBtnViewShow)
-
-	ON_COMMAND(ID_BTN_VIEW_HIDE, &CTestDrawPicView::OnBtnViewHide)
-	ON_UPDATE_COMMAND_UI(ID_BTN_VIEW_HIDE, &CTestDrawPicView::OnUpdateBtnViewHide)
-
-	//////////////////////////////////////////////////////////////////////////
-	//视觉视图
-	ON_COMMAND(ID_BTN_VIEW_TOP, &CTestDrawPicView::OnBtnViewTop)
-	ON_UPDATE_COMMAND_UI(ID_BTN_VIEW_TOP, &CTestDrawPicView::OnUpdateBtnViewTop)
-
-	ON_COMMAND(ID_BTN_VIEW_RENDER, &CTestDrawPicView::OnBtnViewRender)
-	ON_UPDATE_COMMAND_UI(ID_BTN_VIEW_RENDER, &CTestDrawPicView::OnUpdateBtnViewRender)
-
-	ON_WM_KEYUP()
-	ON_WM_KEYDOWN()
 	ON_COMMAND(ID_SUB_MENU_PROPERTY, &CTestDrawPicView::OnSubMenuProperty)
 
+	ON_COMMAND(ID_BTN_ROOM_CREATE_DRAW_WALL, &CTestDrawPicView::OnBtnRoomCreateDrawWall)
+	ON_COMMAND(ID_BTN_ROOM_CREATE_DRAW_ROOM, &CTestDrawPicView::OnBtnRoomCreateDrawRoom)
+	ON_COMMAND(ID_BTN_ROOM_PICTURE_PICTURE, &CTestDrawPicView::OnBtnRoomPicturePicture)
 END_MESSAGE_MAP()
 
 // CTestDrawPicView 构造/析构
@@ -142,6 +80,24 @@ void CTestDrawPicView::OnDraw(CDC* pDC)
 	ASSERT_VALID(pDoc);
 	if (!pDoc)
 		return;
+	if (m_spRenderContext)
+	{
+		MSG msg;
+
+		while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+		{	
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+
+		m_spRenderContext->Render();
+	}
+}
+void CTestDrawPicView::OnTimer(UINT_PTR nIDEvent)
+{
+	Invalidate();
+
+	CCtrlFuncView::OnTimer(nIDEvent);
 }
 
 void CTestDrawPicView::OnInitialUpdate()
@@ -150,34 +106,6 @@ void CTestDrawPicView::OnInitialUpdate()
 
 	
 }
-
-
-// CTestDrawPicView 打印
-
-
-void CTestDrawPicView::OnFilePrintPreview()
-{
-#ifndef SHARED_HANDLERS
-	AFXPrintPreview(this);
-#endif
-}
-
-BOOL CTestDrawPicView::OnPreparePrinting(CPrintInfo* pInfo)
-{
-	// 默认准备
-	return DoPreparePrinting(pInfo);
-}
-
-void CTestDrawPicView::OnBeginPrinting(CDC* /*pDC*/, CPrintInfo* /*pInfo*/)
-{
-	// TODO: 添加额外的打印前进行的初始化过程
-}
-
-void CTestDrawPicView::OnEndPrinting(CDC* /*pDC*/, CPrintInfo* /*pInfo*/)
-{
-	// TODO: 添加打印后进行的清理过程
-}
-
 
 // CTestDrawPicView 诊断
 
@@ -208,15 +136,13 @@ BOOL CTestDrawPicView::Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName, DWO
 	// TODO: 在此添加专用代码和/或调用基类
 
 	BOOL bRet = CCtrlFuncView::Create(lpszClassName, lpszWindowName, dwStyle, rect, pParentWnd, nID, pContext);
-	
-	
-	GetSubView().Create(_T(""), WS_VISIBLE|WS_CHILD|SS_NOTIFY|SS_OWNERDRAW|WS_CLIPSIBLINGS,CRect(0,600,200,200),this,IDR_VIEW_SUBVIEWER);
-	auto rootODL = std::make_shared<CDesignODL>(GetSubView().GetSafeHwnd());
+
+	auto rootODL = std::make_shared<CDesignODL>(this->GetSafeHwnd());
 	SetRoot(rootODL);
 
 	rootODL->Init();
 
-	GetSubView().SetRenderContext(rootODL->GetRenderContext());
+	m_spRenderContext = (rootODL->GetRenderContext());
 
 	m_pDrop=new COleDropTarget();
 
@@ -224,329 +150,107 @@ BOOL CTestDrawPicView::Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName, DWO
 	{
 		m_pDrop->Register(this);
 	}
+	SetTimer(1000, 20/*ms*/,NULL);
 	return bRet;
 }
-
-
-void CTestDrawPicView::OnLButtonDown(UINT nFlags, CPoint point)
-{
-	//判断鼠标在对象内没，在则启动移动操作
-	
-	CCtrlFuncView::OnLButtonDown(nFlags, point);
-}
-
-void CTestDrawPicView::OnLButtonUp(UINT nFlags, CPoint point)
-{
-	// TODO: 在此添加消息处理程序代码和/或调用默认值
-	CCtrlFuncView::OnLButtonUp(nFlags, point);
-}
-
-void CTestDrawPicView::OnMouseMove(UINT nFlags, CPoint point)
-{
-	//找看看有米有被选中的，有，且当前左键按下，则移动该对象
-	TRACKMOUSEEVENT tEventTrack = {0};
-	tEventTrack.cbSize = sizeof(tEventTrack);
-	tEventTrack.dwFlags = TME_LEAVE;
-	tEventTrack.dwHoverTime = 1;
-	tEventTrack.hwndTrack = GetSafeHwnd();
-	BOOL bRet = _TrackMouseEvent(&tEventTrack);
-
-	CCtrlFuncView::OnMouseMove(nFlags, point);
-}
-
-void CTestDrawPicView::OnRButtonDown(UINT nFlags, CPoint point)
-{
-	CCtrlFuncView::OnRButtonDown(nFlags, point);
-}
-
-void CTestDrawPicView::OnRButtonUp(UINT /* nFlags */, CPoint point)
-{
-	
-}
-
-void CTestDrawPicView::OnContextMenu(CWnd* /* pWnd */, CPoint point)
-{
-}
-
 
 void CTestDrawPicView::OnSize(UINT nType, int cx, int cy)
 {
 	CCtrlFuncView::OnSize(nType, cx, cy);
 
-	if (GetSubView().GetSafeHwnd())
+	if ( m_spRenderContext )
 	{
-		CRect rtMain;
-		GetWindowRect(rtMain);
-
-		GetSubView().MoveWindow(0, 0, rtMain.Width(), rtMain.Height());
+		m_spRenderContext->SetOnResize();
 	}
-	
+}
 
-	/*
-	if (this->GetSafeHwnd())
+
+LRESULT CTestDrawPicView::DefWindowProc(UINT message, WPARAM wParam, LPARAM lParam)
+{
+	// TODO: 在此添加专用代码和/或调用基类
+	//return CStatic::DefWindowProc(message, wParam, lParam);
+	CRect rtMain;
+	GetWindowRect(rtMain);
+	static irr::s32 ClickCount=0;
+	if (::GetCapture() != GetSafeHwnd() && ClickCount > 0)
+		ClickCount = 0;
+
+	struct messageMap
 	{
-		static auto firstUpdate = true;
-		
-		CRect rtMain;
-		GetWindowRect(rtMain);
+		irr::s32 group;
+		UINT winMessage;
+		irr::s32 irrMessage;
+	};
 
-		if (GetSubView().GetSafeHwnd())
+	static messageMap mouseMap[] =
+	{
+		{0, WM_LBUTTONDOWN, irr::EMIE_LMOUSE_PRESSED_DOWN},
+		{0, WM_LBUTTONDBLCLK, irr::EMIE_LMOUSE_DOUBLE_CLICK},
+		{1, WM_LBUTTONUP,   irr::EMIE_LMOUSE_LEFT_UP},
+		{0, WM_RBUTTONDOWN, irr::EMIE_RMOUSE_PRESSED_DOWN},
+		{1, WM_RBUTTONUP,   irr::EMIE_RMOUSE_LEFT_UP},
+		{0, WM_MBUTTONDOWN, irr::EMIE_MMOUSE_PRESSED_DOWN},
+		{1, WM_MBUTTONUP,   irr::EMIE_MMOUSE_LEFT_UP},
+		{2, WM_MOUSEMOVE,   irr::EMIE_MOUSE_MOVED},
+		{3, WM_MOUSEWHEEL,  irr::EMIE_MOUSE_WHEEL},
+		{-1, 0, 0}
+	};
+
+	messageMap * m = mouseMap;
+	while ( m->group >=0 && m->winMessage != message )
+		m += 1;
+
+	if ( m->group >= 0 )
+	{
+		irr::SEvent event;
+
+		if ( m->group == 0 )	// down
 		{
-			if ( firstUpdate )
+			ClickCount++;
+			::SetCapture(GetSafeHwnd());
+		}
+		else if ( m->group == 1 )	// up
+		{
+			ClickCount--;
+			if (ClickCount<1)
 			{
-				GetSubView().MoveWindow(0,rtMain.Height()-500, 800,500);
-				firstUpdate = false;
-			}
-			else
-			{
-				CRect rtSub;
-				GetSubView().GetWindowRect(rtSub);
-				GetSubView().MoveWindow(0, rtMain.Height()-rtSub.Height(), rtSub.Width(), rtSub.Height());
+				ClickCount=0;
+				::ReleaseCapture();
 			}
 		}
-	}*/
-}
 
+		event.EventType = irr::EET_MOUSE_INPUT_EVENT;
+		event.MouseInput.Event = (irr::EMOUSE_INPUT_EVENT) m->irrMessage;
+		event.MouseInput.X = (short)LOWORD(lParam);
+		event.MouseInput.Y = (short)HIWORD(lParam);
+		event.MouseInput.Shift = ((LOWORD(wParam) & MK_SHIFT) != 0);
+		event.MouseInput.Control = ((LOWORD(wParam) & MK_CONTROL) != 0);
+		// left and right mouse buttons
+		event.MouseInput.ButtonStates = wParam & ( MK_LBUTTON | MK_RBUTTON);
+		// middle and extra buttons
+		if (wParam & MK_MBUTTON)
+			event.MouseInput.ButtonStates |= irr::EMBSM_MIDDLE;
+		if (wParam & MK_XBUTTON1)
+			event.MouseInput.ButtonStates |= irr::EMBSM_EXTRA1;
+		if (wParam & MK_XBUTTON2)
+			event.MouseInput.ButtonStates |= irr::EMBSM_EXTRA2;
+		event.MouseInput.Wheel = 0.f;
 
-void CTestDrawPicView::OnMouseLeave()
-{
-	// TODO: 在此添加消息处理程序代码和/或调用默认值
-	//发现鼠标出去了
-	CCtrlFuncView::OnMouseLeave();
-}
+		// wheel
+		if ( m->group == 3 )
+		{
+			POINT p; // fixed by jox
+			p.x = 0; p.y = 0;
+			::ClientToScreen(GetSafeHwnd(), &p);
+			event.MouseInput.X -= p.x;
+			event.MouseInput.Y -= p.y;
+			event.MouseInput.Wheel = ((irr::f32)((short)HIWORD(wParam))) / (irr::f32)WHEEL_DELTA;
+		}
 
-void CTestDrawPicView::ClearState()
-{
-	Invalidate();
-}
+		m_spRenderContext->PostEvent(event);
+	}
 
-void CTestDrawPicView::OnMouseHWheel(UINT nFlags, short zDelta, CPoint pt)
-{
-	// 此功能要求 Windows Vista 或更高版本。
-	// _WIN32_WINNT 符号必须 >= 0x0600。
-	// TODO: 在此添加消息处理程序代码和/或调用默认值
-
-	CCtrlFuncView::OnMouseHWheel(nFlags, zDelta, pt);
-}
-
-
-BOOL CTestDrawPicView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
-{
-	return CCtrlFuncView::OnMouseWheel(nFlags, zDelta, pt);
-}
-
-void CTestDrawPicView::OnMButtonDown(UINT nFlags, CPoint point)
-{
-	CCtrlFuncView::OnMButtonDown(nFlags, point);
-}
-
-
-void CTestDrawPicView::OnMButtonUp(UINT nFlags, CPoint point)
-{
-	// TODO: 在此添加消息处理程序代码和/或调用默认值
-	CCtrlFuncView::OnMButtonUp(nFlags, point);
-}
-
-BOOL CTestDrawPicView::OnEraseBkgnd(CDC* pDC)
-{
-	return TRUE;//CCtrlFuncView::OnEraseBkgnd(pDC);
-}
-
-void CTestDrawPicView::OnBtnCreateWallLine()
-{
-	StatusMgr::GetInstance().DrawingState_ = StatusMgr::EDS_LINE_WALL;
-}
-
-void CTestDrawPicView::OnUpdateBtnCreateWallLine(CCmdUI *pCmdUI)
-{
-	// TODO: 在此添加命令更新用户界面处理程序代码
-}
-
-void CTestDrawPicView::OnBtnCreateWallRect()
-{
-	StatusMgr::GetInstance().DrawingState_ = StatusMgr::EDS_RECT_WALL;
-}
-
-void CTestDrawPicView::OnUpdateBtnCreateWallRect(CCmdUI *pCmdUI)
-{
-	// TODO: 在此添加命令更新用户界面处理程序代码
-}
-
-void CTestDrawPicView::OnBtnCreateBeamRect()
-{
-	
-}
-
-
-void CTestDrawPicView::OnUpdateBtnCreateBeamRect(CCmdUI *pCmdUI)
-{
-	// TODO: 在此添加命令更新用户界面处理程序代码
-}
-
-
-void CTestDrawPicView::OnBtnCreatePillarRect()
-{
-	
-}
-
-
-void CTestDrawPicView::OnUpdateBtnCreatePillarRect(CCmdUI *pCmdUI)
-{
-	// TODO: 在此添加命令更新用户界面处理程序代码
-}
-
-void CTestDrawPicView::OnBtnCreateRoomAuto()
-{
-	// TODO: 在此添加命令处理程序代码
-}
-
-
-void CTestDrawPicView::OnUpdateBtnCreateRoomAuto(CCmdUI *pCmdUI)
-{
-	// TODO: 在此添加命令更新用户界面处理程序代码
-}
-
-
-void CTestDrawPicView::OnBtnCreateRoomStyle()
-{
-	
-}
-
-void CTestDrawPicView::OnUpdateBtnCreateRoomStyle(CCmdUI *pCmdUI)
-{
-	// TODO: 在此添加命令更新用户界面处理程序代码
-}
-
-
-void CTestDrawPicView::OnBtnEditWallSkin()
-{
-	// TODO: 在此添加命令处理程序代码
-}
-
-
-void CTestDrawPicView::OnUpdateBtnEditWallSkin(CCmdUI *pCmdUI)
-{
-	// TODO: 在此添加命令更新用户界面处理程序代码
-}
-
-void CTestDrawPicView::OnBtnEditFloorSkin()
-{
-	// TODO: 在此添加命令处理程序代码
-}
-
-
-void CTestDrawPicView::OnUpdateBtnEditFloorSkin(CCmdUI *pCmdUI)
-{
-	// TODO: 在此添加命令更新用户界面处理程序代码
-}
-
-void CTestDrawPicView::OnBtnEditWallZone()
-{
-	
-}
-
-void CTestDrawPicView::OnUpdateBtnEditWallZone(CCmdUI *pCmdUI)
-{
-	// TODO: 在此添加命令更新用户界面处理程序代码
-}
-
-void CTestDrawPicView::OnBtnEditFloorZone()
-{
-	
-}
-
-
-void CTestDrawPicView::OnUpdateBtnEditFloorZone(CCmdUI *pCmdUI)
-{
-	// TODO: 在此添加命令更新用户界面处理程序代码
-}
-
-
-void CTestDrawPicView::OnBtnViewHide()
-{
-	// TODO: 在此添加命令处理程序代码
-}
-
-
-void CTestDrawPicView::OnUpdateBtnViewHide(CCmdUI *pCmdUI)
-{
-	// TODO: 在此添加命令更新用户界面处理程序代码
-}
-
-
-void CTestDrawPicView::OnBtnViewShow()
-{
-	//显示隐藏的对象
-}
-
-
-void CTestDrawPicView::OnUpdateBtnViewShow(CCmdUI *pCmdUI)
-{
-	// TODO: 在此添加命令更新用户界面处理程序代码
-}
-
-void CTestDrawPicView::OnBtnViewTop()
-{
-	//切换到俯视图，取消未完成的所有操作
-	
-}
-
-void CTestDrawPicView::OnUpdateBtnViewTop(CCmdUI *pCmdUI)
-{
-	//禁用、启用 切换到俯视图功能
-	//编辑墙壁分区、地板分区时，禁止切换，直到编辑完成
-}
-
-void CTestDrawPicView::OnBtnViewRender()
-{
-	//
-}
-
-void CTestDrawPicView::OnUpdateBtnViewRender(CCmdUI *pCmdUI)
-{
-	//禁用、启用 光线渲染功能
-}
-
-BOOL CTestDrawPicView::OnDrop(COleDataObject* pDataObject, DROPEFFECT dropEffect, CPoint point)
-{
-	return CCtrlFuncView::OnDrop(pDataObject, dropEffect, point);
-}
-
-
-DROPEFFECT CTestDrawPicView::OnDragEnter(COleDataObject* pDataObject, DWORD dwKeyState, CPoint point)
-{
-	// TODO: 在此添加专用代码和/或调用基类
-	//清除当前所有状态
-	return DROPEFFECT_MOVE;
-}
-
-DROPEFFECT CTestDrawPicView::OnDragOver(COleDataObject* pDataObject, DWORD dwKeyState, CPoint point)
-{
-	
-	return DROPEFFECT_NONE;
-}
-
-
-void CTestDrawPicView::OnDragLeave()
-{
-	// TODO: 在此添加专用代码和/或调用基类
-	
-	CCtrlFuncView::OnDragLeave();
-}
-
-void CTestDrawPicView::OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags)
-{
-	// TODO: 在此添加消息处理程序代码和/或调用默认值
-	
-	CCtrlFuncView::OnKeyUp(nChar, nRepCnt, nFlags);
-}
-
-
-void CTestDrawPicView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
-{
-	// TODO: 在此添加消息处理程序代码和/或调用默认值
-	
-	CCtrlFuncView::OnKeyDown(nChar, nRepCnt, nFlags);
+	return CCtrlFuncView::DefWindowProc(message, wParam, lParam);
 }
 
 
@@ -604,7 +308,7 @@ BOOL CTestDrawPicView::PreTranslateMessage(MSG* pMsg)
 	{
 		POINT p; // fixed by jox
 		p.x = 0; p.y = 0;
-		::ClientToScreen(GetSubView().GetSafeHwnd(), &p);
+		::ClientToScreen(GetSafeHwnd(), &p);
 
 		irr::SEvent evt;
 		evt.EventType = irr::EET_MOUSE_INPUT_EVENT;
@@ -618,6 +322,10 @@ BOOL CTestDrawPicView::PreTranslateMessage(MSG* pMsg)
 	return CView::PreTranslateMessage(pMsg);
 }
 
+BOOL CTestDrawPicView::OnEraseBkgnd(CDC* pDC)
+{
+	return TRUE;//CCtrlFuncView::OnEraseBkgnd(pDC);
+}
 
 void CTestDrawPicView::OnSubMenuProperty()
 {
@@ -628,4 +336,21 @@ CMainFrame* CTestDrawPicView::GetMainFrame() const
 {
 	CMainFrame* pMain = (CMainFrame*)theApp.GetMainWnd();
 	return pMain;
+}
+
+void CTestDrawPicView::OnBtnRoomCreateDrawWall()
+{
+	StatusMgr::GetInstance().DrawingState_ = StatusMgr::EDS_LINE_WALL;
+}
+
+
+void CTestDrawPicView::OnBtnRoomCreateDrawRoom()
+{
+	// TODO: 在此添加命令处理程序代码
+}
+
+
+void CTestDrawPicView::OnBtnRoomPicturePicture()
+{
+	// TODO: 在此添加命令处理程序代码
 }

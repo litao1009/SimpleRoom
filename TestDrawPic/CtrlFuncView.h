@@ -7,7 +7,6 @@
 //创建墙、修改墙、移动鼠标、等等
 //////////////////////////////////////////////////////////////////////////
 
-#include "SubViewer.h"
 #include "ODL/DesignODL.h"
 
 class CCtrlFuncView : public CView
@@ -26,16 +25,9 @@ public:
 
 	void				SetRoot(CDesignODLSPtr root) { RootODL_ = root; }
 
-	CSubViewer&			GetSubView() { return SubViewPort_; }
-
-	const CSubViewer&	GetSubView() const { return SubViewPort_; }
-
 private:
 
 	CDesignODLSPtr	RootODL_;
-
-	//子窗口显示
-	CSubViewer		SubViewPort_;
 
 public:
 	virtual void OnDraw(CDC* pDC);      // 重写以绘制该视图
