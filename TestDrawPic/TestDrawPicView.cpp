@@ -52,6 +52,8 @@ BEGIN_MESSAGE_MAP(CTestDrawPicView, CCtrlFuncView)
 	ON_UPDATE_COMMAND_UI(ID_ROOM_PICTURE_SHOW, &CTestDrawPicView::OnUpdateRoomPictureShow)
 	ON_COMMAND(ID_SLIDE_ROOM_PIC_ALPHA, &CTestDrawPicView::OnSlideRoomPicAlpha)
 	ON_UPDATE_COMMAND_UI(ID_SLIDE_ROOM_PIC_ALPHA, &CTestDrawPicView::OnUpdateSlideRoomPicAlpha)
+	ON_COMMAND(ID_BTN_ROOM_PIC_SET_SCALE, &CTestDrawPicView::OnBtnRoomPicSetScale)
+	ON_COMMAND(ID_BTN_ROOM_PIC_SET_POSITION, &CTestDrawPicView::OnBtnRoomPicSetPosition)
 END_MESSAGE_MAP()
 
 // CTestDrawPicView 构造/析构
@@ -107,13 +109,12 @@ void CTestDrawPicView::OnInitialUpdate()
 {
 	CCtrlFuncView::OnInitialUpdate();
 
-	CArray<CMFCRibbonBaseElement*, CMFCRibbonBaseElement*> arr;
-
-	GetMainFrame()->GetRibbonBar()->GetElementsByID(ID_SLIDE_ROOM_PIC_ALPHA, arr);
-
-	auto slide = static_cast<CMFCRibbonSlider*>(arr[0]);
-
-	slide->SetPos(50);
+	{
+		CArray<CMFCRibbonBaseElement*, CMFCRibbonBaseElement*> arr;
+		GetMainFrame()->GetRibbonBar()->GetElementsByID(ID_SLIDE_ROOM_PIC_ALPHA, arr);
+		auto slide = static_cast<CMFCRibbonSlider*>(arr[0]);
+		slide->SetPos(50);
+	}
 }
 
 // CTestDrawPicView 诊断
@@ -480,4 +481,26 @@ void CTestDrawPicView::OnUpdateSlideRoomPicAlpha(CCmdUI *pCmdUI)
 	// TODO: 在此添加命令更新用户界面处理程序代码
 
 	pCmdUI->Enable(HasRoomPicture_ ? 1 : 0);
+}
+
+
+void CTestDrawPicView::OnBtnRoomPicSetScale()
+{
+	// TODO: 在此添加命令处理程序代码
+
+	irr::SEvent evt;
+	evt.EventType = irr::EET_USER_EVENT;
+	evt.UserEvent.UserData1 = EUT_DRAW_PICTURE_REF_LINE;	
+	m_spRenderContext->PostEvent(evt);
+}
+
+
+void CTestDrawPicView::OnBtnRoomPicSetPosition()
+{
+	// TODO: 在此添加命令处理程序代码
+
+	irr::SEvent evt;
+	evt.EventType = irr::EET_USER_EVENT;
+	evt.UserEvent.UserData1 = EUT_SET_ROOM_PICTURE_POSITION;	
+	m_spRenderContext->PostEvent(evt);
 }

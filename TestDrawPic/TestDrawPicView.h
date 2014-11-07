@@ -88,6 +88,8 @@ public:
 	afx_msg void OnUpdateRoomPictureShow(CCmdUI *pCmdUI);
 	afx_msg void OnSlideRoomPicAlpha();
 	afx_msg void OnUpdateSlideRoomPicAlpha(CCmdUI *pCmdUI);
+	afx_msg void OnBtnRoomPicSetScale();
+	afx_msg void OnBtnRoomPicSetPosition();
 };
 
 #ifndef _DEBUG  // TestDrawPicView.cpp 中的调试版本

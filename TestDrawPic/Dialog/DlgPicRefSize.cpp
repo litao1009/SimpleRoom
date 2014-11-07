@@ -1,9 +1,8 @@
-// G:\rem\branches\RoomDecor3D\TestDrawPic\Dialog\DlgPicRefSize.cpp : 实现文件
 //
 
 #include "stdafx.h"
 #include "TestDrawPic.h"
-#include "G:\rem\branches\RoomDecor3D\TestDrawPic\Dialog\DlgPicRefSize.h"
+#include "DlgPicRefSize.h"
 #include "afxdialogex.h"
 
 #include <string>
@@ -36,7 +35,6 @@ BOOL DlgPicRefSize::PreTranslateMessage(MSG* pMsg)
 	{
 		switch (pMsg->wParam)
 		{
-		case VK_RETURN:return TRUE;
 		case VK_ESCAPE:return TRUE;
 		}
 	}

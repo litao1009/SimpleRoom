@@ -127,6 +127,8 @@ public:
 
 		LMousePressDown_ = false;
 		EscPressDown_ = false;
+		Drag_ = false;
+		LMouseLeftUp_ = false;
 
 		{
 			Point_ = new irr::scene::SMeshBuffer;
@@ -203,8 +205,11 @@ public:
 	vector3df				SecondPos_;
 	vector2di				CursorIPos_;
 	vector3df				CurrentPos_;
+	vector3df				SavePos_;
 	unsigned				RefSize_;
 	bool					LMousePressDown_;
+	bool					LMouseLeftUp_;
+	bool					Drag_;
 	bool					EscPressDown_;
 	
 };
@@ -280,8 +285,6 @@ bool RoomPictureCtrller::PreRender3D()
 		{
 			if ( imp_.LMousePressDown_ )
 			{
-				imp_.LMousePressDown_ = false;
-
 				imp_.FirstPos_ = imp_.CurrentPos_;
 				imp_.State_ = RPS_DRAWING_SECOND_POINT;
 
@@ -302,12 +305,12 @@ bool RoomPictureCtrller::PreRender3D()
 			{
 				imp_.LMousePressDown_ = false;
 				imp_.SecondPos_ = imp_.CurrentPos_;
-				::SendMessage((HWND)(GetRenderContextSPtr()->GetHandle()), WM_IRR_DLG_MSG, WM_USER_SET_REFERENCE_SIZE, 0);
+				::PostMessage((HWND)(GetRenderContextSPtr()->GetHandle()), WM_IRR_DLG_MSG, WM_USER_SET_REFERENCE_SIZE, 0);
+				imp_.State_ = RPS_COUNT;
 			}
 
 			if ( imp_.EscPressDown_ )
 			{
-				imp_.EscPressDown_ = false;
 				imp_.State_ = RPS_DRAWING_FIRST_POINT;
 			}
 		}
@@ -327,12 +330,43 @@ bool RoomPictureCtrller::PreRender3D()
 		break;
 	case RPS_SET_POSITION:
 		{
+			if ( !imp_.Drag_ )
+			{
+				imp_.Drag_ = imp_.LMousePressDown_;
 
+				if ( imp_.Drag_ )
+				{
+					imp_.SavePos_ = imp_.CurrentPos_;
+					break;
+				}
+			}
+			else
+			{
+				imp_.Drag_ = !imp_.LMouseLeftUp_;
+
+				if ( !imp_.Drag_ )
+				{
+					imp_.State_ = RPS_COUNT;
+					break;
+				}
+			}
+
+			if ( imp_.Drag_ )
+			{
+				auto curPos = imp_.Picture_->getPosition();
+				auto curVec = imp_.CurrentPos_ - imp_.SavePos_;
+				imp_.Picture_->setPosition(curVec + curPos);
+				imp_.SavePos_ = imp_.CurrentPos_;
+			}
 		}
 		break;
 	default:
 		break;
 	}
+
+	imp_.LMousePressDown_ = false;
+	imp_.LMouseLeftUp_ = false;
+	imp_.EscPressDown_ = false;
 
 	return false;
 }
@@ -430,11 +464,36 @@ bool RoomPictureCtrller::OnPostEvent( const irr::SEvent& event )
 
 			return true;
 		}
+
+		if ( event.UserEvent.UserData1 == EUT_DRAW_PICTURE_REF_LINE )
+		{
+			if ( imp_.Picture_ )
+			{
+				imp_.State_ = RPS_DRAWING_FIRST_POINT;
+			}
+
+			return true;
+		}
+
+		if ( event.UserEvent.UserData1 == EUT_SET_ROOM_PICTURE_POSITION )
+		{
+			if ( imp_.Picture_ )
+			{
+				imp_.State_ = RPS_SET_POSITION;
+			}
+
+			return true;
+		}
 	}
 
 	if ( event.EventType == EET_MOUSE_INPUT_EVENT && event.MouseInput.Event == EMIE_LMOUSE_PRESSED_DOWN )
 	{
 		imp_.LMousePressDown_ = true;
+	}
+
+	if ( event.EventType == EET_MOUSE_INPUT_EVENT && event.MouseInput.Event == EMIE_LMOUSE_LEFT_UP )
+	{
+		imp_.LMouseLeftUp_ = true;
 	}
 
 	if ( event.EventType == EET_MOUSE_INPUT_EVENT && event.MouseInput.Event == EMIE_MOUSE_MOVED )

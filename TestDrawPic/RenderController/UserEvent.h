@@ -19,6 +19,9 @@ enum EUserType
 	//设置临摹图可见
 	EUT_ROOM_PICTURE_SHOW,
 
+	//画参考线
+	EUT_DRAW_PICTURE_REF_LINE,
+
 	//设置参考尺寸
 	EUT_SET_REFERENCE_SIZE,
 

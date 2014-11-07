@@ -159,7 +159,7 @@ static irr::core::plane3df s_ZeroPlane(0,0,0,0,1,0);
 GridController::GridController()
 {
 	Node_ = nullptr;
-	GridSize_ = 200.f;
+	GridSize_ = 100.f;
 	Ignore_ = false;
 }
 
