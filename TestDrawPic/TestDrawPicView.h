@@ -34,6 +34,8 @@ public:
 	SRenderContextSPtr GetRenderContext() const { return m_spRenderContext; }
 	void SetRenderContext(SRenderContextSPtr val) { m_spRenderContext = val; }
 
+	void	Render();
+
 // 操作
 public:
 
@@ -43,6 +45,10 @@ private:
 
 	Gdiplus::Color m_clGrout;
 	SRenderContextSPtr	m_spRenderContext;
+	bool				m_Render3D;
+
+	bool				HasRoomPicture_;
+	bool				ShowPic_;
 
 // 重写
 public:
@@ -78,6 +84,10 @@ public:
 	afx_msg void OnBtnRoomCreateDrawWall();
 	afx_msg void OnBtnRoomCreateDrawRoom();
 	afx_msg void OnBtnRoomPicturePicture();
+	afx_msg void OnRoomPictureShow();
+	afx_msg void OnUpdateRoomPictureShow(CCmdUI *pCmdUI);
+	afx_msg void OnSlideRoomPicAlpha();
+	afx_msg void OnUpdateSlideRoomPicAlpha(CCmdUI *pCmdUI);
 };
 
 #ifndef _DEBUG  // TestDrawPicView.cpp 中的调试版本

@@ -22,6 +22,7 @@
 //#include "RenderController/DoorController.h"
 //#include "RenderController/WindowController.h"
 #include "RenderController/DrawLineRoomCtrller.h"
+#include "RenderController/RoomPictureCtrller.h"
 
 //--test
 #include "RenderController/TestDecorGUIBoard.h"
@@ -399,6 +400,8 @@ void CDesignODL::Init()
 		RenderContext_->PushController(std::static_pointer_cast<IRenderController>(ImpSPtr_));
 
 		auto gridCtrller = std::make_shared<GridController>();
+		auto roomPic = std::make_shared<RoomPictureCtrller>();
+		roomPic->SetRootODL(shared_from_this());
 
 		{//TopView
 			ImpSPtr_->StatesController_->AddController(ERenderState::ERS_TOP_VIEW, ImpSPtr_->GUIController_);
@@ -408,10 +411,11 @@ void CDesignODL::Init()
 			//ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->DrawLineWallCtrller_);
 			//ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->DrawRectWallCtrller_);
 			//ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->TopPickingController_);
-			ImpSPtr_->StatesController_->AddController(ERenderState::ERS_TOP_VIEW, std::make_shared<TestDecorGUIBoard>());
-			ImpSPtr_->StatesController_->AddController(ERenderState::ERS_TOP_VIEW, std::make_shared<DrawLineRoomCtrller>(graph));
 			//ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->DoorController_);
 			//ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->WindowController_);
+			//ImpSPtr_->StatesController_->AddController(ERenderState::ERS_TOP_VIEW, std::make_shared<TestDecorGUIBoard>());
+			ImpSPtr_->StatesController_->AddController(ERenderState::ERS_TOP_VIEW, std::make_shared<DrawLineRoomCtrller>(graph));
+			ImpSPtr_->StatesController_->AddController(ERenderState::ERS_TOP_VIEW, roomPic);
 		}
 
 		{//MayaView

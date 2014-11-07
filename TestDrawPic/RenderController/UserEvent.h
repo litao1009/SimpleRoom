@@ -1,0 +1,36 @@
+#pragma once
+
+#define WM_IRR_DLG_MSG						WM_USER+1
+#define DEFINE_USER_MESSAGE(msg)			(WM_USER + msg)
+
+enum EUserType
+{
+	EUT_BEGIN = 100,
+
+	//画墙
+	EUT_DRAW_LINE,
+
+	//画房间
+	EUT_DRAW_ROOM,
+
+	//设置临摹图
+	EUT_SET_ROOM_PICTURE,
+
+	//设置临摹图可见
+	EUT_ROOM_PICTURE_SHOW,
+
+	//设置参考尺寸
+	EUT_SET_REFERENCE_SIZE,
+
+	//设置临摹图透明度
+	EUT_SET_ROOM_PICTURE_ALPHA,
+
+	//设置临摹图位置
+	EUT_SET_ROOM_PICTURE_POSITION,
+
+	EUT_END
+};
+
+
+
+#define WM_USER_SET_REFERENCE_SIZE	DEFINE_USER_MESSAGE(EUT_SET_REFERENCE_SIZE)

@@ -57,6 +57,8 @@ public:
 
 	void	EnableDepthPass(bool val);
 
+	void*	GetHandle();
+
 public:
 
 	//³¡¾°¹ÜÀíÆ÷

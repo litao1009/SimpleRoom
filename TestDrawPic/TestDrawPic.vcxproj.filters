@@ -223,6 +223,12 @@
     <ClCompile Include="RenderController\DrawLineRoomCtrller.cpp">
       <Filter>RenderController</Filter>
     </ClCompile>
+    <ClCompile Include="RenderController\RoomPictureCtrller.cpp">
+      <Filter>RenderController</Filter>
+    </ClCompile>
+    <ClCompile Include="Dialog\DlgPicRefSize.cpp">
+      <Filter>src\Dialog</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BLL\BaseBLL.h">
@@ -519,6 +525,12 @@
     <ClInclude Include="RenderController\RoomPictureCtrller.h">
       <Filter>RenderController</Filter>
     </ClInclude>
+    <ClInclude Include="RenderController\UserEvent.h">
+      <Filter>RenderController</Filter>
+    </ClInclude>
+    <ClInclude Include="Dialog\DlgPicRefSize.h">
+      <Filter>src\Dialog</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\buttons.bmp">
@@ -629,6 +641,9 @@
     </Filter>
     <Filter Include="ODL\MeshSceneNode">
       <UniqueIdentifier>{b22615fd-ddca-4d24-bf1b-d41a4c14d9d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Dialog">
+      <UniqueIdentifier>{e190f9f4-49d2-48ad-9933-431505f471e5}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

@@ -254,3 +254,8 @@ void SRenderContext::EnableDepthPass( bool val )
 {
 	ImpUPtr_->Effect_->enableDepthPass(val);
 }
+
+void* SRenderContext::GetHandle()
+{
+	return VideoData_.OpenGLWin32.HWnd;
+}

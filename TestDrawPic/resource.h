@@ -70,6 +70,7 @@
 #define IDD_DLG_ZONE_INFO               324
 #define IDD_DLG_LAYER                   325
 #define IDD_DLG_SHADER                  326
+#define IDD_DLG_PIC_REF_SIZE            327
 #define IDC_LIST_ROOM_STYLE             1000
 #define IDC_CBX_GTYPE                   1001
 #define IDC_LIST_OBJ                    1002
@@ -103,6 +104,7 @@
 #define IDC_TXT_MIN_1                   1029
 #define IDC_TXT_MAX_1                   1030
 #define IDC_TXT_MIN_2                   1031
+#define IDC_TXT_PIC_REF_SIZE_NUM        1031
 #define IDC_TXT_MAX_2                   1032
 #define IDC_TXT_MIN_3                   1033
 #define IDC_TXT_MAX_3                   1034
@@ -137,21 +139,23 @@
 #define ID_BTN_STATE                    32823
 #define ID_BUTTON2                      32824
 #define ID_BTN_VIEW_ZERO                32824
+#define ID_BTN_ROOM_PIC_SET_SCALE       32824
 #define ID_BTN_ROOM_PICTURE_PICTURE     32826
 #define ID_BTN_ROOM_CREATE_DRAW_WALL    32827
 #define ID_BTN_ROOM_CREATE_DRAW_ROOM    32828
 #define ID_ROOM_PICTURE_SHOW            32829
 #define ID_BUTTON4                      32832
-#define ID_SLIDER2                      32833
-#define ID_BUTTON5                      32834
+#define ID_SLIDE_ROOM_PIC_ALPHA         32833
+#define ID_BUTTON3                      32835
+#define ID_BTN_ROOM_PIC_SET_POSITION    32835
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        327
-#define _APS_NEXT_COMMAND_VALUE         32835
-#define _APS_NEXT_CONTROL_VALUE         1031
+#define _APS_NEXT_RESOURCE_VALUE        328
+#define _APS_NEXT_COMMAND_VALUE         32836
+#define _APS_NEXT_CONTROL_VALUE         1032
 #define _APS_NEXT_SYMED_VALUE           321
 #endif
 #endif

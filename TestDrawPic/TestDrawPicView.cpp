@@ -24,9 +24,13 @@
 #include "TestDrawPicView.h"
 #include "MainFrm.h"
 #include "irrEngine/SRenderContext.h"
-
+#include "RenderController/UserEvent.h"
 #include "StatusMgr.h"
 
+#include "Dialog/DlgPicRefSize.h"
+#include "resource.h"
+
+#include <boost/filesystem/path.hpp>
 // #ifdef _DEBUG
 // #define new DEBUG_NEW
 // #endif
@@ -44,6 +48,10 @@ BEGIN_MESSAGE_MAP(CTestDrawPicView, CCtrlFuncView)
 	ON_COMMAND(ID_BTN_ROOM_CREATE_DRAW_WALL, &CTestDrawPicView::OnBtnRoomCreateDrawWall)
 	ON_COMMAND(ID_BTN_ROOM_CREATE_DRAW_ROOM, &CTestDrawPicView::OnBtnRoomCreateDrawRoom)
 	ON_COMMAND(ID_BTN_ROOM_PICTURE_PICTURE, &CTestDrawPicView::OnBtnRoomPicturePicture)
+	ON_COMMAND(ID_ROOM_PICTURE_SHOW, &CTestDrawPicView::OnRoomPictureShow)
+	ON_UPDATE_COMMAND_UI(ID_ROOM_PICTURE_SHOW, &CTestDrawPicView::OnUpdateRoomPictureShow)
+	ON_COMMAND(ID_SLIDE_ROOM_PIC_ALPHA, &CTestDrawPicView::OnSlideRoomPicAlpha)
+	ON_UPDATE_COMMAND_UI(ID_SLIDE_ROOM_PIC_ALPHA, &CTestDrawPicView::OnUpdateSlideRoomPicAlpha)
 END_MESSAGE_MAP()
 
 // CTestDrawPicView 构造/析构
@@ -53,6 +61,10 @@ CTestDrawPicView::CTestDrawPicView()
 	// TODO: 在此处添加构造代码
 	m_clGrout = Gdiplus::Color::Bisque;
 	m_pDrop=nullptr;
+	m_Render3D = true;
+
+	HasRoomPicture_ = false;
+	ShowPic_ = false;
 }
 
 CTestDrawPicView::~CTestDrawPicView()
@@ -80,22 +92,13 @@ void CTestDrawPicView::OnDraw(CDC* pDC)
 	ASSERT_VALID(pDoc);
 	if (!pDoc)
 		return;
-	if (m_spRenderContext)
-	{
-		MSG msg;
-
-		while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
-		{	
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		}
-
-		m_spRenderContext->Render();
-	}
 }
 void CTestDrawPicView::OnTimer(UINT_PTR nIDEvent)
 {
-	Invalidate();
+	if ( m_Render3D )
+	{
+		Render();
+	}
 
 	CCtrlFuncView::OnTimer(nIDEvent);
 }
@@ -104,7 +107,13 @@ void CTestDrawPicView::OnInitialUpdate()
 {
 	CCtrlFuncView::OnInitialUpdate();
 
-	
+	CArray<CMFCRibbonBaseElement*, CMFCRibbonBaseElement*> arr;
+
+	GetMainFrame()->GetRibbonBar()->GetElementsByID(ID_SLIDE_ROOM_PIC_ALPHA, arr);
+
+	auto slide = static_cast<CMFCRibbonSlider*>(arr[0]);
+
+	slide->SetPos(50);
 }
 
 // CTestDrawPicView 诊断
@@ -174,6 +183,26 @@ LRESULT CTestDrawPicView::DefWindowProc(UINT message, WPARAM wParam, LPARAM lPar
 	static irr::s32 ClickCount=0;
 	if (::GetCapture() != GetSafeHwnd() && ClickCount > 0)
 		ClickCount = 0;
+
+	if ( WM_IRR_DLG_MSG == message )
+	{
+		if ( WM_USER_SET_REFERENCE_SIZE == wParam )
+		{
+			DlgPicRefSize dlg;
+			
+			dlg.DoModal();
+
+			auto num = dlg.GetNum();
+
+			irr::SEvent evt;
+			evt.EventType = irr::EET_USER_EVENT;
+			evt.UserEvent.UserData1 = EUT_SET_REFERENCE_SIZE;
+			evt.UserEvent.UserData2 = num;
+			m_spRenderContext->PostEvent(evt);
+		}
+
+		return TRUE;
+	}
 
 	struct messageMap
 	{
@@ -340,24 +369,115 @@ CMainFrame* CTestDrawPicView::GetMainFrame() const
 
 void CTestDrawPicView::OnBtnRoomCreateDrawWall()
 {
-	StatusMgr::GetInstance().DrawingState_ = StatusMgr::EDS_LINE_WALL;
+	irr::SEvent evt;
+	evt.EventType = irr::EET_USER_EVENT;
+	evt.UserEvent.UserData1 = EUT_DRAW_LINE;
+
+	
+	GetRootODL()->GetRenderContext()->PostEvent(evt);
 }
 
 
 void CTestDrawPicView::OnBtnRoomCreateDrawRoom()
 {
-	// TODO: 在此添加命令处理程序代码
+	
 }
 
 
 void CTestDrawPicView::OnBtnRoomPicturePicture()
 {
-	CFileDialog fd(TRUE);
-	fd.DoModal();
+	static	boost::filesystem::path filePath;
 
-	auto pn = fd.GetPathName();
+	CFileDialog fd(TRUE, NULL, NULL, 0, _T("JPG(*.jpg)|*.jpg|ALL Files(*.*)|*.*||"));
+	
+	m_Render3D = false;
+
+	if ( IDOK == fd.DoModal() )
+	{
+		auto pn = fd.GetPathName();
+		filePath = pn.GetBuffer();
+		pn.ReleaseBuffer();
+
+		HasRoomPicture_ = true;
+		ShowPic_ = true;
+
+		irr::SEvent evt;
+		evt.EventType = irr::EET_USER_EVENT;
+		evt.UserEvent.UserData1 = EUT_SET_ROOM_PICTURE;
+		evt.UserEvent.UserData2 = reinterpret_cast<int>(static_cast<void*>(&filePath));
+
+		GetRenderContext()->PostEvent(evt);
+	}
+
+	m_Render3D = true;
+}
+
+void CTestDrawPicView::Render()
+{
+	if (m_spRenderContext)
+	{
+		MSG msg;
+
+		while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+		{	
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+
+		m_spRenderContext->Render();
+	}
+}
 
 
-
+void CTestDrawPicView::OnRoomPictureShow()
+{
 	// TODO: 在此添加命令处理程序代码
+
+	ShowPic_ = !ShowPic_;
+	
+	irr::SEvent evt;
+	evt.EventType = irr::EET_USER_EVENT;
+	evt.UserEvent.UserData1 = EUT_ROOM_PICTURE_SHOW;
+	evt.UserEvent.UserData2 = ShowPic_ ? 1 : 0;
+
+	m_spRenderContext->PostEvent(evt);
+}
+
+
+void CTestDrawPicView::OnUpdateRoomPictureShow(CCmdUI *pCmdUI)
+{
+	// TODO: 在此添加命令更新用户界面处理程序代码
+
+	pCmdUI->Enable(HasRoomPicture_ ? 1 : 0);
+
+	if ( HasRoomPicture_ )
+	{
+		pCmdUI->SetCheck(ShowPic_ ? 1 : 0);
+	}
+}
+
+
+void CTestDrawPicView::OnSlideRoomPicAlpha()
+{
+	// TODO: 在此添加命令处理程序代码
+	CArray<CMFCRibbonBaseElement*, CMFCRibbonBaseElement*> arr;
+
+	GetMainFrame()->GetRibbonBar()->GetElementsByID(ID_SLIDE_ROOM_PIC_ALPHA, arr);
+
+	auto slide = static_cast<CMFCRibbonSlider*>(arr[0]);
+
+	irr::SEvent evt;
+	evt.EventType = irr::EET_USER_EVENT;
+	evt.UserEvent.UserData1 = EUT_SET_ROOM_PICTURE_ALPHA;
+	evt.UserEvent.UserData2 = slide->GetPos();
+	
+	m_spRenderContext->PostEvent(evt);
+}
+
+
+void CTestDrawPicView::OnUpdateSlideRoomPicAlpha(CCmdUI *pCmdUI)
+{
+	// TODO: 在此添加命令更新用户界面处理程序代码
+
+	pCmdUI->Enable(HasRoomPicture_ ? 1 : 0);
 }

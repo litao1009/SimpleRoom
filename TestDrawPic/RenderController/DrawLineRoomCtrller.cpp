@@ -4,6 +4,7 @@
 #include "SMeshBuffer.h"
 #include "irrEngine/SRenderContext.h"
 #include "irrEngine/irrEngine.h"
+#include "UserEvent.h"
 
 #include "ODL/GraphODL.h"
 #include "ODL/CornerODL.h"
@@ -67,13 +68,14 @@ public:
 		AuxiliaryLine_->getMaterial().DiffuseColor = 0xFF000000;
 		AuxiliaryLine_->getMaterial().Thickness = 2;
 
-		PressDown_ = false;
-		Finish_ = false;
+		LMousePressDown_ = false;
+		EscPressDown_ = false;
 
 		Polar_ = 30.f;
 		PolarRange_ = 10.f;
 		AllowPolar_ = true;
 		AllowPerpendicular_ = true;
+		Reset_ = false;
 	}
 
 	~Imp()
@@ -138,8 +140,9 @@ public:
 
 	vector2di					CursorIPos_;
 	
-	bool						PressDown_;
-	bool						Finish_;
+	bool						LMousePressDown_;
+	bool						EscPressDown_;
+	bool						Reset_;
 
 	GraphODLWPtr				Graph_;
 };
@@ -157,17 +160,20 @@ DrawLineRoomCtrller::~DrawLineRoomCtrller()
 
 bool DrawLineRoomCtrller::PreRender3D()
 {
-	SetEnable(StatusMgr::GetInstance().DrawingState_ == StatusMgr::EDS_LINE_WALL);
+	auto& imp_ = *ImpUPtr_;
 
 	if ( !IsEnable() )
 	{
-		Reset();
 		return false;
 	}
 
-	CCombineSceneNode::SetRenderMode(CBaseSceneNode::ESNT_2D);
+	if ( imp_.Reset_ )
+	{
+		Reset();
+		imp_.Reset_ = false;
+	}
 
-	auto& imp_ = *ImpUPtr_;
+	CCombineSceneNode::SetRenderMode(CBaseSceneNode::ESNT_2D);
 
 	plane3df plan(0,0,0,0,1,0);
 	vector3df planPos;
@@ -416,9 +422,9 @@ bool DrawLineRoomCtrller::PreRender3D()
 	{
 	case EState::ES_READY:
 		{
-			if ( imp_.PressDown_ )
+			if ( imp_.LMousePressDown_ )
 			{
-				imp_.PressDown_ = false;
+				imp_.LMousePressDown_ = false;
 				if ( nearestCorner )
 				{
 					imp_.LastCorner_ = nearestCorner;
@@ -441,6 +447,11 @@ bool DrawLineRoomCtrller::PreRender3D()
 
 				imp_.DrawingPathList_.push_back(imp_.LastCorner_);
 				imp_.State_ = EState::ES_DRAWING;
+			}
+
+			if ( imp_.EscPressDown_ )
+			{
+				SetEnable(false);
 			}
 		}
 		break;
@@ -556,9 +567,9 @@ bool DrawLineRoomCtrller::PreRender3D()
 				imp_.FloatingLine_->getMaterial().DiffuseColor = 0xFFFF0000;//Read
 			}
 
-			if ( imp_.PressDown_ )
+			if ( imp_.LMousePressDown_ )
 			{
-				imp_.PressDown_ = false;
+				imp_.LMousePressDown_ = false;
 
 				if ( valid )
 				{
@@ -591,10 +602,10 @@ bool DrawLineRoomCtrller::PreRender3D()
 				}
 			}
 
-			if ( imp_.Finish_ )
+			if ( imp_.EscPressDown_ )
 			{
-				Reset();
-				StatusMgr::GetInstance().DrawingState_ = StatusMgr::EDS_NONE;
+				imp_.State_ = EState::ES_READY;
+				imp_.EscPressDown_ = false;
 			}
 		}
 		break;
@@ -704,12 +715,20 @@ void DrawLineRoomCtrller::PostRender3D()
 
 bool DrawLineRoomCtrller::OnPostEvent( const irr::SEvent& evt )
 {
+	auto& imp_ = *ImpUPtr_;
+
 	if ( !IsEnable() )
 	{
+		if ( evt.EventType == EET_USER_EVENT && evt.UserEvent.UserData1 == EUT_DRAW_LINE )
+		{
+			SetEnable(true);
+			imp_.Reset_ = true;
+
+			return true;
+		}
+
 		return false;
 	}
-
-	auto& imp_ = *ImpUPtr_;
 
 	if ( evt.EventType == EET_MOUSE_INPUT_EVENT )
 	{
@@ -721,7 +740,7 @@ bool DrawLineRoomCtrller::OnPostEvent( const irr::SEvent& evt )
 
 		if ( evt.MouseInput.Event == EMIE_LMOUSE_PRESSED_DOWN )
 		{
-			imp_.PressDown_ = true;
+			imp_.LMousePressDown_ = true;
 		}
 	}
 
@@ -729,7 +748,7 @@ bool DrawLineRoomCtrller::OnPostEvent( const irr::SEvent& evt )
 	{
 		if ( evt.KeyInput.Key == KEY_ESCAPE && evt.KeyInput.PressedDown )
 		{
-			imp_.Finish_ = true;
+			imp_.EscPressDown_ = true;
 		}
 	}
 
@@ -794,7 +813,7 @@ void DrawLineRoomCtrller::Reset()
 {
 	auto& imp_ = *ImpUPtr_;
 
-	imp_.Finish_ = false;
+	imp_.EscPressDown_ = false;
 
 	if ( imp_.LastCorner_ )
 	{

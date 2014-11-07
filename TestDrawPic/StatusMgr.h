@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <boost/optional.hpp>
+#include <string>
 
 class	StatusMgr
 {
@@ -29,6 +30,7 @@ public:
 		EDS_LINE_WALL,
 		EDS_RECT_WALL,
 		EDS_BAY_WINDOW,
+		EDS_ROMM_PICTURE,
 		EDS_COUNT
 	};
 
@@ -54,6 +56,8 @@ public:
 	boost::optional<irr::core::vector3df>	GridAlign_;
 
 	EDrawingState							DrawingState_;
+
+	std::string								RoomPicture_;
 
 	float									CreateWallHeight_;
 
