@@ -3,15 +3,15 @@
 #include "irrEngine/IRenderController.h"
 #include "ODL/BaseODLFwd.h"
 
-class	RoomPictureCtrller : public IRenderController
+class	RoomLayoutPictureCtrller : public IRenderController
 {
 	class	Imp;
 	std::unique_ptr<Imp>	ImpUPtr_;
 
 public:
 
-	RoomPictureCtrller();
-	~RoomPictureCtrller();
+	RoomLayoutPictureCtrller();
+	~RoomLayoutPictureCtrller();
 
 public://IRenderController
 
@@ -33,4 +33,4 @@ private:
 
 };
 
-typedef	std::shared_ptr<RoomPictureCtrller>	RoomPictureCtrllerSPtr;
+typedef	std::shared_ptr<RoomLayoutPictureCtrller>	RoomPictureCtrllerSPtr;

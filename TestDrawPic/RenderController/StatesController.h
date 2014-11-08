@@ -66,20 +66,28 @@ public:
 
 	void			AddController(const State& state, const IRenderControllerSPtr& controller)
 	{
-		if ( !StateControllers_[state] )
-		{
-			StateControllers_[state] = std::make_shared<MetaRenderController>();
-			StateControllers_[state]->SetRenderContextWPtr(GetRenderContextSPtr());
-		}
-
+		_AddState(state);
 		StateControllers_[state]->PushController(controller);
 	}
 
 	State			GetCurrentState() const { return CurrentState_; }
 
-	void			SetCurrentState(const State& state) { CurrentState_ = state; }
+	void			SetCurrentState(const State& state)
+	{
+		_AddState(state);
+		CurrentState_ = state;
+	}
 
 private:
+
+	void	_AddState(const State& state)
+	{
+		if ( !StateControllers_[state] )
+		{
+			StateControllers_[state] = std::make_shared<MetaRenderController>();
+			StateControllers_[state]->SetRenderContextWPtr(GetRenderContextSPtr());
+		}
+	}
 
 	State											CurrentState_;
 	std::map<State,MetaRenderControllerSPtr>		StateControllers_;

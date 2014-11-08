@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-#include "RoomPictureCtrller.h"
+#include "RoomLayoutPictureCtrller.h"
 #include "UserEvent.h"
 
 #include "ODL/BaseODL.h"
@@ -115,7 +115,7 @@ enum RoomPicState
 	RPS_COUNT
 };
 
-class	RoomPictureCtrller::Imp
+class	RoomLayoutPictureCtrller::Imp
 {
 public:
 
@@ -214,31 +214,24 @@ public:
 	
 };
 
-RoomPictureCtrller::RoomPictureCtrller():ImpUPtr_(new Imp)
+RoomLayoutPictureCtrller::RoomLayoutPictureCtrller():ImpUPtr_(new Imp)
 {
 
 }
 
-RoomPictureCtrller::~RoomPictureCtrller()
+RoomLayoutPictureCtrller::~RoomLayoutPictureCtrller()
 {
 
 }
 
-void RoomPictureCtrller::Init()
+void RoomLayoutPictureCtrller::Init()
 {
 	ImpUPtr_->Picture_ = new RoomPictureNode(BaseODL_.lock()->GetDataSceneNode().get());
 	ImpUPtr_->Picture_->setVisible(false);
-
-	SetEnable(false);
 }
 
-bool RoomPictureCtrller::PreRender3D()
+bool RoomLayoutPictureCtrller::PreRender3D()
 {
-	if ( !IsEnable() )
-	{
-		return false;
-	}
-
 	auto& imp_ = *ImpUPtr_;
 
 	auto driver = GetRenderContextSPtr()->Smgr_->getVideoDriver();
@@ -305,7 +298,7 @@ bool RoomPictureCtrller::PreRender3D()
 			{
 				imp_.LMousePressDown_ = false;
 				imp_.SecondPos_ = imp_.CurrentPos_;
-				::PostMessage((HWND)(GetRenderContextSPtr()->GetHandle()), WM_IRR_DLG_MSG, WM_USER_SET_REFERENCE_SIZE, 0);
+				::PostMessage((HWND)(GetRenderContextSPtr()->GetHandle()), WM_IRR_DLG_MSG, WM_USER_ROOMLAYOUT_PICTUREREFLINE_SIZE, 0);
 				imp_.State_ = RPS_COUNT;
 			}
 
@@ -325,7 +318,10 @@ bool RoomPictureCtrller::PreRender3D()
 
 			imp_.Picture_->setScale(curScale);
 
-			imp_.State_ = RPS_COUNT;
+			irr::SEvent evt;
+			evt.EventType = EET_USER_EVENT;
+			evt.UserEvent.UserData1 = EUT_ROOMLAYOUT_PICTURE_FINISH;
+			GetRenderContextSPtr()->PostEvent(evt);
 		}
 		break;
 	case RPS_SET_POSITION:
@@ -371,13 +367,8 @@ bool RoomPictureCtrller::PreRender3D()
 	return false;
 }
 
-void RoomPictureCtrller::PostRender3D()
+void RoomLayoutPictureCtrller::PostRender3D()
 {
-	if ( !IsEnable() )
-	{
-		return;
-	}
-
 	auto& imp_ = *ImpUPtr_;
 
 	auto driver = GetRenderContextSPtr()->Smgr_->getVideoDriver();
@@ -420,30 +411,23 @@ void RoomPictureCtrller::PostRender3D()
 	}
 }
 
-bool RoomPictureCtrller::OnPostEvent( const irr::SEvent& event )
+bool RoomLayoutPictureCtrller::OnPostEvent( const irr::SEvent& event )
 {
 	auto& imp_ = *ImpUPtr_;
 
-	if ( !IsEnable() )
+	if ( event.EventType == EET_USER_EVENT && event.UserEvent.UserData1 == EUT_ROOMLAYOUT_PICTURE_SETTING )
 	{
-		if ( event.EventType == EET_USER_EVENT && event.UserEvent.UserData1 == EUT_SET_ROOM_PICTURE )
-		{
-			imp_.State_ = RPS_INIT_PICTURE;
-			auto filePath = static_cast<boost::filesystem::path*>(reinterpret_cast<void*>(event.UserEvent.UserData2));
-			imp_.PicPath_ = *filePath;
-			imp_.Picture_->setVisible(true);
+		imp_.State_ = RPS_INIT_PICTURE;
+		auto filePath = static_cast<boost::filesystem::path*>(reinterpret_cast<void*>(event.UserEvent.UserData2));
+		imp_.PicPath_ = *filePath;
+		imp_.Picture_->setVisible(true);
 
-			SetEnable(true);
-
-			return true;
-		}
-
-		return false;
+		return true;
 	}
 
 	if ( event.EventType == EET_USER_EVENT )
 	{
-		if ( event.UserEvent.UserData1 == EUT_SET_REFERENCE_SIZE )
+		if ( event.UserEvent.UserData1 == EUT_ROOMLAYOUT_PICTUREREFLINE_SIZE )
 		{
 			imp_.RefSize_ = event.UserEvent.UserData2;
 			imp_.State_ = RPS_SET_REFERENCE_SIZE;
@@ -451,21 +435,21 @@ bool RoomPictureCtrller::OnPostEvent( const irr::SEvent& event )
 			return true;
 		}
 		
-		if ( event.UserEvent.UserData1 == EUT_ROOM_PICTURE_SHOW )
+		if ( event.UserEvent.UserData1 == EUT_ROOMLAYOUT_PICTURE_VISIBLE )
 		{
 			imp_.Picture_->setVisible(event.UserEvent.UserData2 == 1);
 
 			return true;
 		}
 
-		if ( event.UserEvent.UserData1 == EUT_SET_ROOM_PICTURE_ALPHA )
+		if ( event.UserEvent.UserData1 == EUT_ROOMLAYOUT_PICTURE_ALPHA )
 		{
 			imp_.Picture_->getMaterial(0).MaterialTypeParam = event.UserEvent.UserData2 / 100.f;
 
 			return true;
 		}
 
-		if ( event.UserEvent.UserData1 == EUT_DRAW_PICTURE_REF_LINE )
+		if ( event.UserEvent.UserData1 == EUT_ROOMLAYOUT_PICTUREREFLINE_DRAW )
 		{
 			if ( imp_.Picture_ )
 			{
@@ -475,7 +459,7 @@ bool RoomPictureCtrller::OnPostEvent( const irr::SEvent& event )
 			return true;
 		}
 
-		if ( event.UserEvent.UserData1 == EUT_SET_ROOM_PICTURE_POSITION )
+		if ( event.UserEvent.UserData1 == EUT_ROOMLAYOUT_PICTURE_POSITION )
 		{
 			if ( imp_.Picture_ )
 			{

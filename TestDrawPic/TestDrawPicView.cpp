@@ -187,7 +187,7 @@ LRESULT CTestDrawPicView::DefWindowProc(UINT message, WPARAM wParam, LPARAM lPar
 
 	if ( WM_IRR_DLG_MSG == message )
 	{
-		if ( WM_USER_SET_REFERENCE_SIZE == wParam )
+		if ( WM_USER_ROOMLAYOUT_PICTUREREFLINE_SIZE == wParam )
 		{
 			DlgPicRefSize dlg;
 			
@@ -197,7 +197,7 @@ LRESULT CTestDrawPicView::DefWindowProc(UINT message, WPARAM wParam, LPARAM lPar
 
 			irr::SEvent evt;
 			evt.EventType = irr::EET_USER_EVENT;
-			evt.UserEvent.UserData1 = EUT_SET_REFERENCE_SIZE;
+			evt.UserEvent.UserData1 = EUT_ROOMLAYOUT_PICTUREREFLINE_SIZE;
 			evt.UserEvent.UserData2 = num;
 			m_spRenderContext->PostEvent(evt);
 		}
@@ -372,7 +372,7 @@ void CTestDrawPicView::OnBtnRoomCreateDrawWall()
 {
 	irr::SEvent evt;
 	evt.EventType = irr::EET_USER_EVENT;
-	evt.UserEvent.UserData1 = EUT_DRAW_LINE;
+	evt.UserEvent.UserData1 = EUT_ROOMLAYOUT_DRAWLINE;
 
 	
 	GetRootODL()->GetRenderContext()->PostEvent(evt);
@@ -404,7 +404,7 @@ void CTestDrawPicView::OnBtnRoomPicturePicture()
 
 		irr::SEvent evt;
 		evt.EventType = irr::EET_USER_EVENT;
-		evt.UserEvent.UserData1 = EUT_SET_ROOM_PICTURE;
+		evt.UserEvent.UserData1 = EUT_ROOMLAYOUT_PICTURE_SETTING;
 		evt.UserEvent.UserData2 = reinterpret_cast<int>(static_cast<void*>(&filePath));
 
 		GetRenderContext()->PostEvent(evt);
@@ -438,7 +438,7 @@ void CTestDrawPicView::OnRoomPictureShow()
 	
 	irr::SEvent evt;
 	evt.EventType = irr::EET_USER_EVENT;
-	evt.UserEvent.UserData1 = EUT_ROOM_PICTURE_SHOW;
+	evt.UserEvent.UserData1 = EUT_ROOMLAYOUT_PICTURE_VISIBLE;
 	evt.UserEvent.UserData2 = ShowPic_ ? 1 : 0;
 
 	m_spRenderContext->PostEvent(evt);
@@ -469,7 +469,7 @@ void CTestDrawPicView::OnSlideRoomPicAlpha()
 
 	irr::SEvent evt;
 	evt.EventType = irr::EET_USER_EVENT;
-	evt.UserEvent.UserData1 = EUT_SET_ROOM_PICTURE_ALPHA;
+	evt.UserEvent.UserData1 = EUT_ROOMLAYOUT_PICTURE_ALPHA;
 	evt.UserEvent.UserData2 = slide->GetPos();
 	
 	m_spRenderContext->PostEvent(evt);
@@ -490,7 +490,7 @@ void CTestDrawPicView::OnBtnRoomPicSetScale()
 
 	irr::SEvent evt;
 	evt.EventType = irr::EET_USER_EVENT;
-	evt.UserEvent.UserData1 = EUT_DRAW_PICTURE_REF_LINE;	
+	evt.UserEvent.UserData1 = EUT_ROOMLAYOUT_PICTUREREFLINE_DRAW;	
 	m_spRenderContext->PostEvent(evt);
 }
 
@@ -501,6 +501,6 @@ void CTestDrawPicView::OnBtnRoomPicSetPosition()
 
 	irr::SEvent evt;
 	evt.EventType = irr::EET_USER_EVENT;
-	evt.UserEvent.UserData1 = EUT_SET_ROOM_PICTURE_POSITION;	
+	evt.UserEvent.UserData1 = EUT_ROOMLAYOUT_PICTURE_POSITION;	
 	m_spRenderContext->PostEvent(evt);
 }

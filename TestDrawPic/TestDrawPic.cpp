@@ -29,7 +29,7 @@
 #include "DAL/DBConnection.h"
 #include "DAL/DataManager.h"
 
-//#include "vld.h"
+#include "vld.h"
 
 // CTestDrawPicApp
 

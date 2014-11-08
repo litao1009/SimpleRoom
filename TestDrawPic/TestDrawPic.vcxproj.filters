@@ -220,14 +220,23 @@
     <ClCompile Include="ODL\FloorODL.cpp">
       <Filter>ODL</Filter>
     </ClCompile>
-    <ClCompile Include="RenderController\DrawLineRoomCtrller.cpp">
-      <Filter>RenderController</Filter>
-    </ClCompile>
-    <ClCompile Include="RenderController\RoomPictureCtrller.cpp">
-      <Filter>RenderController</Filter>
-    </ClCompile>
     <ClCompile Include="Dialog\DlgPicRefSize.cpp">
       <Filter>src\Dialog</Filter>
+    </ClCompile>
+    <ClCompile Include="irrEngine\IrrExtension\CameraInterpolationAnimator.cpp">
+      <Filter>IrrEngine\IrrExtension</Filter>
+    </ClCompile>
+    <ClCompile Include="irrEngine\IrrExtension\InterpolationCameraNode.cpp">
+      <Filter>IrrEngine\IrrExtension</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderController\RoomLayoutCtrller.cpp">
+      <Filter>RenderController</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderController\RoomLayoutDrawingCtrller.cpp">
+      <Filter>RenderController</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderController\RoomLayoutPictureCtrller.cpp">
+      <Filter>RenderController</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -519,17 +528,26 @@
     <ClInclude Include="ODL\FloorODLFwd.h">
       <Filter>ODL</Filter>
     </ClInclude>
-    <ClInclude Include="RenderController\DrawLineRoomCtrller.h">
-      <Filter>RenderController</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderController\RoomPictureCtrller.h">
-      <Filter>RenderController</Filter>
-    </ClInclude>
     <ClInclude Include="RenderController\UserEvent.h">
       <Filter>RenderController</Filter>
     </ClInclude>
     <ClInclude Include="Dialog\DlgPicRefSize.h">
       <Filter>src\Dialog</Filter>
+    </ClInclude>
+    <ClInclude Include="irrEngine\IrrExtension\CameraInterpolationAnimator.h">
+      <Filter>IrrEngine\IrrExtension</Filter>
+    </ClInclude>
+    <ClInclude Include="irrEngine\IrrExtension\InterpolationCameraNode.h">
+      <Filter>IrrEngine\IrrExtension</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderController\RoomLayoutCtrller.h">
+      <Filter>RenderController</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderController\RoomLayoutDrawingCtrller.h">
+      <Filter>RenderController</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderController\RoomLayoutPictureCtrller.h">
+      <Filter>RenderController</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

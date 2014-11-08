@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-#include "DrawLineRoomCtrller.h"
+#include "RoomLayoutDrawingCtrller.h"
 #include "SMeshBuffer.h"
 #include "irrEngine/SRenderContext.h"
 #include "irrEngine/irrEngine.h"
@@ -38,7 +38,7 @@ enum EState
 	ES_COUNT
 };
 
-class	DrawLineRoomCtrller::Imp
+class	RoomLayoutDrawingCtrller::Imp
 {
 public:
 
@@ -147,25 +147,19 @@ public:
 	GraphODLWPtr				Graph_;
 };
 
-DrawLineRoomCtrller::DrawLineRoomCtrller(const GraphODLWPtr& graphODL):ImpUPtr_(new Imp)
+RoomLayoutDrawingCtrller::RoomLayoutDrawingCtrller(const GraphODLWPtr& graphODL):ImpUPtr_(new Imp)
 {
-	SetEnable(false);
 	ImpUPtr_->Graph_ = graphODL;
 }
 
-DrawLineRoomCtrller::~DrawLineRoomCtrller()
+RoomLayoutDrawingCtrller::~RoomLayoutDrawingCtrller()
 {
 
 }
 
-bool DrawLineRoomCtrller::PreRender3D()
+bool RoomLayoutDrawingCtrller::PreRender3D()
 {
 	auto& imp_ = *ImpUPtr_;
-
-	if ( !IsEnable() )
-	{
-		return false;
-	}
 
 	if ( imp_.Reset_ )
 	{
@@ -184,7 +178,7 @@ bool DrawLineRoomCtrller::PreRender3D()
 	gp_Pnt cursorPnt(planPos.X, 0, planPos.Z);
 	
 	//Îü¸½°ë¾¶
-	auto alignDistance = 200.f;
+	auto alignDistance = 100.f;
 
 	//×î½üµÄÇ½½Ç
 	CornerODLSPtr nearestCorner;
@@ -355,6 +349,7 @@ bool DrawLineRoomCtrller::PreRender3D()
 		else if ( !lineGroup.empty() )
 		{
 			firstAuxiliaryLine = lineGroup.front();
+			auto needSet = true;
 
 			do
 			{
@@ -382,6 +377,7 @@ bool DrawLineRoomCtrller::PreRender3D()
 						firstAuxiliaryLine = tmpFirstLine;
 						secondAuxiliaryLine = curBC;
 						needBreak = true;
+						needSet = false;
 						break;
 					}
 				}
@@ -391,22 +387,149 @@ bool DrawLineRoomCtrller::PreRender3D()
 					break;
 				}
 			}while ( !lineGroup.empty() );
+
+			if ( needSet )
+			{
+				GeomAPI_ProjectPointOnCurve ppc(cursorPnt, firstAuxiliaryLine.Curve().Curve());
+				cursorPnt = ppc.NearestPoint();
+			}
 		}
 
-		if ( GeomAbs_OtherCurve != firstAuxiliaryLine.GetType() && GeomAbs_OtherCurve == secondAuxiliaryLine.GetType() )
+		//¼«Öá×·×Ù
+		if ( imp_.AllowPolar_ && imp_.State_ == EState::ES_DRAWING && imp_.LastCorner_ && GeomAbs_OtherCurve == secondAuxiliaryLine.GetType() )
 		{
-			GeomAPI_ProjectPointOnCurve ppc(cursorPnt, firstAuxiliaryLine.Curve().Curve());
-			cursorPnt = ppc.NearestPoint();
-
-			if ( StatusMgr::GetInstance().GridAlign_ )
+			auto polarWalls = imp_.Graph_.lock()->GetWallsOnCorner(imp_.LastCorner_);
+			if ( !polarWalls.empty() && imp_.LastCorner_->GetPosition().SquareDistance(cursorPnt) > alignDistance * alignDistance )
 			{
-				auto pos = *StatusMgr::GetInstance().GridAlign_;
-				GeomAPI_ProjectPointOnCurve ppcGrid(gp_Pnt(pos.X, 0, pos.Z), firstAuxiliaryLine.Curve().Curve());
+				auto floatingEdge = BRepBuilderAPI_MakeEdge(imp_.LastCorner_->GetPosition(), cursorPnt).Edge();
+				BRepAdaptor_Curve floatingBC(floatingEdge);
 
-				auto gridPnt = ppcGrid.NearestPoint();
-				if ( gridPnt.SquareDistance(cursorPnt) < alignDistance * alignDistance )
+				for ( auto& curWall : polarWalls )
 				{
-					cursorPnt = gridPnt;
+					auto curEdge = curWall->GetEdge(imp_.LastCorner_);
+					BRepAdaptor_Curve curBC(curEdge);
+
+					auto rad = curBC.Line().Direction().AngleWithRef(floatingBC.Line().Direction(), gp::DY().Reversed());
+					rad = rad < 0 ? 2 * M_PI + rad : rad;
+					auto angle = irr::core::radToDeg(rad);
+
+					auto rest = std::fmod(angle, imp_.Polar_);
+					if ( rest < imp_.PolarRange_/2 )
+					{
+						angle -= rest;
+					}
+					if ( imp_.Polar_-rest < imp_.PolarRange_/2 )
+					{
+						angle += imp_.Polar_ - rest;
+					}
+
+					auto newDir = curBC.Line().Direction().Rotated(gp::OY().Reversed(), irr::core::degToRad(angle));
+
+					if ( Standard_True == newDir.IsEqual(floatingBC.Line().Direction(), Precision::Angular()) )
+					{
+						continue;
+					}
+
+					if ( GeomAbs_OtherCurve != firstAuxiliaryLine.GetType() && Standard_True == newDir.IsParallel(firstAuxiliaryLine.Line().Direction(), Precision::Angular()) )
+					{
+						continue;
+					}
+
+					gp_Lin newLin(imp_.LastCorner_->GetPosition(), newDir);
+					auto newEdge = BRepBuilderAPI_MakeEdge(newLin).Edge();
+					BRepAdaptor_Curve newBC(newEdge);
+					auto new2D = GeomAPI::To2d(newBC.Curve().Curve(), compareIntCCPln);
+
+					if ( GeomAbs_OtherCurve != firstAuxiliaryLine.GetType() )
+					{
+						auto first2D = GeomAPI::To2d(firstAuxiliaryLine.Curve().Curve(), compareIntCCPln);
+
+						Geom2dAPI_InterCurveCurve icc(new2D, first2D);
+						assert(1 == icc.NbPoints());
+						auto iccPnt2D = icc.Point(1);
+						gp_Pnt iccPnt(iccPnt2D.X(), 0, iccPnt2D.Y());
+
+						if ( iccPnt.SquareDistance(cursorPnt) < alignDistance * alignDistance )
+						{
+							cursorPnt = iccPnt;
+							secondAuxiliaryLine = newBC;
+							break;
+						}
+					}
+					else
+					{
+						GeomAPI_ProjectPointOnCurve ppcPolar(cursorPnt, newBC.Curve().Curve());
+						auto polarPnt = ppcPolar.NearestPoint();
+						auto testDis = polarPnt.Distance(cursorPnt);
+
+						if ( polarPnt.SquareDistance(cursorPnt) < alignDistance * alignDistance )
+						{
+							cursorPnt = polarPnt;
+							firstAuxiliaryLine = newBC;
+							break;
+						}
+					}
+				}
+			}
+			else
+			{
+				auto floatingEdge = BRepBuilderAPI_MakeEdge(imp_.LastCorner_->GetPosition(), cursorPnt).Edge();
+				BRepAdaptor_Curve floatingBC(floatingEdge);
+
+				gp_Lin dxLin(imp_.LastCorner_->GetPosition(), gp::DX());
+				auto dxEdge = BRepBuilderAPI_MakeEdge(dxLin);
+				BRepAdaptor_Curve dxBC(dxEdge);
+
+				auto rad = dxBC.Line().Direction().AngleWithRef(floatingBC.Line().Direction(), gp::DY().Reversed());
+				rad = rad < 0 ? 2 * M_PI + rad : rad;
+				auto angle = irr::core::radToDeg(rad);
+
+				auto rest = std::fmod(angle, imp_.Polar_);
+				if ( rest < imp_.PolarRange_/2 )
+				{
+					angle -= rest;
+				}
+				if ( imp_.Polar_-rest < imp_.PolarRange_/2 )
+				{
+					angle += imp_.Polar_ - rest;
+				}
+
+				auto newDir = dxBC.Line().Direction().Rotated(gp::OY().Reversed(), irr::core::degToRad(angle));
+
+				if ( Standard_False == newDir.IsEqual(floatingBC.Line().Direction(), Precision::Angular()) )
+				{
+					gp_Lin newLin(imp_.LastCorner_->GetPosition(), newDir);
+					auto newEdge = BRepBuilderAPI_MakeEdge(newLin).Edge();
+					BRepAdaptor_Curve newBC(newEdge);
+
+					if ( (GeomAbs_OtherCurve != firstAuxiliaryLine.GetType() && Standard_False == newDir.IsParallel(firstAuxiliaryLine.Line().Direction(), Precision::Angular())) )
+					{
+						auto new2D = GeomAPI::To2d(newBC.Curve().Curve(), compareIntCCPln);
+						auto first2D = GeomAPI::To2d(firstAuxiliaryLine.Curve().Curve(), compareIntCCPln);
+
+						Geom2dAPI_InterCurveCurve icc(new2D, first2D);
+						assert(1 == icc.NbPoints());
+						auto iccPnt2D = icc.Point(1);
+						gp_Pnt iccPnt(iccPnt2D.X(), 0, iccPnt2D.Y());
+
+						if ( iccPnt.SquareDistance(cursorPnt) < alignDistance * alignDistance )
+						{
+							cursorPnt = iccPnt;
+							secondAuxiliaryLine = newBC;
+						}
+					}
+					else if (GeomAbs_OtherCurve == firstAuxiliaryLine.GetType())
+					{
+						GeomAPI_ProjectPointOnCurve ppcPolar(cursorPnt, newBC.Curve().Curve());
+						auto polarPnt = ppcPolar.NearestPoint();
+						auto testDis = polarPnt.Distance(cursorPnt);
+
+						if ( polarPnt.SquareDistance(cursorPnt) < alignDistance * alignDistance )
+						{
+							cursorPnt = polarPnt;
+							firstAuxiliaryLine = newBC;
+						}
+					}
 				}
 			}
 		}
@@ -451,7 +574,10 @@ bool DrawLineRoomCtrller::PreRender3D()
 
 			if ( imp_.EscPressDown_ )
 			{
-				SetEnable(false);
+				irr::SEvent evt;
+				evt.EventType = EET_USER_EVENT;
+				evt.UserEvent.UserData1 = EUT_ROOMLAYOUT_DRAWLINE_FINISH;
+				GetRenderContextSPtr()->PostEvent(evt);
 			}
 		}
 		break;
@@ -604,8 +730,14 @@ bool DrawLineRoomCtrller::PreRender3D()
 
 			if ( imp_.EscPressDown_ )
 			{
-				imp_.State_ = EState::ES_READY;
 				imp_.EscPressDown_ = false;
+				imp_.State_ = EState::ES_READY;
+				
+				auto walls = imp_.Graph_.lock()->GetWallsOnCorner(imp_.LastCorner_);
+				if ( walls.empty() )
+				{
+					imp_.Graph_.lock()->RemoveCorner(imp_.LastCorner_);
+				}
 			}
 		}
 		break;
@@ -666,13 +798,8 @@ bool DrawLineRoomCtrller::PreRender3D()
 	return false;
 }
 
-void DrawLineRoomCtrller::PostRender3D()
+void RoomLayoutDrawingCtrller::PostRender3D()
 {
-	if ( !IsEnable() )
-	{
-		return;
-	}
-
 	auto& imp_ = *ImpUPtr_;
 
 	auto driver = GetRenderContextSPtr()->Smgr_->getVideoDriver();
@@ -713,21 +840,15 @@ void DrawLineRoomCtrller::PostRender3D()
 	}
 }
 
-bool DrawLineRoomCtrller::OnPostEvent( const irr::SEvent& evt )
+bool RoomLayoutDrawingCtrller::OnPostEvent( const irr::SEvent& evt )
 {
 	auto& imp_ = *ImpUPtr_;
 
-	if ( !IsEnable() )
+	if ( evt.EventType == EET_USER_EVENT && evt.UserEvent.UserData1 == EUT_ROOMLAYOUT_DRAWLINE )
 	{
-		if ( evt.EventType == EET_USER_EVENT && evt.UserEvent.UserData1 == EUT_DRAW_LINE )
-		{
-			SetEnable(true);
-			imp_.Reset_ = true;
+		imp_.Reset_ = true;
 
-			return true;
-		}
-
-		return false;
+		return true;
 	}
 
 	if ( evt.EventType == EET_MOUSE_INPUT_EVENT )
@@ -755,7 +876,7 @@ bool DrawLineRoomCtrller::OnPostEvent( const irr::SEvent& evt )
 	return false;
 }
 
-void DrawLineRoomCtrller::Init()
+void RoomLayoutDrawingCtrller::Init()
 {
 	auto& imp_ = *ImpUPtr_;
 
@@ -809,7 +930,7 @@ void DrawLineRoomCtrller::Init()
 	}
 }
 
-void DrawLineRoomCtrller::Reset()
+void RoomLayoutDrawingCtrller::Reset()
 {
 	auto& imp_ = *ImpUPtr_;
 
