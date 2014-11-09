@@ -154,3 +154,27 @@ void WallMeshNode2D::UpdateMesh( const TopoDS_Shape& wallBottomFace )
 // 	LineBuffer_->getMaterial().PolygonOffsetDirection = EPO_BACK;
 // 	LineBuffer_->getMaterial().PolygonOffsetFactor = 3;
 }
+
+void WallMeshNode2D::SetSweeping( bool val )
+{
+	if ( val )
+	{
+		FaceBuffer_->getMaterial().setTexture(0, SceneManager->getVideoDriver()->getTexture("../Data/Resource/3D/wallLine_sweeping.png"));
+	}
+	else
+	{
+		FaceBuffer_->getMaterial().setTexture(0, SceneManager->getVideoDriver()->getTexture("../Data/Resource/3D/wallLine.png"));
+	}
+}
+
+void WallMeshNode2D::SetPicking( bool val )
+{
+	if ( val )
+	{
+		FaceBuffer_->getMaterial().setTexture(0, SceneManager->getVideoDriver()->getTexture("../Data/Resource/3D/wallLine_picking.png"));
+	}
+	else
+	{
+		FaceBuffer_->getMaterial().setTexture(0, SceneManager->getVideoDriver()->getTexture("../Data/Resource/3D/wallLine.png"));
+	}
+}

@@ -230,13 +230,16 @@
       <Filter>IrrEngine\IrrExtension</Filter>
     </ClCompile>
     <ClCompile Include="RenderController\RoomLayoutCtrller.cpp">
-      <Filter>RenderController</Filter>
+      <Filter>RenderController\RoomLayout</Filter>
     </ClCompile>
     <ClCompile Include="RenderController\RoomLayoutDrawingCtrller.cpp">
-      <Filter>RenderController</Filter>
+      <Filter>RenderController\RoomLayout</Filter>
     </ClCompile>
     <ClCompile Include="RenderController\RoomLayoutPictureCtrller.cpp">
-      <Filter>RenderController</Filter>
+      <Filter>RenderController\RoomLayout</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderController\RoomLayoutBrowserCtrller.cpp">
+      <Filter>RenderController\RoomLayout</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -541,13 +544,16 @@
       <Filter>IrrEngine\IrrExtension</Filter>
     </ClInclude>
     <ClInclude Include="RenderController\RoomLayoutCtrller.h">
-      <Filter>RenderController</Filter>
+      <Filter>RenderController\RoomLayout</Filter>
     </ClInclude>
     <ClInclude Include="RenderController\RoomLayoutDrawingCtrller.h">
-      <Filter>RenderController</Filter>
+      <Filter>RenderController\RoomLayout</Filter>
     </ClInclude>
     <ClInclude Include="RenderController\RoomLayoutPictureCtrller.h">
-      <Filter>RenderController</Filter>
+      <Filter>RenderController\RoomLayout</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderController\RoomLayoutBrowserCtrller.h">
+      <Filter>RenderController\RoomLayout</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -654,14 +660,14 @@
     <Filter Include="RenderController">
       <UniqueIdentifier>{95520caa-429e-41dc-990e-0add94df28fe}</UniqueIdentifier>
     </Filter>
-    <Filter Include="RenderController\2D">
-      <UniqueIdentifier>{d6a5c821-3f0d-43fb-986c-4afee75709b9}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ODL\MeshSceneNode">
       <UniqueIdentifier>{b22615fd-ddca-4d24-bf1b-d41a4c14d9d3}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\Dialog">
       <UniqueIdentifier>{e190f9f4-49d2-48ad-9933-431505f471e5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RenderController\RoomLayout">
+      <UniqueIdentifier>{664ed944-f34d-454f-ba4f-3ee90fbf5128}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

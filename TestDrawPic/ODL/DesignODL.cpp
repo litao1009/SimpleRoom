@@ -23,6 +23,7 @@
 //#include "RenderController/WindowController.h"
 #include "RenderController/RoomLayoutDrawingCtrller.h"
 #include "RenderController/RoomLayoutPictureCtrller.h"
+#include "RenderController/RoomLayoutBrowserCtrller.h"
 #include "RenderController/RoomLayoutCtrller.h"
 //--test
 #include "RenderController/TestDecorGUIBoard.h"
@@ -413,10 +414,10 @@ void CDesignODL::Init()
 			//ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->WindowController_);
 			//ImpSPtr_->StatesController_->AddController(ERenderState::ERS_TOP_VIEW, std::make_shared<TestDecorGUIBoard>());
 
-			//»§ÐÍÍ¼
-			auto roomlayout = std::make_shared<RoomLayoutCtrller>();
-			ImpSPtr_->StatesController_->AddController(ERenderState::ERS_TOP_VIEW, roomlayout);
-			{
+			{//»§ÐÍÍ¼
+				auto roomlayout = std::make_shared<RoomLayoutCtrller>();
+				ImpSPtr_->StatesController_->AddController(ERenderState::ERS_TOP_VIEW, roomlayout);
+
 				//ÁÙÄ¡Í¼
 				auto roomPic = std::make_shared<RoomLayoutPictureCtrller>();
 				roomPic->SetRootODL(shared_from_this());
@@ -426,6 +427,9 @@ void CDesignODL::Init()
 				roomlayout->AddController(ERoomLayoutSatate::ERS_DRAWING, std::make_shared<RoomLayoutDrawingCtrller>(graph));
 				
 				//ä¯ÀÀ
+				roomlayout->AddController(ERoomLayoutSatate::ERS_BROWSE, std::make_shared<RoomLayoutBrowserCtrller>(graph));
+
+				//Ä¬ÈÏ×´Ì¬
 				roomlayout->SetCurrentState(ERoomLayoutSatate::ERS_BROWSE);
 			}
 		}

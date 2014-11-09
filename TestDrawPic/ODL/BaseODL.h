@@ -39,10 +39,24 @@ public:
 	bool				IsDirty() const { return Dirty_; }
 	void				SetDirty(bool val) { Dirty_ = val; }
 
+	bool				IsSweeping() const { return Sweeping_; }
+	void				SetSweeping(bool val) { Sweeping_ = val; UpdateSweeping(); }
+
+	bool				IsPicking() const { return Picking_; }
+	void				SetPicking(bool val) { Picking_ = val; UpdatePicking(); }
+
+protected:
+
+	virtual void		UpdateSweeping() {}
+
+	virtual	void		UpdatePicking() {}
+
 private:
 
 	gp_Trsf				AbsoluteTransform_;
 	bool				Dirty_;
+	bool				Sweeping_;
+	bool				Picking_;
 };
 
 #endif // BaseODL_h__

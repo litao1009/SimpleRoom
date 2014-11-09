@@ -591,6 +591,10 @@ bool RoomLayoutDrawingCtrller::PreRender3D()
 				{
 					valid = false;
 				}
+				else if ( imp_.LastCorner_->GetPosition().SquareDistance(cursorPnt) < alignDistance * alignDistance )
+				{
+					valid = false;
+				}
 				else
 				{
 					//Ä¿Ç°µÄ±ß

@@ -7,6 +7,8 @@
 CBaseODL::CBaseODL( const SRenderContextWPtr& rc ):TSceneNode(rc)
 {
 	Dirty_ = false;
+	Sweeping_ = false;
+	Picking_ = false;
 }
 
 CBaseODL::~CBaseODL( void )

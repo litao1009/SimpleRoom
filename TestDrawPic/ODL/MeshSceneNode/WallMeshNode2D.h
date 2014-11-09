@@ -43,6 +43,10 @@ public:
 
 	void	UpdateMesh(const TopoDS_Shape& wallBottomFace);
 
+	void	SetSweeping(bool val);
+
+	void	SetPicking(bool val);
+
 private:
 
 	irr::scene::IMeshBuffer*	FaceBuffer_;

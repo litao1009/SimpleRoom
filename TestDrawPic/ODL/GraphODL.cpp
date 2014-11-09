@@ -312,6 +312,24 @@ public:
 		}
 	}
 
+	static void	UpdateVertexIndex(Graph& graph)
+	{
+		for ( auto itors=boost::vertices(graph); itors.first!=itors.second; ++itors.first )
+		{
+			auto curCorner = boost::get(CornerTag(), graph, *itors.first);
+			curCorner->SetIndex(*itors.first);
+		}
+	}
+
+	static void	UpdateEdgeIndex(Graph& graph)
+	{
+		for ( auto itors=boost::edges(graph); itors.first!=itors.second; ++itors.first )
+		{
+			auto curWall = boost::get(WallTag(), graph, *itors.first);
+			curWall->SetIndex(*itors.first);
+		}
+	}
+
 public:
 
 	RoomODLList		Rooms_;
@@ -332,7 +350,7 @@ CornerODLList GraphODL::GetAllCorners()
 	CornerODLList ret;
 
 	auto itors = boost::get_property_iter_range(Graph_, CornerTag());
-
+	
 	for ( auto& curProp : boost::make_iterator_range(itors.first, itors.second) )
 	{
 		ret.push_back(curProp);
@@ -410,6 +428,9 @@ bool GraphODL::RemoveCorner( const CornerODLSPtr& corner )
 	boost::remove_vertex(corner->GetIndex(), Graph_);
 	RemoveChild(corner);
 
+	Imp::UpdateVertexIndex(Graph_);
+	Imp::UpdateEdgeIndex(Graph_);
+
 	return true;
 }
 
@@ -443,22 +464,43 @@ bool GraphODL::RemoveWall( const WallODLSPtr& wall )
 
 	auto src = boost::source(edgeIndex, Graph_);
 	auto target = boost::target(edgeIndex, Graph_);
+	auto srcCorner = boost::get(CornerTag(), Graph_, src);
+	auto targetCorner = boost::get(CornerTag(), Graph_, target);
 
+	RemoveChild(wall);
 	boost::remove_edge(wall->GetIndex(), Graph_);
 
 	auto srcOutEdges = boost::out_edges(src, Graph_);
 	if ( srcOutEdges.first == srcOutEdges.second )
 	{
-		boost::remove_vertex(src, Graph_);
+		RemoveCorner(srcCorner);
+		if ( target > src )
+		{
+			--target;
+		}
+	}
+	else
+	{
+		auto corner = boost::get(CornerTag(), Graph_, src);
+		for ( auto& curWall : GetWallsOnCorner(corner) )
+		{
+			curWall->UpdateMesh();
+		}
 	}
 
 	auto targetOutEdges = boost::out_edges(target, Graph_);
 	if ( targetOutEdges.first == targetOutEdges.second )
 	{
-		boost::remove_vertex(target, Graph_);
+		RemoveCorner(targetCorner);
 	}
-
-	RemoveChild(wall);
+	else
+	{
+		auto corner = boost::get(CornerTag(), Graph_, target);
+		for ( auto& curWall : GetWallsOnCorner(corner) )
+		{
+			curWall->UpdateMesh();
+		}
+	}
 
 	Imp::SearchRoom(std::static_pointer_cast<GraphODL>(shared_from_this()));
 

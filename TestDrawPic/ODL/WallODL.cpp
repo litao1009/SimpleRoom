@@ -389,3 +389,22 @@ void WallODL::SetDefaultTexture()
 	meshBufferPtr->getMaterial().setTextureMatrix(0, texMat);
 	GetDataSceneNode()->setMaterialTexture(0, tex);
 }
+
+void WallODL::UpdateSweeping()
+{
+	if ( IsSweeping() )
+	{
+		GetDataSceneNode()->getMaterial(0).MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_LUMINANCE);
+	}
+	else
+	{
+		GetDataSceneNode()->getMaterial(0).MaterialType = irr::video::EMT_SOLID;
+	}
+
+	ImpUPtr_->Node2D_->SetSweeping(IsSweeping());
+}
+
+void WallODL::UpdatePicking()
+{
+	ImpUPtr_->Node2D_->SetPicking(IsPicking());
+}

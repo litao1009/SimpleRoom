@@ -30,6 +30,12 @@ public:
 	virtual	EObjectDisplayLayerType	GetType() const { return EODLT_WALL; }
 
 	virtual	void	Init();
+	
+protected:
+
+	virtual	void	UpdateSweeping();
+
+	virtual	void	UpdatePicking();
 
 public:
 
