@@ -8,6 +8,7 @@
 #include "BRepBuilderAPI_MakePolygon.hxx"
 #include "BRepBuilderAPI_MakeFace.hxx"
 #include "BRepFeat.hxx"
+#include "BRepAdaptor_Curve.hxx"
 
 #include <boost/graph/property_iter_range.hpp>
 #include <boost/graph/planar_face_traversal.hpp>
@@ -317,7 +318,8 @@ public:
 		for ( auto itors=boost::vertices(graph); itors.first!=itors.second; ++itors.first )
 		{
 			auto curCorner = boost::get(CornerTag(), graph, *itors.first);
-			curCorner->SetIndex(*itors.first);
+			auto curIndex = boost::get(boost::vertex_index, graph, *itors.first);
+			curCorner->SetIndex(curIndex);
 		}
 	}
 
@@ -326,8 +328,39 @@ public:
 		for ( auto itors=boost::edges(graph); itors.first!=itors.second; ++itors.first )
 		{
 			auto curWall = boost::get(WallTag(), graph, *itors.first);
+			auto curIndex = boost::get(boost::edge_index, graph, *itors.first);
+			auto src = boost::source(*itors.first, graph);
+			auto target = boost::target(*itors.first, graph);
 			curWall->SetIndex(*itors.first);
 		}
+	}
+
+	static void	MergeWallIfNeeded(const GraphODLSPtr& graph, const CornerODLSPtr& corner)
+	{
+		auto walls = graph->GetWallsOnCorner(corner);
+
+		if ( 2 !=walls.size() )
+		{
+			return;
+		}
+
+		auto& wall1 = walls[0];
+		auto& wall2 = walls[1];
+
+		gp_Dir edge1Dir = gp_Vec(corner->GetPosition(), wall1->GetOtherCorner(corner).lock()->GetPosition());
+		gp_Dir edge2Dir = gp_Vec(corner->GetPosition(), wall2->GetOtherCorner(corner).lock()->GetPosition());
+
+		if ( Standard_False == edge1Dir.IsParallel(edge2Dir, Precision::Angular()) )
+		{
+			return;
+		}
+
+		auto corner1 = wall1->GetOtherCorner(corner);
+		auto corner2 = wall2->GetOtherCorner(corner);
+
+		graph->AddWall(corner1.lock(),corner2.lock(), false);
+		graph->RemoveWall(wall1);
+		graph->RemoveWall(wall2);
 	}
 
 public:
@@ -428,8 +461,8 @@ bool GraphODL::RemoveCorner( const CornerODLSPtr& corner )
 	boost::remove_vertex(corner->GetIndex(), Graph_);
 	RemoveChild(corner);
 
-	Imp::UpdateVertexIndex(Graph_);
-	Imp::UpdateEdgeIndex(Graph_);
+	//Imp::UpdateVertexIndex(Graph_);
+	//Imp::UpdateEdgeIndex(Graph_);
 
 	return true;
 }
@@ -470,6 +503,8 @@ bool GraphODL::RemoveWall( const WallODLSPtr& wall )
 	RemoveChild(wall);
 	boost::remove_edge(wall->GetIndex(), Graph_);
 
+	auto thisPtr = std::static_pointer_cast<GraphODL>(shared_from_this());
+
 	auto srcOutEdges = boost::out_edges(src, Graph_);
 	if ( srcOutEdges.first == srcOutEdges.second )
 	{
@@ -482,6 +517,8 @@ bool GraphODL::RemoveWall( const WallODLSPtr& wall )
 	else
 	{
 		auto corner = boost::get(CornerTag(), Graph_, src);
+		Imp::MergeWallIfNeeded(thisPtr, corner);
+
 		for ( auto& curWall : GetWallsOnCorner(corner) )
 		{
 			curWall->UpdateMesh();
@@ -496,11 +533,15 @@ bool GraphODL::RemoveWall( const WallODLSPtr& wall )
 	else
 	{
 		auto corner = boost::get(CornerTag(), Graph_, target);
+		Imp::MergeWallIfNeeded(thisPtr, corner);
+
 		for ( auto& curWall : GetWallsOnCorner(corner) )
 		{
 			curWall->UpdateMesh();
 		}
 	}
+
+	//Imp::UpdateEdgeIndex(Graph_);
 
 	Imp::SearchRoom(std::static_pointer_cast<GraphODL>(shared_from_this()));
 

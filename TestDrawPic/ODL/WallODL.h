@@ -51,6 +51,12 @@ public:
 
 	CornerODLWPtr		GetSecondCorner() const { return SecondCorner_; }
 
+	CornerODLWPtr		GetOtherCorner(const CornerODLSPtr& corner ) const
+	{
+		assert(FirstCorner_.lock()==corner || SecondCorner_.lock()==corner);
+		return FirstCorner_.lock() == corner ? SecondCorner_ : FirstCorner_;
+	}
+
 	void				SetThickness(float val) { Thickness_ = val; }
 
 	float				GetThickness() const { return Thickness_; }
