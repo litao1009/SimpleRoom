@@ -227,7 +227,7 @@ void CSimpleMayaAnimator::animateNode(irr::scene::ISceneNode* node, irr::u32 tim
 		//pos -= movedir * timeDiff * MoveSpeed;
 	}
 
-	pos += movedir * timeDiff * MouseWheel;
+	pos += movedir * timeDiff * MouseWheel * 2;
 	MouseWheel = 0.f;
 
 	// strafing

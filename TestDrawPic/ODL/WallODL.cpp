@@ -368,7 +368,6 @@ void WallODL::UpdateMesh()
 	}
 	
 	{//ÉèÖÃÐ§¹û
-		GetDataSceneNode()->setMaterialFlag(irr::video::EMF_LIGHTING, false);
 		GetDataSceneNode()->AddToDepthPass();
 		SetDefaultTexture();
 	}

@@ -47,7 +47,7 @@ CornerMeshNode2D::CornerMeshNode2D(irr::scene::ISceneNode* parent, irr::s32 id):
 
 	MeshBuffer_->getMaterial().Lighting = false;
 	MeshBuffer_->getMaterial().BackfaceCulling = false;
-	MeshBuffer_->getMaterial().ZWriteEnable = false;
+	MeshBuffer_->getMaterial().ZBuffer = ECFN_ALWAYS;
 	MeshBuffer_->getMaterial().MaterialType = EMT_TRANSPARENT_ALPHA_CHANNEL;
 }
 

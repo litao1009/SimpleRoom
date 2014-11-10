@@ -58,7 +58,6 @@ FloorODLSPtr FloorODL::CreateByFace( SRenderContextWPtr renderContext, const Top
 		meshBuf->drop();
 		mesh->drop();
 
-		newFloor->GetDataSceneNode()->setMaterialFlag(irr::video::EMF_BACK_FACE_CULLING, false);
 		newFloor->GetDataSceneNode()->getMaterial(0).PolygonOffsetDirection = irr::video::EPO_FRONT;
 		newFloor->GetDataSceneNode()->getMaterial(0).PolygonOffsetFactor = 1;
 		newFloor->GetDataSceneNode()->AddToDepthPass();
@@ -72,7 +71,9 @@ FloorODLSPtr FloorODL::CreateByFace( SRenderContextWPtr renderContext, const Top
 		auto smgr = newFloor->GetDataSceneNode()->getSceneManager();
 
 		meshBuf->getMaterial().setTexture(0, smgr->getVideoDriver()->getTexture("../Data/Resource/3D/floorLine.png"));
-		meshBuf->getMaterial().BackfaceCulling = false;
+//  	meshBuf->getMaterial().PolygonOffsetDirection = irr::video::EPO_BACK;
+//  	meshBuf->getMaterial().PolygonOffsetFactor = 1;
+
 		irr::core::matrix4 r,s;
 		s.setTextureScale(1/200.f, 1/200.f);
 		r.setTextureRotationCenter(static_cast<float>(M_PI_2));

@@ -701,6 +701,7 @@ irr::scene::IMeshBuffer* ODLTools::NEW_CreateMeshBuffer( const TopoDS_Shape& sha
 	}
 
 	meshBufferPtr->getMaterial().Lighting = false;
+	meshBufferPtr->getMaterial().BackfaceCulling = false;
 
 	return meshBufferPtr;
 }

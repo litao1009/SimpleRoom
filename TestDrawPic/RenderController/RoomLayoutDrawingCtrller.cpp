@@ -52,6 +52,7 @@ public:
 		PositionRect_->getMaterial().ZWriteEnable = false;
 		PositionRect_->getMaterial().MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_VERTEX_ALPHA);
 		PositionRect_->getMaterial().MaterialTypeParam = 0.65f;
+		PositionRect_->getMaterial().ZBuffer = ECFN_ALWAYS;
 
 		FloatingLine_ = new SMeshBuffer;
 		FloatingLine_->getMaterial().Lighting = false;
@@ -59,6 +60,7 @@ public:
 		FloatingLine_->getMaterial().ZWriteEnable = false;
 		FloatingLine_->getMaterial().Thickness = 4;
 		FloatingLine_->getMaterial().MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_LINE);
+		FloatingLine_->getMaterial().ZBuffer = ECFN_ALWAYS;
 
 		AuxiliaryLine_ = new SMeshBuffer;
 		AuxiliaryLine_->getMaterial().Lighting = false;
@@ -67,6 +69,7 @@ public:
 		AuxiliaryLine_->getMaterial().MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_LINE);
 		AuxiliaryLine_->getMaterial().DiffuseColor = 0xFF000000;
 		AuxiliaryLine_->getMaterial().Thickness = 2;
+		AuxiliaryLine_->getMaterial().ZBuffer = ECFN_ALWAYS;
 
 		LMousePressDown_ = false;
 		EscPressDown_ = false;
@@ -349,7 +352,6 @@ bool RoomLayoutDrawingCtrller::PreRender3D()
 		else if ( !lineGroup.empty() )
 		{
 			firstAuxiliaryLine = lineGroup.front();
-			auto needSet = true;
 
 			do
 			{
@@ -377,7 +379,6 @@ bool RoomLayoutDrawingCtrller::PreRender3D()
 						firstAuxiliaryLine = tmpFirstLine;
 						secondAuxiliaryLine = curBC;
 						needBreak = true;
-						needSet = false;
 						break;
 					}
 				}
@@ -387,12 +388,6 @@ bool RoomLayoutDrawingCtrller::PreRender3D()
 					break;
 				}
 			}while ( !lineGroup.empty() );
-
-			if ( needSet )
-			{
-				GeomAPI_ProjectPointOnCurve ppc(cursorPnt, firstAuxiliaryLine.Curve().Curve());
-				cursorPnt = ppc.NearestPoint();
-			}
 		}
 
 		//极轴追踪
@@ -400,7 +395,7 @@ bool RoomLayoutDrawingCtrller::PreRender3D()
 		{
 			auto polarWalls = imp_.Graph_.lock()->GetWallsOnCorner(imp_.LastCorner_);
 			if ( !polarWalls.empty() && imp_.LastCorner_->GetPosition().SquareDistance(cursorPnt) > alignDistance * alignDistance )
-			{
+			{//起始点有墙
 				auto floatingEdge = BRepBuilderAPI_MakeEdge(imp_.LastCorner_->GetPosition(), cursorPnt).Edge();
 				BRepAdaptor_Curve floatingBC(floatingEdge);
 
@@ -472,7 +467,7 @@ bool RoomLayoutDrawingCtrller::PreRender3D()
 				}
 			}
 			else
-			{
+			{//起始点无墙
 				auto floatingEdge = BRepBuilderAPI_MakeEdge(imp_.LastCorner_->GetPosition(), cursorPnt).Edge();
 				BRepAdaptor_Curve floatingBC(floatingEdge);
 
@@ -538,6 +533,11 @@ bool RoomLayoutDrawingCtrller::PreRender3D()
 		{
 			auto pos = *StatusMgr::GetInstance().GridAlign_;
 			cursorPnt = gp_Pnt(pos.X, 0, pos.Z);
+		}
+		else if ( GeomAbs_OtherCurve != firstAuxiliaryLine.GetType() && GeomAbs_OtherCurve == secondAuxiliaryLine.GetType() )
+		{
+			GeomAPI_ProjectPointOnCurve ppc(cursorPnt, firstAuxiliaryLine.Curve().Curve());
+			cursorPnt = ppc.NearestPoint();
 		}
 	}
 
@@ -737,11 +737,18 @@ bool RoomLayoutDrawingCtrller::PreRender3D()
 				imp_.EscPressDown_ = false;
 				imp_.State_ = EState::ES_READY;
 				
+				for ( auto& curCorner : imp_.DrawingPathList_ )
+				{
+					curCorner->SetVisible(false);
+				}
+				imp_.DrawingPathList_.clear();
+
 				auto walls = imp_.Graph_.lock()->GetWallsOnCorner(imp_.LastCorner_);
 				if ( walls.empty() )
 				{
 					imp_.Graph_.lock()->RemoveCorner(imp_.LastCorner_);
 				}
+				imp_.LastCorner_.reset();
 			}
 		}
 		break;
@@ -797,6 +804,11 @@ bool RoomLayoutDrawingCtrller::PreRender3D()
 		vector3df curVec(static_cast<float>(cursorPnt.X()), static_cast<float>(cursorPnt.Y()), static_cast<float>(cursorPnt.Z()));
 		imp_.FloatingLine_->getPosition(0) = beginVec;
 		imp_.FloatingLine_->getPosition(1) = curVec;
+	}
+
+	for ( auto& curCorner : imp_.DrawingPathList_ )
+	{
+		curCorner->SetVisible(true);
 	}
 
 	return false;
@@ -940,16 +952,6 @@ void RoomLayoutDrawingCtrller::Reset()
 
 	imp_.EscPressDown_ = false;
 
-	if ( imp_.LastCorner_ )
-	{
-		auto walls = imp_.Graph_.lock()->GetWallsOnCorner(imp_.LastCorner_);
-		if ( walls.empty() )
-		{
-			imp_.Graph_.lock()->RemoveCorner(imp_.LastCorner_);
-		}
-	}
-	
-	imp_.LastCorner_ = nullptr;
 	imp_.LastWall_ = nullptr;
 
 	for ( auto& curCorner : imp_.DrawingPathList_ )

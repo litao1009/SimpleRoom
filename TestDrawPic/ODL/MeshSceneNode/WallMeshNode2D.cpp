@@ -137,8 +137,6 @@ void WallMeshNode2D::UpdateMesh( const TopoDS_Shape& wallBottomFace )
 	FaceBuffer_->getMaterial().Lighting = false;
 	FaceBuffer_->getMaterial().BackfaceCulling = false;
 	FaceBuffer_->getMaterial().setTexture(0, SceneManager->getVideoDriver()->getTexture("../Data/Resource/3D/wallLine.png"));
- 	FaceBuffer_->getMaterial().PolygonOffsetDirection = EPO_FRONT;
- 	FaceBuffer_->getMaterial().PolygonOffsetFactor = 0;
 	{
 		matrix4 scale,rotate;
 		scale.setTextureScale(1/300.f, 1/300.f);
@@ -151,8 +149,6 @@ void WallMeshNode2D::UpdateMesh( const TopoDS_Shape& wallBottomFace )
 	LineBuffer_->getMaterial().Thickness = 2;
 	LineBuffer_->getMaterial().Wireframe = true;
 	//LineBuffer_->getMaterial().AntiAliasing = irr::video::EAAM_LINE_SMOOTH;
-// 	LineBuffer_->getMaterial().PolygonOffsetDirection = EPO_BACK;
-// 	LineBuffer_->getMaterial().PolygonOffsetFactor = 3;
 }
 
 void WallMeshNode2D::SetSweeping( bool val )

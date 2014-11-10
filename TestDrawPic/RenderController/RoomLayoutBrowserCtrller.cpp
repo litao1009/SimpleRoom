@@ -85,19 +85,18 @@ bool RoomLayoutBrowserCtrller::PreRender3D()
 
 	gp_Pnt cursorPnt(imp_.CurrentPos_.X, imp_.CurrentPos_.Y, imp_.CurrentPos_.Z);
 
-	auto sweepingWallExist = false;
-
 	if ( !imp_.SweepingWall_.expired() )
 	{
 		auto wall = imp_.SweepingWall_.lock();
 
-		if ( Standard_False == wall->GetBaseBndBox().IsOut(cursorPnt.Transformed(wall->GetAbsoluteTransform().Inverted())) )
+		if ( Standard_True == wall->GetBaseBndBox().IsOut(cursorPnt.Transformed(wall->GetAbsoluteTransform().Inverted())) )
 		{
-			sweepingWallExist = true;
+			wall->SetSweeping(false);
+			imp_.SweepingWall_.reset();
 		}
 	}
 
-	if ( !sweepingWallExist )
+	if ( imp_.SweepingWall_.expired() )
 	{
 		for ( auto& curWall : imp_.Graph_.lock()->GetChildrenList() )
 		{
@@ -108,25 +107,14 @@ bool RoomLayoutBrowserCtrller::PreRender3D()
 
 			auto curTrueWall = std::static_pointer_cast<WallODL>(curWall);
 
-			if ( !imp_.PickingWall_.expired() && imp_.PickingWall_.lock() == curTrueWall )
-			{
-				continue;
-			}
-
 			auto transform = curTrueWall->GetAbsoluteTransform();
 			
 			if ( Standard_False == curTrueWall->GetBaseBndBox().IsOut(cursorPnt.Transformed(curTrueWall->GetAbsoluteTransform().Inverted())) )
 			{
-				sweepingWallExist = true;
 				imp_.SweepingWall_ = curTrueWall;
 				break;
 			}
 		}
-	}
-	
-	if ( sweepingWallExist )
-	{
-		imp_.SweepingWall_.lock()->SetSweeping(true);
 	}
 
 	if ( imp_.LMousePressDown_ )
@@ -136,12 +124,7 @@ bool RoomLayoutBrowserCtrller::PreRender3D()
 			imp_.PickingWall_.lock()->SetPicking(false);
 		}
 
-		if ( sweepingWallExist )
-		{
-			imp_.PickingWall_ = imp_.SweepingWall_;
-			imp_.PickingWall_.lock()->SetPicking(true);
-			imp_.SweepingWall_.reset();
-		}
+		imp_.PickingWall_ = imp_.SweepingWall_;
 	}
 
 	if ( imp_.DeletePressDown_ )
@@ -151,6 +134,16 @@ bool RoomLayoutBrowserCtrller::PreRender3D()
 			imp_.Graph_.lock()->RemoveWall(imp_.PickingWall_.lock());
 			imp_.PickingWall_.reset();
 		}
+	}
+
+	if ( !imp_.SweepingWall_.expired() )
+	{
+		imp_.SweepingWall_.lock()->SetSweeping(true);
+	}
+
+	if ( !imp_.PickingWall_.expired() )
+	{
+		imp_.PickingWall_.lock()->SetPicking(true);
 	}
 
 	imp_.LMousePressDown_ = false;

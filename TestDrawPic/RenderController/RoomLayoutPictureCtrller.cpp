@@ -47,8 +47,6 @@ public:
 		mat.BackfaceCulling = false;
 		mat.MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_VERTEX_ALPHA);
 		mat.MaterialTypeParam = 0.5f;
-		//mat.PolygonOffsetDirection = EPO_BACK;
-		//mat.PolygonOffsetFactor = 7;
 	}
 
 	~RoomPictureNode()
@@ -322,6 +320,7 @@ bool RoomLayoutPictureCtrller::PreRender3D()
 			evt.EventType = EET_USER_EVENT;
 			evt.UserEvent.UserData1 = EUT_ROOMLAYOUT_PICTURE_FINISH;
 			GetRenderContextSPtr()->PostEvent(evt);
+			imp_.State_ = RPS_COUNT;
 		}
 		break;
 	case RPS_SET_POSITION:
