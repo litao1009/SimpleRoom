@@ -46,6 +46,8 @@ public:
 
 	bool			RemoveWall(const WallODLSPtr& wall );
 
+	void			MergeWallIfNeeded(const CornerODLSPtr& corner);
+
 private:
 
 	Graph	Graph_;

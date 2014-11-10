@@ -338,34 +338,6 @@ public:
 		}
 	}
 
-	static void	MergeWallIfNeeded(const GraphODLSPtr& graph, const CornerODLSPtr& corner)
-	{
-		auto walls = graph->GetWallsOnCorner(corner);
-
-		if ( 2 !=walls.size() )
-		{
-			return;
-		}
-
-		auto& wall1 = walls[0];
-		auto& wall2 = walls[1];
-
-		gp_Dir edge1Dir = gp_Vec(corner->GetPosition(), wall1->GetOtherCorner(corner).lock()->GetPosition());
-		gp_Dir edge2Dir = gp_Vec(corner->GetPosition(), wall2->GetOtherCorner(corner).lock()->GetPosition());
-
-		if ( Standard_False == edge1Dir.IsParallel(edge2Dir, Precision::Angular()) )
-		{
-			return;
-		}
-
-		auto corner1 = wall1->GetOtherCorner(corner);
-		auto corner2 = wall2->GetOtherCorner(corner);
-
-		graph->AddWall(corner1.lock(),corner2.lock(), false);
-		graph->RemoveWall(wall1);
-		graph->RemoveWall(wall2);
-	}
-
 public:
 
 	RoomODLList		Rooms_;
@@ -508,7 +480,6 @@ bool GraphODL::RemoveWall( const WallODLSPtr& wall )
 	RemoveChild(wall);
 	boost::remove_edge(wall->GetIndex(), Graph_);
 
-	auto thisPtr = std::static_pointer_cast<GraphODL>(shared_from_this());
 	auto needMergeSrc = false, needMergeTarget = false;
 	auto needDelSrc = false, needDelTarget = false;
 
@@ -550,7 +521,7 @@ bool GraphODL::RemoveWall( const WallODLSPtr& wall )
 	}
 	else if ( needMergeSrc )
 	{
-		Imp::MergeWallIfNeeded(thisPtr, boost::get(CornerTag(), Graph_, src));
+		MergeWallIfNeeded(boost::get(CornerTag(), Graph_, src));
 	}
 
 	if ( needDelTarget )
@@ -559,7 +530,7 @@ bool GraphODL::RemoveWall( const WallODLSPtr& wall )
 	}
 	else if ( needMergeTarget )
 	{
-		Imp::MergeWallIfNeeded(thisPtr, boost::get(CornerTag(), Graph_, target));
+		MergeWallIfNeeded(boost::get(CornerTag(), Graph_, target));
 	}
 
 	Imp::SearchRoom(std::static_pointer_cast<GraphODL>(shared_from_this()));
@@ -582,4 +553,32 @@ RoomODLList GraphODL::GetAllRooms()
 	}
 
 	return ret;
+}
+
+void GraphODL::MergeWallIfNeeded( const CornerODLSPtr& corner )
+{
+	auto walls = GetWallsOnCorner(corner);
+
+	if ( 2 !=walls.size() )
+	{
+		return;
+	}
+
+	auto& wall1 = walls[0];
+	auto& wall2 = walls[1];
+
+	gp_Dir edge1Dir = gp_Vec(corner->GetPosition(), wall1->GetOtherCorner(corner).lock()->GetPosition());
+	gp_Dir edge2Dir = gp_Vec(corner->GetPosition(), wall2->GetOtherCorner(corner).lock()->GetPosition());
+
+	if ( Standard_False == edge1Dir.IsParallel(edge2Dir, Precision::Angular()) )
+	{
+		return;
+	}
+
+	auto corner1 = wall1->GetOtherCorner(corner);
+	auto corner2 = wall2->GetOtherCorner(corner);
+
+	AddWall(corner1.lock(),corner2.lock(), false);
+	RemoveWall(wall1);
+	RemoveWall(wall2);
 }

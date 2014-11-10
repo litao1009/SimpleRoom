@@ -748,6 +748,8 @@ bool RoomLayoutDrawingCtrller::PreRender3D()
 				{
 					imp_.Graph_.lock()->RemoveCorner(imp_.LastCorner_);
 				}
+
+				imp_.Graph_.lock()->MergeWallIfNeeded(imp_.LastCorner_);
 				imp_.LastCorner_.reset();
 			}
 		}
