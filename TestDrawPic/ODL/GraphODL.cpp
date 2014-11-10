@@ -338,6 +338,105 @@ public:
 		}
 	}
 
+	static WallODLSPtr AddWall( const GraphODLSPtr& graph, const CornerODLSPtr& corner1, const CornerODLSPtr& corner2, bool researchRomm )
+	{
+		auto newWall = std::make_shared<WallODL>(graph, corner1, corner2);
+		newWall->CreateEmptyDataSceneNode();
+		newWall->Init();
+		graph->AddChild(newWall);
+
+		auto index = boost::add_edge(corner1->GetIndex(), corner2->GetIndex(), newWall, graph->Graph_);
+
+		assert(index.second);
+
+		//boost::put(boost::edge_index, Graph_, index.first, index);
+		//newWall->SetIndex(index.first);
+		UpdateEdgeIndex(graph->Graph_);
+
+		newWall->UpdateMesh();
+
+		if ( researchRomm )
+		{
+			Imp::SearchRoom(graph);
+		}
+
+		return newWall;
+	}
+
+	static bool RemoveWall( const GraphODLSPtr& graphODL, const WallODLSPtr& wall, bool needMerge, bool researchRomm )
+	{
+		auto& edgeIndex = wall->GetIndex();
+		auto& graph_ = graphODL->Graph_;
+
+		auto src = boost::source(edgeIndex, graph_);
+		auto target = boost::target(edgeIndex, graph_);
+		auto srcCorner = boost::get(CornerTag(), graph_, src);
+		auto targetCorner = boost::get(CornerTag(), graph_, target);
+
+		graphODL->RemoveChild(wall);
+		boost::remove_edge(wall->GetIndex(), graph_);
+
+		auto needMergeSrc = false, needMergeTarget = false;
+		auto needDelSrc = false, needDelTarget = false;
+
+		auto srcOutEdges = boost::out_edges(src, graph_);
+		if ( srcOutEdges.first == srcOutEdges.second )
+		{
+			needDelSrc = true;
+		}
+		else
+		{
+			auto corner = boost::get(CornerTag(), graph_, src);
+			needMergeSrc = true;
+			for ( auto& curWall : graphODL->GetWallsOnCorner(corner) )
+			{
+				curWall->UpdateMesh();
+			}
+		}
+
+		auto targetOutEdges = boost::out_edges(target, graph_);
+		if ( targetOutEdges.first == targetOutEdges.second )
+		{
+			needDelTarget = true;
+		}
+		else
+		{
+			auto corner = boost::get(CornerTag(), graph_, target);
+			needMergeTarget = true;
+			for ( auto& curWall : graphODL->GetWallsOnCorner(corner) )
+			{
+				curWall->UpdateMesh();
+			}
+		}
+
+		Imp::UpdateEdgeIndex(graph_);
+
+		if ( needDelSrc )
+		{
+			graphODL->RemoveCorner(srcCorner);
+		}
+		else if ( needMergeSrc && needMerge )
+		{
+			graphODL->MergeWallIfNeeded(srcCorner);
+		}
+
+		if ( needDelTarget )
+		{
+			graphODL->RemoveCorner(targetCorner);
+		}
+		else if ( needMergeTarget && needMerge )
+		{
+			graphODL->MergeWallIfNeeded(targetCorner);
+		}
+
+		if ( researchRomm )
+		{
+			Imp::SearchRoom(graphODL);
+		}
+
+		return true;
+	}
+
 public:
 
 	RoomODLList		Rooms_;
@@ -424,8 +523,10 @@ CornerODLSPtr GraphODL::CreateCornerBySplitWall( const WallODLSPtr& toSplit, con
 	auto srcProp = boost::get(CornerTag(), Graph_, src);
 	auto targetPorp = boost::get(CornerTag(), Graph_, target);
 
-	AddWall(srcProp, newCorner, false);
-	AddWall(newCorner, targetPorp);
+	auto thisSPtr = std::static_pointer_cast<GraphODL>(shared_from_this());
+
+	Imp::AddWall(thisSPtr, srcProp, newCorner, false);
+	Imp::AddWall(thisSPtr, newCorner, targetPorp, true);
 
 	return newCorner;
 }
@@ -442,100 +543,17 @@ bool GraphODL::RemoveCorner( const CornerODLSPtr& corner )
 	return true;
 }
 
-WallODLSPtr GraphODL::AddWall( const CornerODLSPtr& corner1, const CornerODLSPtr& corner2, bool researchRomm )
+WallODLSPtr GraphODL::AddWall( const CornerODLSPtr& corner1, const CornerODLSPtr& corner2 )
 {
 	auto thisSPtr = std::static_pointer_cast<GraphODL>(shared_from_this());
-	auto newWall = std::make_shared<WallODL>(thisSPtr, corner1, corner2);
-	newWall->CreateEmptyDataSceneNode();
-	newWall->Init();
-	AddChild(newWall);
-
-	auto index = boost::add_edge(corner1->GetIndex(), corner2->GetIndex(), newWall, Graph_);
-
-	assert(index.second);
-
-	//boost::put(boost::edge_index, Graph_, index.first, index);
-	//newWall->SetIndex(index.first);
-	Imp::UpdateEdgeIndex(Graph_);
-
-	newWall->UpdateMesh();
-
-	if ( researchRomm )
-	{
-		Imp::SearchRoom(std::static_pointer_cast<GraphODL>(shared_from_this()));
-	}
-
-	return newWall;
+	return Imp::AddWall(thisSPtr, corner1, corner2, true);
 }
 
 bool GraphODL::RemoveWall( const WallODLSPtr& wall )
 {
-	auto& edgeIndex = wall->GetIndex();
+	auto thisSPtr = std::static_pointer_cast<GraphODL>(shared_from_this());
 
-	auto src = boost::source(edgeIndex, Graph_);
-	auto target = boost::target(edgeIndex, Graph_);
-	auto srcCorner = boost::get(CornerTag(), Graph_, src);
-	auto targetCorner = boost::get(CornerTag(), Graph_, target);
-
-	RemoveChild(wall);
-	boost::remove_edge(wall->GetIndex(), Graph_);
-
-	auto needMergeSrc = false, needMergeTarget = false;
-	auto needDelSrc = false, needDelTarget = false;
-
-	auto srcOutEdges = boost::out_edges(src, Graph_);
-	if ( srcOutEdges.first == srcOutEdges.second )
-	{
-		needDelSrc = true;
-	}
-	else
-	{
-		auto corner = boost::get(CornerTag(), Graph_, src);
-		needMergeSrc = true;
-		for ( auto& curWall : GetWallsOnCorner(corner) )
-		{
-			curWall->UpdateMesh();
-		}
-	}
-
-	auto targetOutEdges = boost::out_edges(target, Graph_);
-	if ( targetOutEdges.first == targetOutEdges.second )
-	{
-		needDelTarget = true;
-	}
-	else
-	{
-		auto corner = boost::get(CornerTag(), Graph_, target);
-		needMergeTarget = true;
-		for ( auto& curWall : GetWallsOnCorner(corner) )
-		{
-			curWall->UpdateMesh();
-		}
-	}
-
-	Imp::UpdateEdgeIndex(Graph_);
-
-	if ( needDelSrc )
-	{
-		RemoveCorner(srcCorner);
-	}
-	else if ( needMergeSrc )
-	{
-		MergeWallIfNeeded(boost::get(CornerTag(), Graph_, src));
-	}
-
-	if ( needDelTarget )
-	{
-		RemoveCorner(targetCorner);
-	}
-	else if ( needMergeTarget )
-	{
-		MergeWallIfNeeded(boost::get(CornerTag(), Graph_, target));
-	}
-
-	Imp::SearchRoom(std::static_pointer_cast<GraphODL>(shared_from_this()));
-
-	return true;
+	return Imp::RemoveWall(thisSPtr, wall, true, true);
 }
 
 RoomODLList GraphODL::GetAllRooms()
@@ -578,7 +596,10 @@ void GraphODL::MergeWallIfNeeded( const CornerODLSPtr& corner )
 	auto corner1 = wall1->GetOtherCorner(corner);
 	auto corner2 = wall2->GetOtherCorner(corner);
 
-	AddWall(corner1.lock(),corner2.lock(), false);
-	RemoveWall(wall1);
-	RemoveWall(wall2);
+	auto thisSPtr = std::static_pointer_cast<GraphODL>(shared_from_this());
+
+	Imp::AddWall(thisSPtr, corner1.lock(),corner2.lock(), false);
+
+	Imp::RemoveWall(thisSPtr, wall1, false, false);
+	Imp::RemoveWall(thisSPtr, wall2, false, true);
 }

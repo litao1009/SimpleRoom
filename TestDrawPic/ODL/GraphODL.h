@@ -42,7 +42,7 @@ public:
 
 	bool			RemoveCorner(const CornerODLSPtr& corner);
 
-	WallODLSPtr		AddWall(const CornerODLSPtr& corner1, const CornerODLSPtr& corner2, bool researchRomm = true );
+	WallODLSPtr		AddWall(const CornerODLSPtr& corner1, const CornerODLSPtr& corner2 );
 
 	bool			RemoveWall(const WallODLSPtr& wall );
 
