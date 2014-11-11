@@ -71,6 +71,8 @@
 #define IDD_DLG_LAYER                   325
 #define IDD_DLG_SHADER                  326
 #define IDD_DLG_PIC_REF_SIZE            327
+#define IDD_DLG_ROOMLAYOUT_PICTURE_SIZE 327
+#define IDD_DLG_ROOMLAYOUT_DRAWLINEINFO 328
 #define IDC_LIST_ROOM_STYLE             1000
 #define IDC_CBX_GTYPE                   1001
 #define IDC_LIST_OBJ                    1002
@@ -106,6 +108,8 @@
 #define IDC_TXT_MIN_2                   1031
 #define IDC_TXT_PIC_REF_SIZE_NUM        1031
 #define IDC_TXT_MAX_2                   1032
+#define IDC_EDIT1                       1032
+#define IDC_TXT_NUM                     1032
 #define IDC_TXT_MIN_3                   1033
 #define IDC_TXT_MAX_3                   1034
 #define IDC_TXT_MIN_4                   1035
@@ -153,9 +157,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        328
+#define _APS_NEXT_RESOURCE_VALUE        329
 #define _APS_NEXT_COMMAND_VALUE         32836
-#define _APS_NEXT_CONTROL_VALUE         1032
+#define _APS_NEXT_CONTROL_VALUE         1034
 #define _APS_NEXT_SYMED_VALUE           321
 #endif
 #endif

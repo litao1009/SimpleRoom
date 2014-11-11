@@ -2,33 +2,33 @@
 
 #include "stdafx.h"
 #include "TestDrawPic.h"
-#include "DlgPicRefSize.h"
+#include "DlgRoomLayoutPictureSize.h"
 #include "afxdialogex.h"
 
 #include <string>
 
 // DlgPicRefSize 对话框
 
-IMPLEMENT_DYNAMIC(DlgPicRefSize, CDialogEx)
+IMPLEMENT_DYNAMIC(DlgRoomLayoutPictureSize, CDialogEx)
 
-DlgPicRefSize::DlgPicRefSize(CWnd* pParent /*=NULL*/)
-	: CDialogEx(DlgPicRefSize::IDD, pParent)
+DlgRoomLayoutPictureSize::DlgRoomLayoutPictureSize(CWnd* pParent /*=NULL*/)
+	: CDialogEx(DlgRoomLayoutPictureSize::IDD, pParent)
 {
 	Result_ = 0;
 }
 
-DlgPicRefSize::~DlgPicRefSize()
+DlgRoomLayoutPictureSize::~DlgRoomLayoutPictureSize()
 {
 }
 
-void DlgPicRefSize::DoDataExchange(CDataExchange* pDX)
+void DlgRoomLayoutPictureSize::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_TXT_PIC_REF_SIZE_NUM, NumText_);
 	DDX_Control(pDX, IDOK, OKBtn_);
 }
 
-BOOL DlgPicRefSize::PreTranslateMessage(MSG* pMsg)
+BOOL DlgRoomLayoutPictureSize::PreTranslateMessage(MSG* pMsg)
 {
 	// TODO: 在此添加专用代码和/或调用基类
 	if ( pMsg->message==WM_KEYDOWN || pMsg->message == WM_KEYUP )
@@ -43,11 +43,11 @@ BOOL DlgPicRefSize::PreTranslateMessage(MSG* pMsg)
 }
 
 
-BEGIN_MESSAGE_MAP(DlgPicRefSize, CDialogEx)
-	ON_EN_CHANGE(IDC_TXT_PIC_REF_SIZE_NUM, &DlgPicRefSize::OnEnChangeTxtPicRefSizeNum)
+BEGIN_MESSAGE_MAP(DlgRoomLayoutPictureSize, CDialogEx)
+	ON_EN_CHANGE(IDC_TXT_PIC_REF_SIZE_NUM, &DlgRoomLayoutPictureSize::OnEnChangeTxtPicRefSizeNum)
 END_MESSAGE_MAP()
 
-unsigned DlgPicRefSize::GetNum() const
+unsigned DlgRoomLayoutPictureSize::GetNum() const
 {
 	return Result_;
 }
@@ -55,7 +55,7 @@ unsigned DlgPicRefSize::GetNum() const
 // DlgPicRefSize 消息处理程序
 
 
-void DlgPicRefSize::OnEnChangeTxtPicRefSizeNum()
+void DlgRoomLayoutPictureSize::OnEnChangeTxtPicRefSizeNum()
 {
 	// TODO:  如果该控件是 RICHEDIT 控件，它将不
 	// 发送此通知，除非重写 CDialogEx::OnInitDialog()
@@ -81,7 +81,7 @@ void DlgPicRefSize::OnEnChangeTxtPicRefSizeNum()
 }
 
 
-BOOL DlgPicRefSize::OnInitDialog()
+BOOL DlgRoomLayoutPictureSize::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
 

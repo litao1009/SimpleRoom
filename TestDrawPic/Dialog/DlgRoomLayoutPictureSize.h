@@ -4,13 +4,13 @@
 
 // DlgPicRefSize 对话框
 
-class DlgPicRefSize : public CDialogEx
+class DlgRoomLayoutPictureSize : public CDialogEx
 {
-	DECLARE_DYNAMIC(DlgPicRefSize)
+	DECLARE_DYNAMIC(DlgRoomLayoutPictureSize)
 
 public:
-	DlgPicRefSize(CWnd* pParent = NULL);   // 标准构造函数
-	virtual ~DlgPicRefSize();
+	DlgRoomLayoutPictureSize(CWnd* pParent = NULL);   // 标准构造函数
+	virtual ~DlgRoomLayoutPictureSize();
 
 // 对话框数据
 	enum { IDD = IDD_DLG_PIC_REF_SIZE };

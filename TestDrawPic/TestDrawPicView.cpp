@@ -27,7 +27,8 @@
 #include "RenderController/UserEvent.h"
 #include "StatusMgr.h"
 
-#include "Dialog/DlgPicRefSize.h"
+#include "Dialog/DlgRoomLayoutPictureSize.h"
+#include "Dialog/DlgRoomLayoutDrawlinInfo.h"
 #include "resource.h"
 
 #include <boost/filesystem/path.hpp>
@@ -56,9 +57,16 @@ BEGIN_MESSAGE_MAP(CTestDrawPicView, CCtrlFuncView)
 	ON_COMMAND(ID_BTN_ROOM_PIC_SET_POSITION, &CTestDrawPicView::OnBtnRoomPicSetPosition)
 END_MESSAGE_MAP()
 
-// CTestDrawPicView 构造/析构
 
-CTestDrawPicView::CTestDrawPicView()
+class	CTestDrawPicView::Imp
+{
+public:
+
+	std::shared_ptr<DlgRoomLayoutDrawlinInfo>	DlgRoomLayoutDrawlinInfo_;
+};
+
+// CTestDrawPicView 构造/析构
+CTestDrawPicView::CTestDrawPicView():ImpUPtr_(new Imp)
 {
 	// TODO: 在此处添加构造代码
 	m_clGrout = Gdiplus::Color::Bisque;
@@ -161,12 +169,22 @@ BOOL CTestDrawPicView::Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName, DWO
 		m_pDrop->Register(this);
 	}
 	SetTimer(1000, 20/*ms*/,NULL);
+
+	ImpUPtr_->DlgRoomLayoutDrawlinInfo_ = std::make_shared<DlgRoomLayoutDrawlinInfo>(m_spRenderContext, this);
+	ImpUPtr_->DlgRoomLayoutDrawlinInfo_->Create(DlgRoomLayoutDrawlinInfo::IDD, this);
+	ImpUPtr_->DlgRoomLayoutDrawlinInfo_->SetVisible(true);
+
 	return bRet;
 }
 
 void CTestDrawPicView::OnSize(UINT nType, int cx, int cy)
 {
 	CCtrlFuncView::OnSize(nType, cx, cy);
+
+	if ( ImpUPtr_->DlgRoomLayoutDrawlinInfo_ )
+	{
+		ImpUPtr_->DlgRoomLayoutDrawlinInfo_->Resize();
+	}
 
 	if ( m_spRenderContext )
 	{
@@ -189,7 +207,7 @@ LRESULT CTestDrawPicView::DefWindowProc(UINT message, WPARAM wParam, LPARAM lPar
 	{
 		if ( WM_USER_ROOMLAYOUT_PICTUREREFLINE_SIZE == wParam )
 		{
-			DlgPicRefSize dlg;
+			DlgRoomLayoutPictureSize dlg;
 			
 			dlg.DoModal();
 
@@ -200,6 +218,21 @@ LRESULT CTestDrawPicView::DefWindowProc(UINT message, WPARAM wParam, LPARAM lPar
 			evt.UserEvent.UserData1 = EUT_ROOMLAYOUT_PICTUREREFLINE_SIZE;
 			evt.UserEvent.UserData2 = num;
 			m_spRenderContext->PostEvent(evt);
+		}
+
+		if ( WM_USER_ROOMLAYOUT_DLG_LINELENGTH_SHOW == wParam )
+		{
+			ImpUPtr_->DlgRoomLayoutDrawlinInfo_->SetVisible(true);
+		}
+
+		if ( WM_USER_ROOMLAYOUT_DLG_LINELENGTH_HIDE == wParam )
+		{
+			ImpUPtr_->DlgRoomLayoutDrawlinInfo_->SetVisible(false);
+		}
+
+		if ( WM_USER_ROOMLAYOUT_LINELENGTH_SET == wParam )
+		{
+			ImpUPtr_->DlgRoomLayoutDrawlinInfo_->SetNum(lParam);
 		}
 
 		return TRUE;
@@ -280,6 +313,12 @@ LRESULT CTestDrawPicView::DefWindowProc(UINT message, WPARAM wParam, LPARAM lPar
 		m_spRenderContext->PostEvent(event);
 	}
 
+	if ( WM_CHAR == message && ImpUPtr_->DlgRoomLayoutDrawlinInfo_ && ImpUPtr_->DlgRoomLayoutDrawlinInfo_->IsVisible() )
+	{
+		::SendMessage(ImpUPtr_->DlgRoomLayoutDrawlinInfo_->GetSafeHwnd(), message, wParam, lParam);
+		::SendMessage(ImpUPtr_->DlgRoomLayoutDrawlinInfo_->GetTextHwnd(), message, wParam, lParam);
+	}
+	
 	return CCtrlFuncView::DefWindowProc(message, wParam, lParam);
 }
 

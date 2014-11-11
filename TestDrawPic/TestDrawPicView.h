@@ -21,6 +21,9 @@ class CMainFrame;
 
 class CTestDrawPicView : public CCtrlFuncView
 {
+	class	Imp;
+	std::unique_ptr<Imp>	ImpUPtr_;
+
 protected: // 仅从序列化创建
 	CTestDrawPicView();
 	DECLARE_DYNCREATE(CTestDrawPicView)

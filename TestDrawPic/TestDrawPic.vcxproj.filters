@@ -220,9 +220,6 @@
     <ClCompile Include="ODL\FloorODL.cpp">
       <Filter>ODL</Filter>
     </ClCompile>
-    <ClCompile Include="Dialog\DlgPicRefSize.cpp">
-      <Filter>src\Dialog</Filter>
-    </ClCompile>
     <ClCompile Include="irrEngine\IrrExtension\CameraInterpolationAnimator.cpp">
       <Filter>IrrEngine\IrrExtension</Filter>
     </ClCompile>
@@ -240,6 +237,12 @@
     </ClCompile>
     <ClCompile Include="RenderController\RoomLayoutBrowserCtrller.cpp">
       <Filter>RenderController\RoomLayout</Filter>
+    </ClCompile>
+    <ClCompile Include="Dialog\DlgRoomLayoutDrawlinInfo.cpp">
+      <Filter>src\Dialog</Filter>
+    </ClCompile>
+    <ClCompile Include="Dialog\DlgRoomLayoutPictureSize.cpp">
+      <Filter>src\Dialog</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -534,9 +537,6 @@
     <ClInclude Include="RenderController\UserEvent.h">
       <Filter>RenderController</Filter>
     </ClInclude>
-    <ClInclude Include="Dialog\DlgPicRefSize.h">
-      <Filter>src\Dialog</Filter>
-    </ClInclude>
     <ClInclude Include="irrEngine\IrrExtension\CameraInterpolationAnimator.h">
       <Filter>IrrEngine\IrrExtension</Filter>
     </ClInclude>
@@ -554,6 +554,12 @@
     </ClInclude>
     <ClInclude Include="RenderController\RoomLayoutBrowserCtrller.h">
       <Filter>RenderController\RoomLayout</Filter>
+    </ClInclude>
+    <ClInclude Include="Dialog\DlgRoomLayoutDrawlinInfo.h">
+      <Filter>src\Dialog</Filter>
+    </ClInclude>
+    <ClInclude Include="Dialog\DlgRoomLayoutPictureSize.h">
+      <Filter>src\Dialog</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

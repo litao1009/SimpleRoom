@@ -146,6 +146,7 @@ public:
 	bool						LMousePressDown_;
 	bool						EscPressDown_;
 	bool						Reset_;
+	boost::optional<int>		LineLength_;
 
 	GraphODLWPtr				Graph_;
 };
@@ -194,6 +195,17 @@ bool RoomLayoutDrawingCtrller::PreRender3D()
 
 	//两条辅助线
 	BRepAdaptor_Curve firstAuxiliaryLine,secondAuxiliaryLine;
+
+	if ( imp_.State_ == EState::ES_DRAWING && imp_.LineLength_ )
+	{
+		assert(imp_.LastCorner_);
+
+		gp_Dir dir = gp_Vec(imp_.LastCorner_->GetPosition(), cursorPnt);
+		cursorPnt = imp_.LastCorner_->GetPosition().XYZ() + (gp_Vec(dir) * (*imp_.LineLength_)).XYZ();
+		vector3df newPos3D(static_cast<float>(cursorPnt.X()), static_cast<float>(cursorPnt.Y()), static_cast<float>(cursorPnt.Z()));
+		auto newPos2D = GetRenderContextSPtr()->Smgr_->getSceneCollisionManager()->getScreenCoordinatesFrom3DPosition(newPos3D);
+		GetRenderContextSPtr()->CursorControl_->setPosition(newPos2D);
+	}
 
 	//寻找最近的墙角和一个墙的墙角
 	for ( auto& curCorner : imp_.Graph_.lock()->GetAllCorners() )
@@ -748,8 +760,11 @@ bool RoomLayoutDrawingCtrller::PreRender3D()
 				{
 					imp_.Graph_.lock()->RemoveCorner(imp_.LastCorner_);
 				}
-
-				imp_.Graph_.lock()->MergeWallIfNeeded(imp_.LastCorner_);
+				else
+				{
+					imp_.Graph_.lock()->MergeWallIfNeeded(imp_.LastCorner_);
+				}
+				
 				imp_.LastCorner_.reset();
 			}
 		}
@@ -812,6 +827,25 @@ bool RoomLayoutDrawingCtrller::PreRender3D()
 	{
 		curCorner->SetVisible(true);
 	}
+
+	if ( imp_.State_ == ES_DRAWING )
+	{
+		if ( GeomAbs_OtherCurve != firstAuxiliaryLine.GetType() && GeomAbs_OtherCurve == secondAuxiliaryLine.GetType() )
+		{
+			::PostMessage((HWND)(GetRenderContextSPtr()->GetHandle()), WM_IRR_DLG_MSG, WM_USER_ROOMLAYOUT_DLG_LINELENGTH_SHOW, 0);
+		}
+
+		auto length = 0;
+		length = static_cast<int>(imp_.LastCorner_->GetPosition().Distance(cursorPnt));
+		
+		::PostMessage((HWND)(GetRenderContextSPtr()->GetHandle()), WM_IRR_DLG_MSG, WM_USER_ROOMLAYOUT_LINELENGTH_SET, length);
+	}
+	else
+	{
+		::PostMessage((HWND)(GetRenderContextSPtr()->GetHandle()), WM_IRR_DLG_MSG, WM_USER_ROOMLAYOUT_DLG_LINELENGTH_HIDE, 0);
+	}
+
+	imp_.LineLength_ = boost::none;
 
 	return false;
 }
@@ -888,6 +922,15 @@ bool RoomLayoutDrawingCtrller::OnPostEvent( const irr::SEvent& evt )
 		if ( evt.KeyInput.Key == KEY_ESCAPE && evt.KeyInput.PressedDown )
 		{
 			imp_.EscPressDown_ = true;
+		}
+	}
+
+	if ( evt.EventType == EET_USER_EVENT )
+	{
+		if ( evt.UserEvent.UserData1 == EUT_ROOMLAYOUT_LINELENGTH_SET )
+		{
+			imp_.LineLength_ = evt.UserEvent.UserData2;
+			return true;
 		}
 	}
 
