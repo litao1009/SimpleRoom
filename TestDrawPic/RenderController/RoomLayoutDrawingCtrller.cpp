@@ -146,7 +146,8 @@ public:
 	bool						LMousePressDown_;
 	bool						EscPressDown_;
 	bool						Reset_;
-	boost::optional<int>		LineLength_;
+	boost::optional<int>		CustomLength_;
+	boost::optional<gp_Pnt>		CustomPnt_;
 
 	GraphODLWPtr				Graph_;
 };
@@ -195,17 +196,6 @@ bool RoomLayoutDrawingCtrller::PreRender3D()
 
 	//两条辅助线
 	BRepAdaptor_Curve firstAuxiliaryLine,secondAuxiliaryLine;
-
-	if ( imp_.State_ == EState::ES_DRAWING && imp_.LineLength_ )
-	{
-		assert(imp_.LastCorner_);
-
-		gp_Dir dir = gp_Vec(imp_.LastCorner_->GetPosition(), cursorPnt);
-		cursorPnt = imp_.LastCorner_->GetPosition().XYZ() + (gp_Vec(dir) * (*imp_.LineLength_)).XYZ();
-		vector3df newPos3D(static_cast<float>(cursorPnt.X()), static_cast<float>(cursorPnt.Y()), static_cast<float>(cursorPnt.Z()));
-		auto newPos2D = GetRenderContextSPtr()->Smgr_->getSceneCollisionManager()->getScreenCoordinatesFrom3DPosition(newPos3D);
-		GetRenderContextSPtr()->CursorControl_->setPosition(newPos2D);
-	}
 
 	//寻找最近的墙角和一个墙的墙角
 	for ( auto& curCorner : imp_.Graph_.lock()->GetAllCorners() )
@@ -595,6 +585,29 @@ bool RoomLayoutDrawingCtrller::PreRender3D()
 		break;
 	case EState::ES_DRAWING:
 		{
+			if ( imp_.CustomLength_ )
+			{
+				assert(imp_.LastCorner_);
+
+				gp_Dir dir = gp_Vec(imp_.LastCorner_->GetPosition(), cursorPnt);
+				cursorPnt = imp_.LastCorner_->GetPosition().XYZ() + (gp_Vec(dir) * (*imp_.CustomLength_)).XYZ();
+				imp_.CustomPnt_ = cursorPnt;
+				vector3df newPos3D(static_cast<float>(cursorPnt.X()), static_cast<float>(cursorPnt.Y()), static_cast<float>(cursorPnt.Z()));
+				auto newPos2D = GetRenderContextSPtr()->Smgr_->getSceneCollisionManager()->getScreenCoordinatesFrom3DPosition(newPos3D);
+				GetRenderContextSPtr()->CursorControl_->setPosition(newPos2D);
+			}
+			else if ( imp_.CustomPnt_ )
+			{
+				if ( cursorPnt.SquareDistance(*imp_.CustomPnt_) < alignDistance * alignDistance )
+				{
+					cursorPnt = *imp_.CustomPnt_;
+				}
+				else
+				{
+					imp_.CustomPnt_ = boost::none;
+				}
+			}
+
 			bool valid = true;
 			{//checkValid
 
@@ -830,13 +843,11 @@ bool RoomLayoutDrawingCtrller::PreRender3D()
 
 	if ( imp_.State_ == ES_DRAWING )
 	{
-		if ( GeomAbs_OtherCurve != firstAuxiliaryLine.GetType() && GeomAbs_OtherCurve == secondAuxiliaryLine.GetType() )
-		{
-			::PostMessage((HWND)(GetRenderContextSPtr()->GetHandle()), WM_IRR_DLG_MSG, WM_USER_ROOMLAYOUT_DLG_LINELENGTH_SHOW, 0);
-		}
+		::PostMessage((HWND)(GetRenderContextSPtr()->GetHandle()), WM_IRR_DLG_MSG, WM_USER_ROOMLAYOUT_DLG_LINELENGTH_SHOW, 0);
 
 		auto length = 0;
-		length = static_cast<int>(imp_.LastCorner_->GetPosition().Distance(cursorPnt));
+		auto fl = imp_.LastCorner_->GetPosition().Distance(cursorPnt) + .5f;
+		length = static_cast<int>(fl);
 		
 		::PostMessage((HWND)(GetRenderContextSPtr()->GetHandle()), WM_IRR_DLG_MSG, WM_USER_ROOMLAYOUT_LINELENGTH_SET, length);
 	}
@@ -845,7 +856,7 @@ bool RoomLayoutDrawingCtrller::PreRender3D()
 		::PostMessage((HWND)(GetRenderContextSPtr()->GetHandle()), WM_IRR_DLG_MSG, WM_USER_ROOMLAYOUT_DLG_LINELENGTH_HIDE, 0);
 	}
 
-	imp_.LineLength_ = boost::none;
+	imp_.CustomLength_ = boost::none;
 
 	return false;
 }
@@ -929,7 +940,7 @@ bool RoomLayoutDrawingCtrller::OnPostEvent( const irr::SEvent& evt )
 	{
 		if ( evt.UserEvent.UserData1 == EUT_ROOMLAYOUT_LINELENGTH_SET )
 		{
-			imp_.LineLength_ = evt.UserEvent.UserData2;
+			imp_.CustomLength_ = evt.UserEvent.UserData2;
 			return true;
 		}
 	}
@@ -996,7 +1007,8 @@ void RoomLayoutDrawingCtrller::Reset()
 	auto& imp_ = *ImpUPtr_;
 
 	imp_.EscPressDown_ = false;
-
+	imp_.CustomLength_ = boost::none;
+	imp_.CustomPnt_ = boost::none;
 	imp_.LastWall_ = nullptr;
 
 	for ( auto& curCorner : imp_.DrawingPathList_ )

@@ -53,6 +53,8 @@ LRESULT DlgRoomLayoutDrawlinInfo::DefWindowProc(UINT message, WPARAM wParam, LPA
 	// TODO: 在此添加专用代码和/或调用基类
 	if ( message==WM_CHAR )
 	{
+		Inputting_ = true;
+
 		switch (wParam)
 		{
 		case VK_RETURN:
@@ -75,6 +77,11 @@ LRESULT DlgRoomLayoutDrawlinInfo::DefWindowProc(UINT message, WPARAM wParam, LPA
 					EditNum_.SetWindowText(_T(""));
 					Inputting_ = false;
 				}
+			}
+			break;
+		case VK_ESCAPE:
+			{
+				Inputting_ = false;
 			}
 			break;
 		}
@@ -121,5 +128,6 @@ void DlgRoomLayoutDrawlinInfo::SetNum( int num )
 		return;
 	}
 
-
+	EditNum_.SetWindowText(std::to_wstring(num).c_str());
+	EditNum_.SetSel(0, -1);
 }

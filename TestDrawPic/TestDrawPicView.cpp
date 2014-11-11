@@ -172,7 +172,7 @@ BOOL CTestDrawPicView::Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName, DWO
 
 	ImpUPtr_->DlgRoomLayoutDrawlinInfo_ = std::make_shared<DlgRoomLayoutDrawlinInfo>(m_spRenderContext, this);
 	ImpUPtr_->DlgRoomLayoutDrawlinInfo_->Create(DlgRoomLayoutDrawlinInfo::IDD, this);
-	ImpUPtr_->DlgRoomLayoutDrawlinInfo_->SetVisible(true);
+	ImpUPtr_->DlgRoomLayoutDrawlinInfo_->SetVisible(false);
 
 	return bRet;
 }
