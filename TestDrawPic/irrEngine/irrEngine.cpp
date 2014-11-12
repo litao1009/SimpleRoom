@@ -104,6 +104,13 @@ IrrEngine::IrrEngine(const irr::SIrrlichtCreationParameters& params):ImpUPtr_(ne
 		vertexAlpha->drop();
 		imp_.ShaderMap_[EST_VERTEX_ALPHA] = material;
 	}
+
+	{
+		auto font = new FontColorCB;
+		auto material = rawDevice->getVideoDriver()->getGPUProgrammingServices()->addHighLevelShaderMaterial(FontColorCB::GetVertexShader(), FontColorCB::GetPixelShader(), font, irr::video::EMT_TRANSPARENT_VERTEX_ALPHA);
+		font->drop();
+		imp_.ShaderMap_[EST_FONT] = material;
+	}
 }
 
 IrrEngine::~IrrEngine()

@@ -21,6 +21,7 @@
 //Irrlicht
 #include "CDynamicMeshBuffer.h"
 #include "SMesh.h"
+#include "SMeshBuffer.h"
 
 using namespace irr;
 using namespace core;
@@ -699,6 +700,35 @@ irr::scene::IMeshBuffer* ODLTools::NEW_CreateMeshBuffer( const TopoDS_Shape& sha
 			}
 		}
 	}
+
+	meshBufferPtr->getMaterial().Lighting = false;
+	meshBufferPtr->getMaterial().BackfaceCulling = false;
+
+	return meshBufferPtr;
+}
+
+irr::scene::IMeshBuffer* ODLTools::NEW_CreateRectMeshBuffer( float radius )
+{
+	vector3df normal(0,1,0);
+	SColor clr(~0);
+
+	auto meshBufferPtr = new SMeshBuffer;
+	meshBufferPtr->Vertices.reallocate(4);
+	meshBufferPtr->Indices.reallocate(6);
+
+	meshBufferPtr->Vertices.push_back(S3DVertex(vector3df(-radius, 0, radius), normal, clr, vector2df(0,0)));
+	meshBufferPtr->Vertices.push_back(S3DVertex(vector3df(radius, 0, radius), normal, clr, vector2df(1,0)));
+	meshBufferPtr->Vertices.push_back(S3DVertex(vector3df(radius, 0, -radius), normal, clr, vector2df(1,-1)));
+	meshBufferPtr->Vertices.push_back(S3DVertex(vector3df(-radius, 0, -radius), normal, clr, vector2df(0,-1)));
+
+	meshBufferPtr->Indices.push_back(0);
+	meshBufferPtr->Indices.push_back(1);
+	meshBufferPtr->Indices.push_back(2);
+	meshBufferPtr->Indices.push_back(0);
+	meshBufferPtr->Indices.push_back(2);
+	meshBufferPtr->Indices.push_back(3);
+
+	meshBufferPtr->recalculateBoundingBox();
 
 	meshBufferPtr->getMaterial().Lighting = false;
 	meshBufferPtr->getMaterial().BackfaceCulling = false;

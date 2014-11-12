@@ -150,3 +150,50 @@ const char* VertexAlphaCB::GetPixelShader()
 {
 	return VertexAlhpa[1];
 }
+
+const char*	FontColor[2] = 
+{
+	"void main(void)"
+	"{"
+	"	gl_Position = ftransform();"
+	"	gl_TexCoord[0] = gl_TextureMatrix[0]*gl_MultiTexCoord0;"
+	"}"
+
+	,
+
+	"uniform	vec4			fontColor;"
+	"uniform	sampler2D		colorMap;"
+
+	"void main(void)"
+	"{"
+	"	vec4 color = texture2D(colorMap, vec2(gl_TexCoord[0]));"
+	"	color.rgb = fontColor.rgb;"
+	"	gl_FragColor = color;"
+	"}"
+};
+
+void FontColorCB::OnSetConstants( irr::video::IMaterialRendererServices* services, irr::s32 userData )
+{
+	irr::s32 pos = 0;
+	static irr::video::SColorf color;
+	auto& curColor = CurrentMaterial_.DiffuseColor;
+	color.set(1, static_cast<float>(curColor.getRed())/255.f, static_cast<float>(curColor.getGreen())/255.f, static_cast<float>(curColor.getBlue())/255.f);
+
+	services->setPixelShaderConstant("colorMap", &pos, 1);
+	services->setPixelShaderConstant("fontColor", &color.r, 4);
+}
+
+void FontColorCB::OnSetMaterial( const irr::video::SMaterial& material )
+{
+	CurrentMaterial_ = material;
+}
+
+const char* FontColorCB::GetVertexShader()
+{
+	return FontColor[0];
+}
+
+const char* FontColorCB::GetPixelShader()
+{
+	return FontColor[1];
+}

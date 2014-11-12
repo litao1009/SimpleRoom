@@ -244,6 +244,12 @@
     <ClCompile Include="Dialog\DlgRoomLayoutPictureSize.cpp">
       <Filter>src\Dialog</Filter>
     </ClCompile>
+    <ClCompile Include="irrEngine\IrrExtension\FreetypeFontManager.cpp">
+      <Filter>IrrEngine\IrrExtension</Filter>
+    </ClCompile>
+    <ClCompile Include="irrEngine\IrrExtension\GUIFreetypeFont.cpp">
+      <Filter>IrrEngine\IrrExtension</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BLL\BaseBLL.h">
@@ -560,6 +566,12 @@
     </ClInclude>
     <ClInclude Include="Dialog\DlgRoomLayoutPictureSize.h">
       <Filter>src\Dialog</Filter>
+    </ClInclude>
+    <ClInclude Include="irrEngine\IrrExtension\FreetypeFontManager.h">
+      <Filter>IrrEngine\IrrExtension</Filter>
+    </ClInclude>
+    <ClInclude Include="irrEngine\IrrExtension\GUIFreetypeFont.h">
+      <Filter>IrrEngine\IrrExtension</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

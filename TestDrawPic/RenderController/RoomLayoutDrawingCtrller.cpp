@@ -598,7 +598,7 @@ bool RoomLayoutDrawingCtrller::PreRender3D()
 			}
 			else if ( imp_.CustomPnt_ )
 			{
-				if ( cursorPnt.SquareDistance(*imp_.CustomPnt_) < alignDistance * alignDistance )
+				if ( cursorPnt.SquareDistance(*imp_.CustomPnt_) < alignDistance * alignDistance * 4 )
 				{
 					cursorPnt = *imp_.CustomPnt_;
 				}

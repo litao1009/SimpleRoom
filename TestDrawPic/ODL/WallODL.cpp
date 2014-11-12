@@ -8,8 +8,8 @@
 #include "ISceneManager.h"
 
 #include "IrrEngine/IrrEngine.h"
-
 #include "MeshSceneNode/WallMeshNode2D.h"
+#include "irrEngine/IrrExtension/FreetypeFontManager.h"
 
 #include "gp_Lin.hxx"
 #include "gp_Pln.hxx"
@@ -23,6 +23,8 @@
 #include "BRepBuilderAPI_MakeFace.hxx"
 #include "BRepPrimAPI_MakePrism.hxx"
 #include "BRepBndLib.hxx"
+
+#include <boost/filesystem.hpp>
 
 class	WallODL::Imp
 {
@@ -242,8 +244,11 @@ public:
 		return angle1 < angle2;
 	}
 
+public:
+
 	CornerODLSPtr		RefCorner_;
 	WallMeshNode2D*		Node2D_;
+	irr::scene::IMeshSceneNode*	Lable_;
 };
 
 WallODL::WallODL( const GraphODLWPtr graphODL, const CornerODLSPtr& firstCorner, const CornerODLSPtr& secondCorner, float wallThickness /*= 200.f*/, float height )
@@ -265,8 +270,22 @@ WallODL::~WallODL( void )
 void WallODL::Init()
 {
 	auto wall2DNode = new WallMeshNode2D(GetDataSceneNode()->GetSceneNode2D());
-	wall2DNode->drop();
 	ImpUPtr_->Node2D_ = wall2DNode;
+	wall2DNode->drop();
+
+	auto lableMeshBuf = ODLTools::NEW_CreateRectMeshBuffer(0.5f);
+	lableMeshBuf->getMaterial().DiffuseColor = 0xFF000000;
+	lableMeshBuf->getMaterial().MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_FONT);
+
+	auto lableMesh = new irr::scene::SMesh;
+	lableMesh->addMeshBuffer(lableMeshBuf);
+	lableMeshBuf->recalculateBoundingBox();
+
+	auto lableNode = GetDataSceneNode()->getSceneManager()->addMeshSceneNode(lableMesh, wall2DNode);
+	ImpUPtr_->Lable_ = lableNode;
+
+	lableMeshBuf->drop();
+	lableMesh->drop();
 }
 
 bool WallODL::IsBezierCurve() const
@@ -314,6 +333,7 @@ void WallODL::UpdateMesh()
 		gp_Trsf transToCenter;
 
 		gp_Dir wallDir = gp_Vec(FirstCorner_.lock()->GetPosition(), SecondCorner_.lock()->GetPosition());
+		wallDir.Cross(gp::DY());
 		rotToDZ.SetRotation(gp_Quaternion(wallDir, gp::DZ()));
 		solid.Move(rotToDZ);
 
@@ -365,6 +385,34 @@ void WallODL::UpdateMesh()
 		tfs.SetTranslationPart(gp_Vec(gp::Origin(), gp_Pnt(0, Height_/2, 0)));
 		transformedFace.Move(tfs);
 		ImpUPtr_->Node2D_->UpdateMesh(transformedFace);
+
+		//标注
+		auto length = static_cast<int>(FirstCorner_.lock()->GetPosition().Distance(SecondCorner_.lock()->GetPosition()) + 0.5f);
+		auto lableTxt = std::to_wstring(length);
+		lableTxt += L"mm";
+		auto size = GetWindowsDirectory(NULL, 0);
+		std::wstring str;
+		str.resize(size);
+		auto data = &str[0];
+		GetWindowsDirectory(data, size);
+		str.pop_back();
+		
+		str += L"/fonts/arial.ttf";
+		boost::filesystem::path pt(str);
+
+		auto font = FreetypeFontMgr::GetInstance().GetTtFont(ImpUPtr_->Lable_->getSceneManager()->getVideoDriver(), pt.string().c_str(), 32);
+		assert(font);
+
+		auto txtTexture = font->GenerateTextTexture(lableTxt.c_str());
+		assert(txtTexture);
+
+		ImpUPtr_->Lable_->getMaterial(0).setTexture(0, txtTexture);
+
+		auto txtSize = txtTexture->getSize();
+		auto border = 10;
+		auto factor = (Thickness_ - border * 2) / txtSize.Height;
+		ImpUPtr_->Lable_->setScale(irr::core::vector3df(factor * txtSize.Width, 1, factor * txtSize.Height));
+		static_cast<irr::scene::SMesh*>(ImpUPtr_->Lable_->getMesh())->recalculateBoundingBox();
 	}
 	
 	{//设置效果

@@ -64,5 +64,7 @@ public:
 
 	static	irr::scene::IMeshBuffer*	NEW_CreateMeshBuffer( const TopoDS_Shape& shape );
 
+	static	irr::scene::IMeshBuffer*	NEW_CreateRectMeshBuffer(float radius);
+
 };
 #endif // ODLTools_h__

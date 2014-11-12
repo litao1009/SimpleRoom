@@ -9,6 +9,8 @@ enum EShaderType
 	EST_LINE,
 
 	EST_VERTEX_ALPHA,
+
+	EST_FONT,
 	
 	EST_COUNT
 };
