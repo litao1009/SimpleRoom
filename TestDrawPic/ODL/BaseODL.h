@@ -15,13 +15,13 @@
 #include "TopoDS_Shape.hxx"
 #include "BRepExtrema_DistShapeShape.hxx"
 
-class CBaseODL : public TSceneNode<CBaseODL>, public ShapeSceneNode
+class BaseODL : public TSceneNode<BaseODL>, public ShapeSceneNode
 {
 public:
 
-	CBaseODL(const SRenderContextWPtr& rc);
+	BaseODL(const SRenderContextWPtr& rc);
 	
-	virtual ~CBaseODL(void);
+	virtual ~BaseODL(void);
 
 public:
 

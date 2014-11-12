@@ -11,7 +11,7 @@ public:
 };
 
 
-CornerODL::CornerODL(const SRenderContextWPtr& rc):CBaseODL(rc),ImpUPtr_(new Imp)
+CornerODL::CornerODL(const SRenderContextWPtr& rc):BaseODL(rc),ImpUPtr_(new Imp)
 {
 	ImpUPtr_->MeshNode2D_ = nullptr;
 }

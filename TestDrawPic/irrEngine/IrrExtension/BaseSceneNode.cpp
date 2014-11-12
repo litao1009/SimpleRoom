@@ -8,7 +8,7 @@ using namespace scene;
 
 CBaseSceneNode::ESceneNodeType	CBaseSceneNode::RenderMode_ = ESNT_COMBINE;
 
-CBaseSceneNode::CBaseSceneNode( SRenderContextWPtr rcWPtr, CBaseODLWPtr odlWPtr )
+CBaseSceneNode::CBaseSceneNode( SRenderContextWPtr rcWPtr, BaseODLWPtr odlWPtr )
 	:IMeshSceneNode(0, rcWPtr.lock()->Smgr_.get(), -1),
 	RenderContextWPtr_(rcWPtr),
 	BaseODLWPtr_(odlWPtr)

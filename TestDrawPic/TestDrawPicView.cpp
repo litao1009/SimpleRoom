@@ -46,15 +46,17 @@ BEGIN_MESSAGE_MAP(CTestDrawPicView, CCtrlFuncView)
 	ON_WM_ERASEBKGND()
 	ON_COMMAND(ID_SUB_MENU_PROPERTY, &CTestDrawPicView::OnSubMenuProperty)
 
-	ON_COMMAND(ID_BTN_ROOM_CREATE_DRAW_WALL, &CTestDrawPicView::OnBtnRoomCreateDrawWall)
-	ON_COMMAND(ID_BTN_ROOM_CREATE_DRAW_ROOM, &CTestDrawPicView::OnBtnRoomCreateDrawRoom)
-	ON_COMMAND(ID_BTN_ROOM_PICTURE_PICTURE, &CTestDrawPicView::OnBtnRoomPicturePicture)
-	ON_COMMAND(ID_ROOM_PICTURE_SHOW, &CTestDrawPicView::OnRoomPictureShow)
-	ON_UPDATE_COMMAND_UI(ID_ROOM_PICTURE_SHOW, &CTestDrawPicView::OnUpdateRoomPictureShow)
-	ON_COMMAND(ID_SLIDE_ROOM_PIC_ALPHA, &CTestDrawPicView::OnSlideRoomPicAlpha)
-	ON_UPDATE_COMMAND_UI(ID_SLIDE_ROOM_PIC_ALPHA, &CTestDrawPicView::OnUpdateSlideRoomPicAlpha)
-	ON_COMMAND(ID_BTN_ROOM_PIC_SET_SCALE, &CTestDrawPicView::OnBtnRoomPicSetScale)
-	ON_COMMAND(ID_BTN_ROOM_PIC_SET_POSITION, &CTestDrawPicView::OnBtnRoomPicSetPosition)
+	ON_COMMAND(ID_BTN_ROOMLAYOUT_CREATE_DRAWWALL, &CTestDrawPicView::OnBtnRoomLayoutCreateDrawWall)
+	ON_COMMAND(ID_BTN_ROOMLAYOUT_CREATE_DRAWROOM, &CTestDrawPicView::OnBtnRoomLayoutCreateDrawRoom)
+	ON_COMMAND(ID_BTN_ROOMLAYOUT_PICTURE_PICTURE, &CTestDrawPicView::OnBtnRoomLayoutPicturePicture)
+	ON_COMMAND(ID_CHK_ROOMLAYOUT_PICTURE_SHOW, &CTestDrawPicView::OnChkRoomLayoutPictureShow)
+	ON_UPDATE_COMMAND_UI(ID_CHK_ROOMLAYOUT_PICTURE_SHOW, &CTestDrawPicView::OnChkUpdateRoomLayoutPictureShow)
+	ON_COMMAND(ID_SLIDE_ROOMLAYOUT_PICTURE_ALPHA, &CTestDrawPicView::OnSlideRoomLayoutPictureAlpha)
+	ON_UPDATE_COMMAND_UI(ID_SLIDE_ROOMLAYOUT_PICTURE_ALPHA, &CTestDrawPicView::OnSlideUpdateRoomLayoutPictureAlpha)
+	ON_COMMAND(ID_BTN_ROOMLAYOUT_PICTURE_SETSCALE, &CTestDrawPicView::OnBtnRoomLayoutPictureSetScale)
+	ON_COMMAND(ID_BTN_ROOMLAYOUT_PICTURE_SETPOSITION, &CTestDrawPicView::OnBtnRoomLayoutPictureSetPosition)
+	ON_COMMAND(ID_BTN_ROOMLAYOUT_TEST_DOOR, &CTestDrawPicView::OnBtnRoomLayoutTestDoor)
+	ON_COMMAND(ID_BTN_ROOMLAYOUT_TEST_WINDOW, &CTestDrawPicView::OnBtnRoomLayoutTestWindow)
 END_MESSAGE_MAP()
 
 
@@ -119,7 +121,7 @@ void CTestDrawPicView::OnInitialUpdate()
 
 	{
 		CArray<CMFCRibbonBaseElement*, CMFCRibbonBaseElement*> arr;
-		GetMainFrame()->GetRibbonBar()->GetElementsByID(ID_SLIDE_ROOM_PIC_ALPHA, arr);
+		GetMainFrame()->GetRibbonBar()->GetElementsByID(ID_SLIDE_ROOMLAYOUT_PICTURE_ALPHA, arr);
 		auto slide = static_cast<CMFCRibbonSlider*>(arr[0]);
 		slide->SetPos(50);
 	}
@@ -155,7 +157,7 @@ BOOL CTestDrawPicView::Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName, DWO
 
 	BOOL bRet = CCtrlFuncView::Create(lpszClassName, lpszWindowName, dwStyle, rect, pParentWnd, nID, pContext);
 
-	auto rootODL = std::make_shared<CDesignODL>(this->GetSafeHwnd());
+	auto rootODL = std::make_shared<DesignODL>(this->GetSafeHwnd());
 	SetRoot(rootODL);
 
 	rootODL->Init();
@@ -407,7 +409,7 @@ CMainFrame* CTestDrawPicView::GetMainFrame() const
 	return pMain;
 }
 
-void CTestDrawPicView::OnBtnRoomCreateDrawWall()
+void CTestDrawPicView::OnBtnRoomLayoutCreateDrawWall()
 {
 	irr::SEvent evt;
 	evt.EventType = irr::EET_USER_EVENT;
@@ -418,13 +420,13 @@ void CTestDrawPicView::OnBtnRoomCreateDrawWall()
 }
 
 
-void CTestDrawPicView::OnBtnRoomCreateDrawRoom()
+void CTestDrawPicView::OnBtnRoomLayoutCreateDrawRoom()
 {
 	
 }
 
 
-void CTestDrawPicView::OnBtnRoomPicturePicture()
+void CTestDrawPicView::OnBtnRoomLayoutPicturePicture()
 {
 	static	boost::filesystem::path filePath;
 
@@ -469,7 +471,7 @@ void CTestDrawPicView::Render()
 }
 
 
-void CTestDrawPicView::OnRoomPictureShow()
+void CTestDrawPicView::OnChkRoomLayoutPictureShow()
 {
 	// TODO: 在此添加命令处理程序代码
 
@@ -484,7 +486,7 @@ void CTestDrawPicView::OnRoomPictureShow()
 }
 
 
-void CTestDrawPicView::OnUpdateRoomPictureShow(CCmdUI *pCmdUI)
+void CTestDrawPicView::OnChkUpdateRoomLayoutPictureShow(CCmdUI *pCmdUI)
 {
 	// TODO: 在此添加命令更新用户界面处理程序代码
 
@@ -497,12 +499,12 @@ void CTestDrawPicView::OnUpdateRoomPictureShow(CCmdUI *pCmdUI)
 }
 
 
-void CTestDrawPicView::OnSlideRoomPicAlpha()
+void CTestDrawPicView::OnSlideRoomLayoutPictureAlpha()
 {
 	// TODO: 在此添加命令处理程序代码
 	CArray<CMFCRibbonBaseElement*, CMFCRibbonBaseElement*> arr;
 
-	GetMainFrame()->GetRibbonBar()->GetElementsByID(ID_SLIDE_ROOM_PIC_ALPHA, arr);
+	GetMainFrame()->GetRibbonBar()->GetElementsByID(ID_SLIDE_ROOMLAYOUT_PICTURE_ALPHA, arr);
 
 	auto slide = static_cast<CMFCRibbonSlider*>(arr[0]);
 
@@ -515,7 +517,7 @@ void CTestDrawPicView::OnSlideRoomPicAlpha()
 }
 
 
-void CTestDrawPicView::OnUpdateSlideRoomPicAlpha(CCmdUI *pCmdUI)
+void CTestDrawPicView::OnSlideUpdateRoomLayoutPictureAlpha(CCmdUI *pCmdUI)
 {
 	// TODO: 在此添加命令更新用户界面处理程序代码
 
@@ -523,7 +525,7 @@ void CTestDrawPicView::OnUpdateSlideRoomPicAlpha(CCmdUI *pCmdUI)
 }
 
 
-void CTestDrawPicView::OnBtnRoomPicSetScale()
+void CTestDrawPicView::OnBtnRoomLayoutPictureSetScale()
 {
 	// TODO: 在此添加命令处理程序代码
 
@@ -534,7 +536,7 @@ void CTestDrawPicView::OnBtnRoomPicSetScale()
 }
 
 
-void CTestDrawPicView::OnBtnRoomPicSetPosition()
+void CTestDrawPicView::OnBtnRoomLayoutPictureSetPosition()
 {
 	// TODO: 在此添加命令处理程序代码
 
@@ -542,4 +544,18 @@ void CTestDrawPicView::OnBtnRoomPicSetPosition()
 	evt.EventType = irr::EET_USER_EVENT;
 	evt.UserEvent.UserData1 = EUT_ROOMLAYOUT_PICTURE_POSITION;	
 	m_spRenderContext->PostEvent(evt);
+}
+
+
+void CTestDrawPicView::OnBtnRoomLayoutTestDoor()
+{
+	// TODO: 在此添加命令处理程序代码
+	auto i = 0;
+}
+
+
+void CTestDrawPicView::OnBtnRoomLayoutTestWindow()
+{
+	// TODO: 在此添加命令处理程序代码
+	auto i = 0;
 }

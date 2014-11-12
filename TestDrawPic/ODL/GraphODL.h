@@ -11,7 +11,7 @@
 #include "RoomODLFwd.h"
 
 
-class	GraphODL : public CBaseODL
+class	GraphODL : public BaseODL
 {
 	class	Imp;
 	std::unique_ptr<Imp>	ImpUPtr_;

@@ -9,7 +9,7 @@ class	CSceneNode3D : public CBaseSceneNode
 {
 public:
 
-	CSceneNode3D(SRenderContextWPtr rcWPtr, CBaseODLWPtr odlWPtr);
+	CSceneNode3D(SRenderContextWPtr rcWPtr, BaseODLWPtr odlWPtr);
 	~CSceneNode3D();
 
 public://CBaseSceneNode

@@ -4,7 +4,7 @@
 
 #include "ODL/BaseODL.h"
 
-void	Update(CBaseODLSPtr& odl)
+void	Update(BaseODLSPtr& odl)
 {
 	for ( auto& curChild : odl->GetChildrenList() )
 	{

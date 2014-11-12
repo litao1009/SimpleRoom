@@ -84,15 +84,17 @@ public:
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 
 	afx_msg void OnSubMenuProperty();
-	afx_msg void OnBtnRoomCreateDrawWall();
-	afx_msg void OnBtnRoomCreateDrawRoom();
-	afx_msg void OnBtnRoomPicturePicture();
-	afx_msg void OnRoomPictureShow();
-	afx_msg void OnUpdateRoomPictureShow(CCmdUI *pCmdUI);
-	afx_msg void OnSlideRoomPicAlpha();
-	afx_msg void OnUpdateSlideRoomPicAlpha(CCmdUI *pCmdUI);
-	afx_msg void OnBtnRoomPicSetScale();
-	afx_msg void OnBtnRoomPicSetPosition();
+	afx_msg void OnBtnRoomLayoutCreateDrawWall();
+	afx_msg void OnBtnRoomLayoutCreateDrawRoom();
+	afx_msg void OnBtnRoomLayoutPicturePicture();
+	afx_msg void OnChkRoomLayoutPictureShow();
+	afx_msg void OnChkUpdateRoomLayoutPictureShow(CCmdUI *pCmdUI);
+	afx_msg void OnSlideRoomLayoutPictureAlpha();
+	afx_msg void OnSlideUpdateRoomLayoutPictureAlpha(CCmdUI *pCmdUI);
+	afx_msg void OnBtnRoomLayoutPictureSetScale();
+	afx_msg void OnBtnRoomLayoutPictureSetPosition();
+	afx_msg void OnBtnRoomLayoutTestDoor();
+	afx_msg void OnBtnRoomLayoutTestWindow();
 };
 
 #ifndef _DEBUG  // TestDrawPicView.cpp 中的调试版本

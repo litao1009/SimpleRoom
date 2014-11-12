@@ -16,7 +16,7 @@ public:
 
 };
 
-RoomODL::RoomODL( const SRenderContextWPtr& rc ):CBaseODL(rc),ImpUPtr_(new Imp)
+RoomODL::RoomODL( const SRenderContextWPtr& rc ):BaseODL(rc),ImpUPtr_(new Imp)
 {
 
 }

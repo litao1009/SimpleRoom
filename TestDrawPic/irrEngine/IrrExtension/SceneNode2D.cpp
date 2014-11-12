@@ -12,7 +12,7 @@ using namespace scene;
 using namespace video;
 using namespace core;
 
-CSceneNode2D::CSceneNode2D(SRenderContextWPtr rcWPtr, CBaseODLWPtr odlWPtr):
+CSceneNode2D::CSceneNode2D(SRenderContextWPtr rcWPtr, BaseODLWPtr odlWPtr):
 	CBaseSceneNode(rcWPtr, odlWPtr)
 {
 	

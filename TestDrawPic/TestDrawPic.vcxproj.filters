@@ -250,6 +250,12 @@
     <ClCompile Include="irrEngine\IrrExtension\GUIFreetypeFont.cpp">
       <Filter>IrrEngine\IrrExtension</Filter>
     </ClCompile>
+    <ClCompile Include="ODL\HoleODL.cpp">
+      <Filter>ODL</Filter>
+    </ClCompile>
+    <ClCompile Include="ODL\DoorODL.cpp">
+      <Filter>ODL</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BLL\BaseBLL.h">
@@ -572,6 +578,12 @@
     </ClInclude>
     <ClInclude Include="irrEngine\IrrExtension\GUIFreetypeFont.h">
       <Filter>IrrEngine\IrrExtension</Filter>
+    </ClInclude>
+    <ClInclude Include="ODL\HoleODL.h">
+      <Filter>ODL</Filter>
+    </ClInclude>
+    <ClInclude Include="ODL\DoorODL.h">
+      <Filter>ODL</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -16,7 +16,7 @@
 
 #include "irrEngine/irrEngine.h"
 
-FloorODL::FloorODL(const SRenderContextWPtr& rc):CBaseODL(rc)
+FloorODL::FloorODL(const SRenderContextWPtr& rc):BaseODL(rc)
 {
 
 }

@@ -13,7 +13,7 @@ using namespace scene;
 using namespace video;
 using namespace core;
 
-CSceneNode3D::CSceneNode3D(SRenderContextWPtr rcWPtr, CBaseODLWPtr odlWPtr)
+CSceneNode3D::CSceneNode3D(SRenderContextWPtr rcWPtr, BaseODLWPtr odlWPtr)
 	:	CBaseSceneNode(rcWPtr, odlWPtr)
 {
 	InShadowPass_ = false;

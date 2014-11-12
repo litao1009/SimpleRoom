@@ -9,7 +9,7 @@
 
 #include "ODL/BaseODL.h"
 
-CCombineSceneNode::CCombineSceneNode( SRenderContextWPtr rcWPtr, CBaseODLWPtr odlWPtr)
+CCombineSceneNode::CCombineSceneNode( SRenderContextWPtr rcWPtr, BaseODLWPtr odlWPtr)
 	:CBaseSceneNode(rcWPtr, odlWPtr)
 {
 	Node2D_ = new CSceneNode2D(rcWPtr, odlWPtr);
@@ -133,7 +133,7 @@ void CCombineSceneNode::Init()
 
 }
 
-CombineSceneNodeSPtr CCombineSceneNode::Create( SRenderContextWPtr rcWPtr, CBaseODLWPtr odlWPtr )
+CombineSceneNodeSPtr CCombineSceneNode::Create( SRenderContextWPtr rcWPtr, BaseODLWPtr odlWPtr )
 {
 	auto newNode = new CCombineSceneNode(rcWPtr, odlWPtr);
 	CombineSceneNodeSPtr sptr(newNode, [](CCombineSceneNode* p){ p->drop(); });

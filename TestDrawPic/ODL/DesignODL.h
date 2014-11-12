@@ -6,22 +6,22 @@
 #include "BaseODL.h"
 #include "irrEngine/SRenderContextFwd.h"
 
-class CDesignODL :	public CBaseODL
+class DesignODL :	public BaseODL
 {
 	class	Imp;
 	std::shared_ptr<Imp>	ImpSPtr_;
 
 public:
-	CDesignODL(HWND Hwnd);
-	~CDesignODL(void);
+	DesignODL(HWND Hwnd);
+	~DesignODL(void);
 
 public://CBaseODL
 
 	virtual	EObjectDisplayLayerType	GetType() const { return EODLT_DESIGN; }
 
-public:
-
 	virtual	void	Init();
+
+public:
 
 	SRenderContextSPtr GetRenderContext() const { return RenderContext_; }
 
@@ -31,7 +31,7 @@ private:
 	SRenderContextSPtr	RenderContext_;
 };
 
-typedef	std::shared_ptr<CDesignODL> CDesignODLSPtr;
-typedef	std::weak_ptr<CDesignODL>	CDesignODLWPtr;
+typedef	std::shared_ptr<DesignODL>	DesignODLSPtr;
+typedef	std::weak_ptr<DesignODL>	DesignODLWPtr;
 
 #endif // DesignODL_h__

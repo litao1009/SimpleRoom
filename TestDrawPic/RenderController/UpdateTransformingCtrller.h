@@ -19,11 +19,11 @@ public://IRenderController
 
 public:
 
-	void	SetRootODL(const CBaseODLWPtr& rootODL) { RootODL_ = rootODL; }
+	void	SetRootODL(const BaseODLWPtr& rootODL) { RootODL_ = rootODL; }
 
 private:
 
-	CBaseODLWPtr		RootODL_;
+	BaseODLWPtr		RootODL_;
 };
 
 typedef	std::shared_ptr<UpdateTransformingCtrller>	UpdateTransformingCtrllerSPtr;

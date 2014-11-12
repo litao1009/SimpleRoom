@@ -25,11 +25,11 @@ public://IRenderController
 
 public:
 
-	void	SetRootODL(const CBaseODLWPtr& odl) { BaseODL_ = odl; }
+	void	SetRootODL(const BaseODLWPtr& odl) { BaseODL_ = odl; }
 
 private:
 
-	CBaseODLWPtr	BaseODL_;
+	BaseODLWPtr	BaseODL_;
 
 };
 

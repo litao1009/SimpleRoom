@@ -7,29 +7,24 @@
 
 #include "BRepPrimAPI_MakeBox.hxx"
 
-class	CDoorODL::Imp
+class	DoorODL::Imp
 {
 public:
 
 	Imp()
 	{
 		MeshNode2D_ = nullptr;
-
-		XLength_ = 0;
-		YLength_ = 0;
-		ZLength_ = 0;
 	}
 
 	DoorMeshNode2D*	MeshNode2D_;
-	float			XLength_,YLength_,ZLength_;
 };
 
-CDoorODL::CDoorODL():ImpUPtr_(new Imp)
+DoorODL::DoorODL(const SRenderContextWPtr& rc):HoleODL(rc),ImpUPtr_(new Imp)
 {
 	
 }
 
-CDoorODL::~CDoorODL()
+DoorODL::~DoorODL()
 {
 	if ( ImpUPtr_->MeshNode2D_ )
 	{
@@ -37,52 +32,30 @@ CDoorODL::~CDoorODL()
 	}
 }
 
-void CDoorODL::UpdateZone( float xLength, float yLength, float zLength )
+void DoorODL::UpdateHole()
 {
-	auto& xLen_ = ImpUPtr_->XLength_;
-	auto& yLen_ = ImpUPtr_->YLength_;
-	auto& zLen_ = ImpUPtr_->ZLength_;
+	HoleODL::UpdateHole();
+	
+	auto size = GetHoleSize();
 
-	auto xDiff = std::abs(xLen_ - xLength);
-	auto yDiff = std::abs(yLen_ - yLength);
-	auto zDiff = std::abs(zLen_ - zLength);
-
-	if ( xDiff < 0.001 && yDiff < 0.001 && zDiff < 0.001 )
-	{
-		return;
-	}
-
-	xLen_ = xLength;
-	yLen_ = yLength;
-	zLen_ = zLength;
-
-	ImpUPtr_->MeshNode2D_->UpdateMesh(xLen_, zLen_);
-
-	auto box = BRepPrimAPI_MakeBox(xLen_, yLen_, zLen_).Shape();
-	gp_Trsf tfs;
-	tfs.SetTranslationPart(gp_Vec(gp_Pnt(xLen_/2, yLen_/2, zLen_/2), gp::Origin()));
-	box.Move(tfs);
-	SetBaseShape(box);
+	ImpUPtr_->MeshNode2D_->UpdateMesh(static_cast<float>(size.X()), static_cast<float>(size.Z()));
 }
 
-void CDoorODL::Set2DLineColor( const irr::video::SColor& clr )
+void DoorODL::Set2DLineColor( const irr::video::SColor& clr )
 {
 	ImpUPtr_->MeshNode2D_->SetLineColor(clr);
 }
 
-void CDoorODL::Init()
+void DoorODL::Init()
 {
 	auto node = new DoorMeshNode2D(GetDataSceneNode()->GetSceneNode2D());
 	ImpUPtr_->MeshNode2D_ = node;
-	UpdateZone(900, 2000, 200);
+	SetHoleSize(900, 2000, 200);
+	SetOffsetSize(0, 0, 50);
+	UpdateHole();
 }
 
-void CDoorODL::Draw2DMesh()
+void DoorODL::Draw2DMesh()
 {
 	ImpUPtr_->MeshNode2D_->render();
-}
-
-std::tuple<float,float,float> CDoorODL::GetZone() const
-{
-	return std::make_tuple(ImpUPtr_->XLength_, ImpUPtr_->YLength_, ImpUPtr_->ZLength_);
 }

@@ -3,36 +3,36 @@
 
 #pragma once
 
-#include "BaseODL.h"
+#include "HoleODL.h"
 
-class CDoorODL : public CBaseODL
+class DoorODL : public HoleODL
 {
 	class	Imp;
 	std::unique_ptr<Imp>	ImpUPtr_;
 
 public:
 
-	CDoorODL();
-	~CDoorODL();
+	DoorODL(const SRenderContextWPtr& rc);
+	~DoorODL();
 
-public:
+public://BaseODL
 
 	virtual	EObjectDisplayLayerType	GetType() const { return EODLT_DOOR; }
 
 	virtual	void	Init();
 
+public://HoleODL
+
+	virtual	void	UpdateHole();
+
 public:
-
-	void	UpdateZone(float xLength, float yLength, float zLength);
-
-	std::tuple<float,float,float>	GetZone() const;
 
 	void	Set2DLineColor(const irr::video::SColor& clr);
 
 	void	Draw2DMesh();
 };
 
-typedef	std::shared_ptr<CDoorODL>	CDoorODLSPtr;
-typedef	std::weak_ptr<CDoorODL>		CDoorODLWPtr;
+typedef	std::shared_ptr<DoorODL>	DoorODLSPtr;
+typedef	std::weak_ptr<DoorODL>		DoorODLWPtr;
 
 #endif // DoorODL_h__

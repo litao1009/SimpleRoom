@@ -7,7 +7,7 @@
 #include "BaseODL.h"
 
 
-class	RoomODL : public CBaseODL
+class	RoomODL : public BaseODL
 {
 	class	Imp;
 	std::unique_ptr<Imp>	ImpUPtr_;

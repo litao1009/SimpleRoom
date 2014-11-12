@@ -442,7 +442,7 @@ public:
 	RoomODLList		Rooms_;
 };
 
-GraphODL::GraphODL(const SRenderContextWPtr& rc):CBaseODL(rc),ImpUPtr_(new Imp)
+GraphODL::GraphODL(const SRenderContextWPtr& rc):BaseODL(rc),ImpUPtr_(new Imp)
 {
 
 }

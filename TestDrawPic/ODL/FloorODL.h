@@ -7,7 +7,7 @@
 #include "FloorODLFwd.h"
 
 
-class FloorODL : public CBaseODL
+class FloorODL : public BaseODL
 {
 public:
 

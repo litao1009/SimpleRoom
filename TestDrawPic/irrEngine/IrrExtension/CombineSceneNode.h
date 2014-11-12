@@ -14,12 +14,12 @@ class	CCombineSceneNode : public CBaseSceneNode
 {
 public:
 
-	CCombineSceneNode(SRenderContextWPtr rcWPtr, CBaseODLWPtr odlWPtr);
+	CCombineSceneNode(SRenderContextWPtr rcWPtr, BaseODLWPtr odlWPtr);
 	~CCombineSceneNode();
 
 public:
 
-	static	CombineSceneNodeSPtr	Create(SRenderContextWPtr rcWPtr, CBaseODLWPtr odlWPtr);
+	static	CombineSceneNodeSPtr	Create(SRenderContextWPtr rcWPtr, BaseODLWPtr odlWPtr);
 
 public://CBaseSceneNode
 

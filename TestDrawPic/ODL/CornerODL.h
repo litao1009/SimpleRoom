@@ -5,7 +5,7 @@
 
 #include "GraphODL.h"
 
-class	CornerODL : public CBaseODL
+class	CornerODL : public BaseODL
 {
 	class	Imp;
 	std::unique_ptr<Imp>	ImpUPtr_;

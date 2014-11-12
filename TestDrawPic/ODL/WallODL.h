@@ -10,7 +10,7 @@
 
 #include "TopoDS_Shape.hxx"
 
-class WallODL : public CBaseODL
+class WallODL : public BaseODL
 {
 	class	Imp;
 	std::unique_ptr<Imp>	ImpUPtr_;

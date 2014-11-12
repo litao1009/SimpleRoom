@@ -4,24 +4,24 @@
 
 #include "gp_Quaternion.hxx"
 
-CBaseODL::CBaseODL( const SRenderContextWPtr& rc ):TSceneNode(rc)
+BaseODL::BaseODL( const SRenderContextWPtr& rc ):TSceneNode(rc)
 {
 	Dirty_ = false;
 	Sweeping_ = false;
 	Picking_ = false;
 }
 
-CBaseODL::~CBaseODL( void )
+BaseODL::~BaseODL( void )
 {
 
 }
 
-EObjectDisplayLayerType CBaseODL::GetType() const
+EObjectDisplayLayerType BaseODL::GetType() const
 {
 	return EODLT_BASE;
 }
 
-void CBaseODL::UpdateShapeAndDataSceneNode()
+void BaseODL::UpdateShapeAndDataSceneNode()
 {
 	UpdateShape();
 
@@ -40,7 +40,7 @@ void CBaseODL::UpdateShapeAndDataSceneNode()
 	}
 }
 
-void CBaseODL::UpdateAbsoluteTransform()
+void BaseODL::UpdateAbsoluteTransform()
 {
 	if ( GetParent().expired() )
 	{

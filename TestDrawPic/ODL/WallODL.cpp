@@ -252,7 +252,7 @@ public:
 };
 
 WallODL::WallODL( const GraphODLWPtr graphODL, const CornerODLSPtr& firstCorner, const CornerODLSPtr& secondCorner, float wallThickness /*= 200.f*/, float height )
-	:ImpUPtr_(new Imp),CBaseODL(graphODL.lock()->GetRenderContextWPtr())
+	:ImpUPtr_(new Imp),BaseODL(graphODL.lock()->GetRenderContextWPtr())
 {
 	GraphODL_ = graphODL;
 	Thickness_ = wallThickness;

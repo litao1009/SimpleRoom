@@ -25,20 +25,20 @@ public:
 
 public:
 
-	void			SetRootODL(CBaseODLWPtr baseODL) { RootODL_ = baseODL; }
+	void			SetRootODL(BaseODLWPtr baseODL) { RootODL_ = baseODL; }
 
 private:
 
-	CBaseODLWPtr				RootODL_;
+	BaseODLWPtr				RootODL_;
 
 	irr::core::vector2di		CursorIPos_;
 	irr::core::vector3df		SavePosition_;
 
 	//扫略对象
-	CBaseODLWPtr				SweepingNode_;
+	BaseODLWPtr				SweepingNode_;
 
 	//选中对象
-	CBaseODLWPtr				PickingNode_;
+	BaseODLWPtr				PickingNode_;
 
 	bool						Ignore_;
 

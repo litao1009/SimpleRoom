@@ -47,11 +47,11 @@ enum class ERenderState
 	ERS_COUNT
 };
 
-class	CDesignODL::Imp : public IRenderController
+class	DesignODL::Imp : public IRenderController
 {
 public:
 
-	CBaseODLWPtr							DesignODL_;
+	BaseODLWPtr							DesignODL_;
 	//DrawingLineWallCtrllerSPtr			DrawLineWallCtrller_;
 	//DrawingRectWallCtrllerSPtr			DrawRectWallCtrller_;
 	TopPickingControllerSPtr				TopPickingController_;
@@ -342,21 +342,21 @@ public:
 		return true;
 	}
 
-	CDesignODLSPtr	GetDesignSPtr() const { return std::static_pointer_cast<CDesignODL>(DesignODL_.lock()); }
+	DesignODLSPtr	GetDesignSPtr() const { return std::static_pointer_cast<DesignODL>(DesignODL_.lock()); }
 };
 
-CDesignODL::CDesignODL(HWND Hwnd):ImpSPtr_(new Imp),CBaseODL(SRenderContextWPtr())
+DesignODL::DesignODL(HWND Hwnd):ImpSPtr_(new Imp),BaseODL(SRenderContextWPtr())
 {
 	Hwnd_ = Hwnd;
 }
 
 
-CDesignODL::~CDesignODL(void)
+DesignODL::~DesignODL(void)
 {
 
 }
 
-void CDesignODL::Init()
+void DesignODL::Init()
 {
 	auto& imp_ = *ImpSPtr_;
 

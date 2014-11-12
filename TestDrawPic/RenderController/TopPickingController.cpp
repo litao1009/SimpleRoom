@@ -117,7 +117,7 @@ bool TopPickingController::PreRender3D()
 		BRepAdaptor_Curve edgeAdaptor(curEdge);
 		auto curGpLine = edgeAdaptor.Line();
 
-		std::map<double,CBaseODLWPtr> nodes;
+		std::map<double,BaseODLWPtr> nodes;
 		auto spODL = RootODL_.lock();
 
 		for ( auto& curODL : spODL->GetChildrenList() )

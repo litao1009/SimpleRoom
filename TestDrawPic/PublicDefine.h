@@ -30,6 +30,9 @@ enum EObjectDisplayLayerType
 	//Ç½
 	EODLT_WALL,
 
+	//¶´
+	EODLT_HOLE,
+
 	//Ç½Ãæ
 	EODLT_WALLFACE,
 

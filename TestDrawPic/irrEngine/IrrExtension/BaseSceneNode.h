@@ -29,7 +29,7 @@ public:
 
 public:
 
-	CBaseSceneNode(SRenderContextWPtr rcWPtr, CBaseODLWPtr odlWPtr);
+	CBaseSceneNode(SRenderContextWPtr rcWPtr, BaseODLWPtr odlWPtr);
 	~CBaseSceneNode();
 
 public:
@@ -38,8 +38,8 @@ public:
 
 public:
 
-	CBaseODLWPtr		GetBaseODLWPtr() const { return BaseODLWPtr_; }
-	CBaseODLSPtr		GetBaseODLSPtr() const { return BaseODLWPtr_.lock(); }
+	BaseODLWPtr		GetBaseODLWPtr() const { return BaseODLWPtr_; }
+	BaseODLSPtr		GetBaseODLSPtr() const { return BaseODLWPtr_.lock(); }
 
 	SRenderContextWPtr	GetRenderContextWPtr() const { return RenderContextWPtr_; }
 	SRenderContextSPtr	GetRenderContextSPtr() const { return RenderContextWPtr_.lock(); }
@@ -59,7 +59,7 @@ private:
 
 	SRenderContextWPtr		RenderContextWPtr_;
 
-	CBaseODLWPtr			BaseODLWPtr_;
+	BaseODLWPtr			BaseODLWPtr_;
 
 private:
 

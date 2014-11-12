@@ -21,13 +21,13 @@ protected:
 
 public:
 
-	CDesignODLSPtr		GetRootODL() const { return RootODL_; }
+	DesignODLSPtr		GetRootODL() const { return RootODL_; }
 
-	void				SetRoot(CDesignODLSPtr root) { RootODL_ = root; }
+	void				SetRoot(DesignODLSPtr root) { RootODL_ = root; }
 
 private:
 
-	CDesignODLSPtr	RootODL_;
+	DesignODLSPtr	RootODL_;
 
 public:
 	virtual void OnDraw(CDC* pDC);      // 重写以绘制该视图

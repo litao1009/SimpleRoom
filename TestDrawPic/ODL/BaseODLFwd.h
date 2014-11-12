@@ -2,6 +2,6 @@
 
 #include <memory>
 
-class	CBaseODL;
-typedef	std::shared_ptr<CBaseODL>	CBaseODLSPtr;
-typedef	std::weak_ptr<CBaseODL>		CBaseODLWPtr;
+class	BaseODL;
+typedef	std::shared_ptr<BaseODL>	BaseODLSPtr;
+typedef	std::weak_ptr<BaseODL>		BaseODLWPtr;
