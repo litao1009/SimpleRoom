@@ -390,17 +390,8 @@ void WallODL::UpdateMesh()
 		auto length = static_cast<int>(FirstCorner_.lock()->GetPosition().Distance(SecondCorner_.lock()->GetPosition()) + 0.5f);
 		auto lableTxt = std::to_wstring(length);
 		lableTxt += L"mm";
-		auto size = GetWindowsDirectory(NULL, 0);
-		std::wstring str;
-		str.resize(size);
-		auto data = &str[0];
-		GetWindowsDirectory(data, size);
-		str.pop_back();
-		
-		str += L"/fonts/arial.ttf";
-		boost::filesystem::path pt(str);
 
-		auto font = FreetypeFontMgr::GetInstance().GetTtFont(ImpUPtr_->Lable_->getSceneManager()->getVideoDriver(), pt.string().c_str(), 32);
+		auto font = FreetypeFontMgr::GetInstance().GetTtFont(ImpUPtr_->Lable_->getSceneManager()->getVideoDriver(), "arial.ttf", 32);
 		assert(font);
 
 		auto txtTexture = font->GenerateTextTexture(lableTxt.c_str());
@@ -413,6 +404,16 @@ void WallODL::UpdateMesh()
 		auto factor = (Thickness_ - border * 2) / txtSize.Height;
 		ImpUPtr_->Lable_->setScale(irr::core::vector3df(factor * txtSize.Width, 1, factor * txtSize.Height));
 		static_cast<irr::scene::SMesh*>(ImpUPtr_->Lable_->getMesh())->recalculateBoundingBox();
+
+		gp_Dir wallDir = gp_Vec(FirstCorner_.lock()->GetPosition(), SecondCorner_.lock()->GetPosition());
+		wallDir.Cross(gp::DY());
+		auto angle = wallDir.AngleWithRef(gp::DZ(), gp::DY());
+		angle = angle < 0 ? 2 * M_PI + angle : angle;
+
+		if ( angle > M_PI_2 && angle < M_PI_2 * 3 )
+		{
+			ImpUPtr_->Lable_->setRotation(irr::core::vector3df(0, 180, 0));
+		}
 	}
 	
 	{//…Ë÷√–ßπ˚

@@ -438,12 +438,24 @@ bool RoomLayoutPictureCtrller::OnPostEvent( const irr::SEvent& event )
 		{
 			imp_.Picture_->setVisible(event.UserEvent.UserData2 == 1);
 
+			irr::SEvent evt;
+			evt.EventType = EET_USER_EVENT;
+			evt.UserEvent.UserData1 = EUT_ROOMLAYOUT_PICTURE_FINISH;
+			GetRenderContextSPtr()->PostEvent(evt);
+			imp_.State_ = RPS_COUNT;
+
 			return true;
 		}
 
 		if ( event.UserEvent.UserData1 == EUT_ROOMLAYOUT_PICTURE_ALPHA )
 		{
 			imp_.Picture_->getMaterial(0).MaterialTypeParam = event.UserEvent.UserData2 / 100.f;
+
+			irr::SEvent evt;
+			evt.EventType = EET_USER_EVENT;
+			evt.UserEvent.UserData1 = EUT_ROOMLAYOUT_PICTURE_FINISH;
+			GetRenderContextSPtr()->PostEvent(evt);
+			imp_.State_ = RPS_COUNT;
 
 			return true;
 		}

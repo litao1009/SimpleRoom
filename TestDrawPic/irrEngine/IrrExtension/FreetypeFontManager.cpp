@@ -4,6 +4,7 @@
 #include "GUIFreetypeFont.h"
 
 #include <sstream>
+#include <string>
 
 FreetypeFontMgr::FreetypeFontMgr()
 {
@@ -22,20 +23,38 @@ FreetypeFontMgr::~FreetypeFontMgr()
 	}
 }
 
+static	const std::string&	GetFontDir()
+{
+	static std::string str;
+	if ( str.empty() )
+	{
+		auto size = GetWindowsDirectory(NULL, 0);
+		str.resize(size);
+		auto data = &str[0];
+		GetWindowsDirectoryA(data, size);
+		str.pop_back();
+
+		str += "\\fonts\\";
+	}
+
+	return str;
+}
+
 CGUIFreetypeFont* FreetypeFontMgr::GetTtFont(irr::video::IVideoDriver* driver, const char* filename_, unsigned int size_, bool antiAlias_, bool transparency_)
 {
 	if ( !filename_ || !strlen(filename_) )
 		return NULL;
 
+	auto faceName = GetFontDir() + filename_;
+
 	// Make a unique font name for the given settings.
 	// We need a new font for each setting, but only a new face when loading a different fontfile
-	std::string fontString(MakeFontIdentifier(filename_, size_, antiAlias_, transparency_));
+	std::string fontString(MakeFontIdentifier(faceName.c_str(), size_, antiAlias_, transparency_));
 	FontMap::iterator itFont = FontMap_.find(fontString);
 	if  (itFont != FontMap_.end() )
 		return itFont->second;
 
 	// check if the face is already loaded
-	std::string faceName(filename_);
 	CGUITTFace * face = NULL;
 	FaceMap::iterator itFace = FaceMap_.find(faceName);
 	if  (itFace != FaceMap_.end() )
@@ -48,7 +67,7 @@ CGUIFreetypeFont* FreetypeFontMgr::GetTtFont(irr::video::IVideoDriver* driver, c
 	{
 		// make a new face
 		face = new CGUITTFace;
-		if ( !face->load(filename_) )
+		if ( !face->load(faceName.c_str()) )
 		{
 			face->drop();
 			return NULL;
