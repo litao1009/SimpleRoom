@@ -34,9 +34,20 @@ enum EUserType
 	EUT_ROOMLAYOUT_DLG_LINELENGTH_SHOW,
 	EUT_ROOMLAYOUT_DLG_LINELENGTH_HIDE,
 	EUT_ROOMLAYOUT_LINELENGTH_SET,
+
+	//√≈
+	EUT_ROOMLAYOUT_TEST_DOOR,
+	//¥∞
+	EUT_ROOMLAYOUT_TEST_WINDOW,
 //-----------------------------------------------------------------------------ªß–ÕÕº
 
 	EUT_END
+};
+
+class	SEventDoorInfo
+{
+public:
+	float	XLength_,YLength_,ZLength_;
 };
 
 

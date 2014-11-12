@@ -6,9 +6,6 @@ enum EObjectDisplayLayerType
 	//基类
 	EODLT_BASE,
 
-	//对象组
-	EODLT_GROUP,
-
 	//户型图
 	EODLT_ROOM_STYLE,
 

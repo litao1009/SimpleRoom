@@ -19,7 +19,7 @@
 #include "RenderController/UpdateTransformingCtrller.h"
 //#include "RenderController/2D/DrawingLineWallCtrller.h"
 //#include "RenderController/2D/DrawingRectWallCtrller.h"
-//#include "RenderController/DoorController.h"
+#include "RenderController/RoomLayoutDoorController.h"
 //#include "RenderController/WindowController.h"
 #include "RenderController/RoomLayoutDrawingCtrller.h"
 #include "RenderController/RoomLayoutPictureCtrller.h"
@@ -428,6 +428,9 @@ void DesignODL::Init()
 				
 				//ä¯ÀÀ
 				roomlayout->AddController(ERoomLayoutSatate::ERS_BROWSE, std::make_shared<RoomLayoutBrowserCtrller>(graph));
+				auto doorCtrller = std::make_shared<RoomLayoutDoorController>();
+				doorCtrller->SetRootODL(graph);
+				roomlayout->AddController(ERoomLayoutSatate::ERS_BROWSE, doorCtrller);
 
 				//Ä¬ÈÏ×´Ì¬
 				roomlayout->SetCurrentState(ERoomLayoutSatate::ERS_BROWSE);

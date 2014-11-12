@@ -94,7 +94,7 @@ public:
 	afx_msg void OnBtnRoomLayoutPictureSetScale();
 	afx_msg void OnBtnRoomLayoutPictureSetPosition();
 	afx_msg void OnBtnRoomLayoutTestDoor();
-	afx_msg void OnBtnRoomLayoutTestWindow();
+	afx_msg void OnBtnRoomlayoutTestWindow();
 };
 
 #ifndef _DEBUG  // TestDrawPicView.cpp 中的调试版本

@@ -201,6 +201,7 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClInclude Include="ODL\WallODLFwd.h" />
     <ClInclude Include="PublicDefine.h" />
     <ClInclude Include="RenderController\CameraController.h" />
+    <ClInclude Include="RenderController\RoomLayoutDoorController.h" />
     <ClInclude Include="RenderController\FlyCameraController.h" />
     <ClInclude Include="RenderController\GridController.h" />
     <ClInclude Include="RenderController\GUIController.h" />
@@ -304,6 +305,7 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClCompile Include="ODL\ShapeSceneNode.cpp" />
     <ClCompile Include="ODL\WallODL.cpp" />
     <ClCompile Include="RenderController\CameraController.cpp" />
+    <ClCompile Include="RenderController\RoomLayoutDoorController.cpp" />
     <ClCompile Include="RenderController\FlyCameraController.cpp" />
     <ClCompile Include="RenderController\GridController.cpp" />
     <ClCompile Include="RenderController\GUIController.cpp" />

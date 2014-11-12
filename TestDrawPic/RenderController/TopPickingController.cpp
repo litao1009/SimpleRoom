@@ -122,7 +122,7 @@ bool TopPickingController::PreRender3D()
 
 		for ( auto& curODL : spODL->GetChildrenList() )
 		{
-			if ( curODL->GetType() == EODLT_GROUP )//分组
+			if ( curODL->GetType() == EODLT_GRAPH )//分组
 			{
 
 				if ( curODL->GetBaseBndBox().IsOut(curGpLine.Transformed(curODL->GetAbsoluteTransform().Inverted())) )

@@ -17,9 +17,8 @@ void HoleODL::UpdateHole()
 		return;
 	}
 
-	auto holeSize = HoleSize_ + HoleOffsetSize_ * 2;
-	auto center = holeSize / 2; 
-	auto box = BRepPrimAPI_MakeBox(holeSize.X(), holeSize.Y(), holeSize.Z()).Shape();
+	auto center = HoleSize_ / 2; 
+	auto box = BRepPrimAPI_MakeBox(HoleSize_.X(), HoleSize_.Y(), HoleSize_.Z()).Shape();
 
 	gp_Trsf tfs;
 	tfs.SetTranslation(center, gp::Origin());

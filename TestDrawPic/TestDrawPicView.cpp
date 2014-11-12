@@ -56,7 +56,7 @@ BEGIN_MESSAGE_MAP(CTestDrawPicView, CCtrlFuncView)
 	ON_COMMAND(ID_BTN_ROOMLAYOUT_PICTURE_SETSCALE, &CTestDrawPicView::OnBtnRoomLayoutPictureSetScale)
 	ON_COMMAND(ID_BTN_ROOMLAYOUT_PICTURE_SETPOSITION, &CTestDrawPicView::OnBtnRoomLayoutPictureSetPosition)
 	ON_COMMAND(ID_BTN_ROOMLAYOUT_TEST_DOOR, &CTestDrawPicView::OnBtnRoomLayoutTestDoor)
-	ON_COMMAND(ID_BTN_ROOMLAYOUT_TEST_WINDOW, &CTestDrawPicView::OnBtnRoomLayoutTestWindow)
+	ON_COMMAND(ID_BTN_ROOMLAYOUT_TEST_WINDOW, &CTestDrawPicView::OnBtnRoomlayoutTestWindow)
 END_MESSAGE_MAP()
 
 
@@ -531,7 +531,7 @@ void CTestDrawPicView::OnBtnRoomLayoutPictureSetScale()
 
 	irr::SEvent evt;
 	evt.EventType = irr::EET_USER_EVENT;
-	evt.UserEvent.UserData1 = EUT_ROOMLAYOUT_PICTUREREFLINE_DRAW;	
+	evt.UserEvent.UserData1 = EUT_ROOMLAYOUT_PICTUREREFLINE_DRAW;
 	m_spRenderContext->PostEvent(evt);
 }
 
@@ -542,7 +542,7 @@ void CTestDrawPicView::OnBtnRoomLayoutPictureSetPosition()
 
 	irr::SEvent evt;
 	evt.EventType = irr::EET_USER_EVENT;
-	evt.UserEvent.UserData1 = EUT_ROOMLAYOUT_PICTURE_POSITION;	
+	evt.UserEvent.UserData1 = EUT_ROOMLAYOUT_PICTURE_POSITION;
 	m_spRenderContext->PostEvent(evt);
 }
 
@@ -550,11 +550,20 @@ void CTestDrawPicView::OnBtnRoomLayoutPictureSetPosition()
 void CTestDrawPicView::OnBtnRoomLayoutTestDoor()
 {
 	// TODO: 在此添加命令处理程序代码
-	auto i = 0;
+	static SEventDoorInfo doorInfo;
+	doorInfo.XLength_ = 900;
+	doorInfo.YLength_ = 2000;
+	doorInfo.ZLength_ = 200;
+
+	irr::SEvent evt;
+	evt.EventType = irr::EET_USER_EVENT;
+	evt.UserEvent.UserData1 = EUT_ROOMLAYOUT_TEST_DOOR;
+	evt.UserEvent.UserData2 = reinterpret_cast<int>(static_cast<void*>(&doorInfo));
+	m_spRenderContext->PostEvent(evt);
 }
 
 
-void CTestDrawPicView::OnBtnRoomLayoutTestWindow()
+void CTestDrawPicView::OnBtnRoomlayoutTestWindow()
 {
 	// TODO: 在此添加命令处理程序代码
 	auto i = 0;

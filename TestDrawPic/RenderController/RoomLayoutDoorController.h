@@ -1,12 +1,12 @@
-#ifndef DoorController_h__
-#define DoorController_h__
+#ifndef RoomLayoutDoorController_h__
+#define RoomLayoutDoorController_h__
 
 #pragma once
 
 #include "irrEngine/IRenderController.h"
 #include "ODL/BaseODLFwd.h"
 
-class	DoorController : public IRenderController
+class	RoomLayoutDoorController : public IRenderController
 {
 
 	class	Imp;
@@ -23,8 +23,8 @@ public:
 
 public:
 
-	DoorController();
-	~DoorController();
+	RoomLayoutDoorController();
+	~RoomLayoutDoorController();
 
 public://IRenderController
 
@@ -44,15 +44,15 @@ public://IRenderController
 
 public:
 
-	void	SetRootODL(CBaseODLWPtr root) { RootODL_ = root; }
+	void	SetRootODL(BaseODLWPtr root) { RootODL_ = root; }
 
 public:
 
 	EDoorState				State_;
 	irr::core::vector2di	CursorIPos_;
-	CBaseODLWPtr			RootODL_;
+	BaseODLWPtr				RootODL_;
 };
 
-typedef	std::shared_ptr<DoorController>	DoorControllerSPtr;
+typedef	std::shared_ptr<RoomLayoutDoorController>	DoorControllerSPtr;
 
-#endif // DoorController_h__
+#endif // RoomLayoutDoorController_h__

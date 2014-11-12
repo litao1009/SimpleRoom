@@ -256,6 +256,9 @@
     <ClCompile Include="ODL\DoorODL.cpp">
       <Filter>ODL</Filter>
     </ClCompile>
+    <ClCompile Include="RenderController\RoomLayoutDoorController.cpp">
+      <Filter>RenderController\RoomLayout</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BLL\BaseBLL.h">
@@ -584,6 +587,9 @@
     </ClInclude>
     <ClInclude Include="ODL\DoorODL.h">
       <Filter>ODL</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderController\RoomLayoutDoorController.h">
+      <Filter>RenderController\RoomLayout</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
