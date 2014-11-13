@@ -21,6 +21,8 @@ DlgRoomLayoutDrawlinInfo::DlgRoomLayoutDrawlinInfo(const SRenderContextWPtr& rc,
 	RC_ = rc;
 	Parent_ = pParent;
 	Inputting_ = false;
+	OK_ = false;
+	Result_ = 0;
 }
 
 DlgRoomLayoutDrawlinInfo::~DlgRoomLayoutDrawlinInfo()
@@ -35,6 +37,7 @@ void DlgRoomLayoutDrawlinInfo::DoDataExchange(CDataExchange* pDX)
 
 
 BEGIN_MESSAGE_MAP(DlgRoomLayoutDrawlinInfo, CDialogEx)
+	ON_EN_CHANGE(IDC_TXT_NUM, &DlgRoomLayoutDrawlinInfo::OnEnChangeTxtNum)
 END_MESSAGE_MAP()
 
 
@@ -59,24 +62,20 @@ LRESULT DlgRoomLayoutDrawlinInfo::DefWindowProc(UINT message, WPARAM wParam, LPA
 		{
 		case VK_RETURN:
 			{
-				CString str;
-				auto num = 0;
-				EditNum_.GetWindowText(str);
-				if ( !str.IsEmpty() )
+				if ( !OK_ )
 				{
-					num = std::stoi(str.GetBuffer());
-					str.ReleaseBuffer();
-
-					irr::SEvent evt;
-					evt.EventType = irr::EET_USER_EVENT;
-					evt.UserEvent.UserData1 = EUT_ROOMLAYOUT_LINELENGTH_SET;
-					evt.UserEvent.UserData2 = num;
-
-					RC_.lock()->PostEvent(evt);
-
-					EditNum_.SetWindowText(_T(""));
-					Inputting_ = false;
+					break;
 				}
+
+				irr::SEvent evt;
+				evt.EventType = irr::EET_USER_EVENT;
+				evt.UserEvent.UserData1 = EUT_ROOMLAYOUT_LINELENGTH_SET;
+				evt.UserEvent.UserData2 = Result_;
+
+				RC_.lock()->PostEvent(evt);
+
+				EditNum_.SetWindowText(_T(""));
+				Inputting_ = false;
 			}
 			break;
 		case VK_ESCAPE:
@@ -130,4 +129,29 @@ void DlgRoomLayoutDrawlinInfo::SetNum( int num )
 
 	EditNum_.SetWindowText(std::to_wstring(num).c_str());
 	EditNum_.SetSel(0, -1);
+}
+
+
+void DlgRoomLayoutDrawlinInfo::OnEnChangeTxtNum()
+{
+	// TODO:  如果该控件是 RICHEDIT 控件，它将不
+	// 发送此通知，除非重写 CDialogEx::OnInitDialog()
+	// 函数并调用 CRichEditCtrl().SetEventMask()，
+	// 同时将 ENM_CHANGE 标志“或”运算到掩码中。
+
+	// TODO:  在此添加控件通知处理程序代码
+	CString num;
+	EditNum_.GetWindowText(num);
+
+	if ( num.GetLength() < 3 || num.GetLength() > 5 )
+	{
+		OK_ = false;
+	}
+	else
+	{
+		OK_ = true;
+		std::wstring str = num.GetBuffer();
+		num.ReleaseBuffer();
+		Result_= std::stoi(str);
+	}
 }

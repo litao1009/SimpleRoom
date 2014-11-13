@@ -48,7 +48,11 @@ private:
 
 	CEdit				EditNum_;
 	bool				Visible_;
+	bool				OK_;
 	bool				Inputting_;
+	int					Result_;
 	SRenderContextWPtr	RC_;
 	CWnd*				Parent_;
+public:
+	afx_msg void OnEnChangeTxtNum();
 };
