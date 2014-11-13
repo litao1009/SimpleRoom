@@ -17,20 +17,31 @@ class	RoomLayoutDoorController::Imp
 {
 public:
 
+	enum EDoorState
+	{
+		EDS_NONE,
+		EDS_CREATE,
+		EDS_PICKING
+	};
+
 	Imp()
 	{
+		State_ = EDS_NONE;
 		Checker_ = false;
 	}
 
+public:
+
+	EDoorState		State_;
 	DoorODLSPtr		CreatedDoor_;
-	BaseODLWPtr		PickingNode_;
+	WallODLWPtr		PickingWall_;
 	bool			Checker_;
 	boost::optional<SEventDoorInfo>	NewInfo_;			
 };
 
 RoomLayoutDoorController::RoomLayoutDoorController():ImpUPtr_(new Imp)
 {
-	State_ = EDS_NONE;
+	
 }
 
 RoomLayoutDoorController::~RoomLayoutDoorController()
@@ -45,6 +56,8 @@ void RoomLayoutDoorController::Init()
 
 bool RoomLayoutDoorController::OnPostEvent( const irr::SEvent& evt )
 {
+	auto& imp_ = *ImpUPtr_;
+
 	if ( evt.EventType == irr::EET_MOUSE_INPUT_EVENT && evt.MouseInput.Event == irr::EMIE_MOUSE_MOVED )
 	{
 		CursorIPos_.X = evt.MouseInput.X;
@@ -54,19 +67,19 @@ bool RoomLayoutDoorController::OnPostEvent( const irr::SEvent& evt )
 	if ( evt.EventType == irr::EET_USER_EVENT && evt.UserEvent.UserData1 == EUT_ROOMLAYOUT_TEST_DOOR )
 	{
 		auto doorInfo = static_cast<SEventDoorInfo*>(reinterpret_cast<void*>(evt.UserEvent.UserData2));
-		ImpUPtr_->NewInfo_ = *doorInfo;
+		imp_.NewInfo_ = *doorInfo;
 
 	}
 
-	switch (State_)
+	switch (imp_.State_)
 	{
-	case RoomLayoutDoorController::EDS_NONE:
+	case Imp::EDS_NONE:
 		break;
-	case RoomLayoutDoorController::EDS_CREATE:
+	case Imp::EDS_CREATE:
 		{
 			if ( evt.EventType == irr::EET_KEY_INPUT_EVENT && evt.KeyInput.Key == irr::KEY_ESCAPE && !evt.KeyInput.PressedDown )
 			{
-				State_ = EDS_NONE;
+				imp_.State_ = Imp::EDS_NONE;
 				if ( ImpUPtr_->CreatedDoor_ )
 				{
 					ImpUPtr_->CreatedDoor_->RemoveFromParent();
@@ -78,7 +91,8 @@ bool RoomLayoutDoorController::OnPostEvent( const irr::SEvent& evt )
 			{
 				if ( ImpUPtr_->Checker_ )
 				{
-					State_ = EDS_NONE;
+					ImpUPtr_->PickingWall_.lock()->CutHole(ImpUPtr_->CreatedDoor_);
+					imp_.State_ = Imp::EDS_NONE;
 					if ( ImpUPtr_->CreatedDoor_ )
 					{
 						ImpUPtr_->CreatedDoor_.reset();
@@ -89,7 +103,7 @@ bool RoomLayoutDoorController::OnPostEvent( const irr::SEvent& evt )
 			}
 		}
 		break;
-	case RoomLayoutDoorController::EDS_PICKING:
+	case Imp::EDS_PICKING:
 		break;
 	default:
 		break;
@@ -107,9 +121,9 @@ bool RoomLayoutDoorController::PreRender3D()
 {
 	auto& imp_ = *ImpUPtr_;
 
-	switch (State_)
+	switch (imp_.State_)
 	{
-	case RoomLayoutDoorController::EDS_NONE:
+	case Imp::EDS_NONE:
 		{
 			if ( !imp_.NewInfo_ )
 			{
@@ -133,10 +147,10 @@ bool RoomLayoutDoorController::PreRender3D()
 			imp_.CreatedDoor_->SetTranslation(gp_XYZ(newPos.X, newPos.Y, newPos.Z));
 			imp_.CreatedDoor_->GetDataSceneNode()->setPosition(newPos);
 
-			State_ = EDS_CREATE;
+			imp_.State_ = Imp::EDS_CREATE;
 		}
 		break;
-	case RoomLayoutDoorController::EDS_CREATE:
+	case Imp::EDS_CREATE:
 		{
 			auto curZone = imp_.CreatedDoor_->GetHoleSize();
 			irr::core::plane3df curPlan(0,static_cast<float>(curZone.Y()/2), 0, 0, 1, 0);
@@ -150,7 +164,7 @@ bool RoomLayoutDoorController::PreRender3D()
 			BRepAdaptor_Curve edgeAdaptor(curEdge);
 			auto curGpLine = edgeAdaptor.Line();
 
-			auto spPickingNode = imp_.PickingNode_.lock();
+			auto spPickingNode = imp_.PickingWall_.lock();
 			if ( spPickingNode )
 			{
 				if ( !spPickingNode->GetBaseBndBox().IsOut(curGpLine.Transformed(spPickingNode->GetAbsoluteTransform().Inverted())) )
@@ -171,7 +185,7 @@ bool RoomLayoutDoorController::PreRender3D()
 				else
 				{
 					RootODL_.lock()->AddChild(imp_.CreatedDoor_);
-					imp_.PickingNode_.reset();
+					imp_.PickingWall_.reset();
 				}
 			}
 
@@ -197,7 +211,7 @@ bool RoomLayoutDoorController::PreRender3D()
 				gp_Pnt curPnt(newPos.X, newPos.Y, newPos.Z);
 				curPnt.Transform(transform);
 
-				imp_.PickingNode_ = wallODL;
+				imp_.PickingWall_ = std::static_pointer_cast<WallODL>(wallODL);
 				wallODL->AddChild(imp_.CreatedDoor_);
 				imp_.CreatedDoor_->SetTranslation(gp_XYZ(curPnt.X(), curZone.Y()/2, 0));
 				imp_.CreatedDoor_->GetDataSceneNode()->setPosition(irr::core::vector3df(static_cast<float>(curPnt.X()), static_cast<float>(curPnt.Y()/2), 0));
@@ -214,7 +228,7 @@ bool RoomLayoutDoorController::PreRender3D()
 			imp_.Checker_ = false;
 		}
 		break;
-	case RoomLayoutDoorController::EDS_PICKING:
+	case Imp::EDS_PICKING:
 		break;
 	default:
 		break;
@@ -225,10 +239,7 @@ bool RoomLayoutDoorController::PreRender3D()
 
 void RoomLayoutDoorController::PostRender3D()
 {
-	if ( ImpUPtr_->CreatedDoor_ )
-	{
-		ImpUPtr_->CreatedDoor_->Draw2DMesh();
-	}
+	
 }
 
 bool RoomLayoutDoorController::PreRender2D()

@@ -167,6 +167,7 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClInclude Include="ODL\GraphODL.h" />
     <ClInclude Include="ODL\GraphODLFwd.h" />
     <ClInclude Include="ODL\HoleODL.h" />
+    <ClInclude Include="ODL\HoleODLFwd.h" />
     <ClInclude Include="ODL\MeshSceneNode\CornerMeshNode2D.h" />
     <ClInclude Include="ODL\MeshSceneNode\DoorMeshNode2D.h" />
     <ClInclude Include="ODL\MeshSceneNode\WallMeshNode2D.h" />
@@ -199,6 +200,7 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClInclude Include="DAL\OrderDAL.h" />
     <ClInclude Include="ODL\WallODL.h" />
     <ClInclude Include="ODL\WallODLFwd.h" />
+    <ClInclude Include="ODL\WindowODL.h" />
     <ClInclude Include="PublicDefine.h" />
     <ClInclude Include="RenderController\CameraController.h" />
     <ClInclude Include="RenderController\RoomLayoutDoorController.h" />
@@ -215,6 +217,7 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClInclude Include="RenderController\TopViewController.h" />
     <ClInclude Include="RenderController\UpdateTransformingCtrller.h" />
     <ClInclude Include="RenderController\UserEvent.h" />
+    <ClInclude Include="RenderController\RoomLayoutWindowCtrller.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="BLL\WallBLL.h" />
     <ClInclude Include="BLL\WallFaceZoneBLL.h" />
@@ -304,6 +307,7 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClCompile Include="ODL\RoomODL.cpp" />
     <ClCompile Include="ODL\ShapeSceneNode.cpp" />
     <ClCompile Include="ODL\WallODL.cpp" />
+    <ClCompile Include="ODL\WindowODL.cpp" />
     <ClCompile Include="RenderController\CameraController.cpp" />
     <ClCompile Include="RenderController\RoomLayoutDoorController.cpp" />
     <ClCompile Include="RenderController\FlyCameraController.cpp" />
@@ -316,6 +320,7 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClCompile Include="RenderController\RoomLayoutDrawingCtrller.cpp" />
     <ClCompile Include="RenderController\TopPickingController.cpp" />
     <ClCompile Include="RenderController\UpdateTransformingCtrller.cpp" />
+    <ClCompile Include="RenderController\RoomLayoutWindowCtrller.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>

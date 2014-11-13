@@ -17,14 +17,26 @@ void HoleODL::UpdateHole()
 		return;
 	}
 
-	auto center = HoleSize_ / 2; 
-	auto box = BRepPrimAPI_MakeBox(HoleSize_.X(), HoleSize_.Y(), HoleSize_.Z()).Shape();
+	{
+		auto center = HoleSize_ / 2; 
+		auto box = BRepPrimAPI_MakeBox(HoleSize_.X(), HoleSize_.Y(), HoleSize_.Z()).Shape();
 
-	gp_Trsf tfs;
-	tfs.SetTranslation(center, gp::Origin());
-	box.Move(tfs);
+		gp_Trsf tfs;
+		tfs.SetTranslation(center, gp::Origin());
+		box.Move(tfs);
 
-	SetBaseShape(box);
+		SetBaseShape(box);
+	}
+
+	{
+		auto offsetSize = HoleSize_ + HoleOffsetSize_;
+		auto center = offsetSize / 2; 
+		OffsetSizeShape_ = BRepPrimAPI_MakeBox(offsetSize.X(), offsetSize.Y(), offsetSize.Z()).Shape();
+
+		gp_Trsf tfs;
+		tfs.SetTranslation(center, gp::Origin());
+		OffsetSizeShape_.Move(tfs);
+	}
 
 	m_NeedUpdate = false;
 }

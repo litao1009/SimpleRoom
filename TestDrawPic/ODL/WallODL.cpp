@@ -3,6 +3,7 @@
 #include "WallODL.h"
 #include "CornerODL.h"
 #include "GraphODL.h"
+#include "HoleODL.h"
 
 #include "IVideoDriver.h"
 #include "ISceneManager.h"
@@ -23,6 +24,7 @@
 #include "BRepBuilderAPI_MakeFace.hxx"
 #include "BRepPrimAPI_MakePrism.hxx"
 #include "BRepBndLib.hxx"
+#include "BRepAlgoAPI_Cut.hxx"
 
 #include <boost/filesystem.hpp>
 
@@ -301,7 +303,7 @@ TopoDS_Edge WallODL::GetEdge(const CornerODLSPtr& fromCorner) const
 	return BRepBuilderAPI_MakeEdge(beginCorner->GetPosition(), endCorner->GetPosition()).Edge();
 }
 
-void WallODL::UpdateMesh()
+void WallODL::UpdateBaseMesh()
 {
 	if ( IsBezierCurve() )
 	{
@@ -382,7 +384,7 @@ void WallODL::UpdateMesh()
 	{//2DÄ£ÐÍ
 		auto transformedFace = bottomFace.Moved(absoluteToRelation);
 		gp_Trsf tfs;
-		tfs.SetTranslationPart(gp_Vec(gp::Origin(), gp_Pnt(0, Height_/2, 0)));
+		tfs.SetTranslationPart(gp_Vec(gp::Origin(), gp_Pnt(0, 200, 0)));
 		transformedFace.Move(tfs);
 		ImpUPtr_->Node2D_->UpdateMesh(transformedFace);
 
@@ -455,4 +457,46 @@ void WallODL::UpdateSweeping()
 void WallODL::UpdatePicking()
 {
 	ImpUPtr_->Node2D_->SetPicking(IsPicking());
+}
+
+WallODL::ChildrenList WallODL::GetHoles() const
+{
+	ChildrenList ret;
+
+	for ( auto& child : this->GetChildrenList() )
+	{
+		if ( EODLT_WALL != child->GetType() || EODLT_WINDOW != child->GetType() )
+		{
+			continue;
+		}
+
+		ret.push_back(child);
+	}
+
+	return ret;
+}
+
+void WallODL::CutHole( const HoleODLSPtr& hole )
+{
+	if ( CutShape_.IsNull() )
+	{
+		CutShape_ = GetBaseShape();
+	}
+
+	hole->UpdateHole();
+
+	BRepAlgoAPI_Cut bc(CutShape_, hole->GetBaseShape().Moved(hole->GetTransform()));
+	CutShape_ = bc.Shape();
+
+	auto meshBuf = ODLTools::NEW_CreateMeshBuffer(CutShape_);
+	assert(meshBuf);
+	auto newMesh = new irr::scene::SMesh;
+	newMesh->addMeshBuffer(meshBuf);
+	newMesh->recalculateBoundingBox();
+
+	GetDataSceneNode()->setMesh(newMesh);
+	newMesh->drop();
+	meshBuf->drop();
+
+	SetDefaultTexture();
 }

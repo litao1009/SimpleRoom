@@ -50,6 +50,13 @@ public:
 	float	XLength_,YLength_,ZLength_;
 };
 
+class	SEventWindowInfo
+{
+public:
+	float	XLength_,YLength_,ZLength_;
+	float	SetupHeight_;
+};
+
 
 
 #define WM_USER_ROOMLAYOUT_PICTUREREFLINE_SIZE	DEFINE_USER_MESSAGE(EUT_ROOMLAYOUT_PICTUREREFLINE_SIZE)

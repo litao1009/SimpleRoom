@@ -28,8 +28,6 @@ public://HoleODL
 public:
 
 	void	Set2DLineColor(const irr::video::SColor& clr);
-
-	void	Draw2DMesh();
 };
 
 typedef	std::shared_ptr<DoorODL>	DoorODLSPtr;

@@ -566,5 +566,15 @@ void CTestDrawPicView::OnBtnRoomLayoutTestDoor()
 void CTestDrawPicView::OnBtnRoomlayoutTestWindow()
 {
 	// TODO: 在此添加命令处理程序代码
-	auto i = 0;
+	static SEventWindowInfo windowInfo;
+	windowInfo.XLength_ = 1800;
+	windowInfo.YLength_ = 1400;
+	windowInfo.ZLength_ = 200;
+	windowInfo.SetupHeight_ = 1000;
+
+	irr::SEvent evt;
+	evt.EventType = irr::EET_USER_EVENT;
+	evt.UserEvent.UserData1 = EUT_ROOMLAYOUT_TEST_WINDOW;
+	evt.UserEvent.UserData2 = reinterpret_cast<int>(static_cast<void*>(&windowInfo));
+	m_spRenderContext->PostEvent(evt);
 }

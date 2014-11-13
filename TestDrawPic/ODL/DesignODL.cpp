@@ -20,7 +20,7 @@
 //#include "RenderController/2D/DrawingLineWallCtrller.h"
 //#include "RenderController/2D/DrawingRectWallCtrller.h"
 #include "RenderController/RoomLayoutDoorController.h"
-//#include "RenderController/WindowController.h"
+#include "RenderController/RoomLayoutWindowCtrller.h"
 #include "RenderController/RoomLayoutDrawingCtrller.h"
 #include "RenderController/RoomLayoutPictureCtrller.h"
 #include "RenderController/RoomLayoutBrowserCtrller.h"
@@ -426,11 +426,17 @@ void DesignODL::Init()
 				//»æÖÆ
 				roomlayout->AddController(ERoomLayoutSatate::ERS_DRAWING, std::make_shared<RoomLayoutDrawingCtrller>(graph));
 				
-				//ä¯ÀÀ
-				roomlayout->AddController(ERoomLayoutSatate::ERS_BROWSE, std::make_shared<RoomLayoutBrowserCtrller>(graph));
-				auto doorCtrller = std::make_shared<RoomLayoutDoorController>();
-				doorCtrller->SetRootODL(graph);
-				roomlayout->AddController(ERoomLayoutSatate::ERS_BROWSE, doorCtrller);
+				{//ä¯ÀÀ
+					roomlayout->AddController(ERoomLayoutSatate::ERS_BROWSE, std::make_shared<RoomLayoutBrowserCtrller>(graph));
+					
+					auto doorCtrller = std::make_shared<RoomLayoutDoorController>();
+					doorCtrller->SetRootODL(graph);
+					roomlayout->AddController(ERoomLayoutSatate::ERS_BROWSE, doorCtrller);
+
+					auto windowCtrller = std::make_shared<RoomLayoutWindowCtrller>();
+					windowCtrller->SetRootODL(graph);
+					roomlayout->AddController(ERoomLayoutSatate::ERS_BROWSE, windowCtrller);
+				}
 
 				//Ä¬ÈÏ×´Ì¬
 				roomlayout->SetCurrentState(ERoomLayoutSatate::ERS_BROWSE);

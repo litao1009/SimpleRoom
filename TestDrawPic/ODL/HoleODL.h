@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "HoleODLFwd.h"
 #include "BaseODL.h"
 
 #include "TopoDS_Shape.hxx"
@@ -52,9 +53,7 @@ private:
 	bool	m_NeedUpdate;
 	gp_XYZ	HoleSize_;
 	gp_XYZ	HoleOffsetSize_;
+	TopoDS_Shape	OffsetSizeShape_;
 };
-
-typedef	std::shared_ptr<HoleODL>	HoleODLSPtr;
-typedef	std::weak_ptr<HoleODL>		HoleODLWPtr;
 
 #endif // HoleODL_h__

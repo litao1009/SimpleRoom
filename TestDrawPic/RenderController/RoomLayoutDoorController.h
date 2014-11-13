@@ -1,6 +1,3 @@
-#ifndef RoomLayoutDoorController_h__
-#define RoomLayoutDoorController_h__
-
 #pragma once
 
 #include "irrEngine/IRenderController.h"
@@ -11,15 +8,6 @@ class	RoomLayoutDoorController : public IRenderController
 
 	class	Imp;
 	std::unique_ptr<Imp>	ImpUPtr_;
-
-public:
-
-	enum EDoorState
-	{
-		EDS_NONE,
-		EDS_CREATE,
-		EDS_PICKING
-	};
 
 public:
 
@@ -48,11 +36,6 @@ public:
 
 public:
 
-	EDoorState				State_;
 	irr::core::vector2di	CursorIPos_;
 	BaseODLWPtr				RootODL_;
 };
-
-typedef	std::shared_ptr<RoomLayoutDoorController>	DoorControllerSPtr;
-
-#endif // RoomLayoutDoorController_h__

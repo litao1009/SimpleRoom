@@ -561,7 +561,7 @@ bool RoomLayoutDrawingCtrller::PreRender3D()
 						imp_.LastCorner_ = imp_.Graph_.lock()->CreateCornerBySplitWall(toSplit, cursorPnt);
 						for ( auto& curWall : imp_.Graph_.lock()->GetWallsOnCorner(imp_.LastCorner_) )
 						{
-							curWall->UpdateMesh();
+							curWall->UpdateBaseMesh();
 						}
 					}
 					else
@@ -790,7 +790,7 @@ bool RoomLayoutDrawingCtrller::PreRender3D()
 	{
 		if ( curWall->IsDirty() )
 		{
-			curWall->UpdateMesh();
+			curWall->UpdateBaseMesh();
 			curWall->SetDirty(false);
 		}
 	}

@@ -353,7 +353,7 @@ public:
 		//newWall->SetIndex(index.first);
 		UpdateEdgeIndex(graph->Graph_);
 
-		newWall->UpdateMesh();
+		newWall->UpdateBaseMesh();
 
 		if ( researchRomm )
 		{
@@ -390,7 +390,7 @@ public:
 			needMergeSrc = true;
 			for ( auto& curWall : graphODL->GetWallsOnCorner(corner) )
 			{
-				curWall->UpdateMesh();
+				curWall->UpdateBaseMesh();
 			}
 		}
 
@@ -405,7 +405,7 @@ public:
 			needMergeTarget = true;
 			for ( auto& curWall : graphODL->GetWallsOnCorner(corner) )
 			{
-				curWall->UpdateMesh();
+				curWall->UpdateBaseMesh();
 			}
 		}
 

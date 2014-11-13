@@ -4,6 +4,7 @@
 #pragma once
 
 #include "BaseODL.h"
+#include "HoleODLFwd.h"
 
 #include "CornerODLFwd.h"
 #include "GraphODLFwd.h"
@@ -65,11 +66,15 @@ public:
 
 	float				GetHeight() const { return Height_; }
 
-	void				UpdateMesh();
+	void				UpdateBaseMesh();
 
 	const MeshPoints&	GetMeshPoints() { return MeshPoints_; }
 
 	void				SetDefaultTexture();
+
+	ChildrenList		GetHoles() const;
+
+	void				CutHole(const HoleODLSPtr& hole);
 
 private:
 
@@ -81,6 +86,8 @@ private:
 	float			Thickness_;
 	float			Height_;
 	MeshPoints		MeshPoints_;
+
+	TopoDS_Shape	CutShape_;
 
 	GraphODLWPtr	GraphODL_;
 };

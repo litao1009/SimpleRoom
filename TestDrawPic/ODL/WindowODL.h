@@ -3,17 +3,17 @@
 
 #pragma once
 
-#include "BaseODL.h"
+#include "HoleODL.h"
 
-class CWindowODL : public CBaseODL
+class WindowODL : public HoleODL
 {
 	class	Imp;
 	std::unique_ptr<Imp>	ImpUPtr_;
 
 public:
 
-	CWindowODL();
-	~CWindowODL();
+	WindowODL(const SRenderContextWPtr& rc);
+	~WindowODL();
 
 public:
 
@@ -21,16 +21,16 @@ public:
 
 	virtual	void	Init();
 
+public://HoleODL
+
+	virtual	void	UpdateHole();
+
 public:
 
-	void	Update2DZone(float xLength, float zLength);
-
 	void	Set2DLineColor(const irr::video::SColor& clr);
-
-	void	Draw2DMesh();
 };
 
-typedef	std::shared_ptr<CWindowODL>	CWindowODLSPtr;
-typedef	std::weak_ptr<CWindowODL>	CWindowODLWPtr;
+typedef	std::shared_ptr<WindowODL>	WindowODLSPtr;
+typedef	std::weak_ptr<WindowODL>	WindowODLWPtr;
 
 #endif // WindowODL_h__

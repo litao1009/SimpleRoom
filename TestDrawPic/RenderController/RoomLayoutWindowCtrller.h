@@ -1,12 +1,9 @@
-#ifndef WindowController_h__
-#define WindowController_h__
-
 #pragma once
 
 #include "irrEngine/IRenderController.h"
 #include "ODL/BaseODLFwd.h"
 
-class	WindowController : public IRenderController
+class	RoomLayoutWindowCtrller : public IRenderController
 {
 
 	class	Imp;
@@ -14,17 +11,8 @@ class	WindowController : public IRenderController
 
 public:
 
-	enum EWindowState
-	{
-		EWS_NONE,
-		EWS_CREATE,
-		EWS_PICKING
-	};
-
-public:
-
-	WindowController();
-	~WindowController();
+	RoomLayoutWindowCtrller();
+	~RoomLayoutWindowCtrller();
 
 public://IRenderController
 
@@ -44,15 +32,10 @@ public://IRenderController
 
 public:
 
-	void	SetRootODL(CBaseODLWPtr root) { RootODL_ = root; }
+	void	SetRootODL(BaseODLWPtr root) { RootODL_ = root; }
 
 public:
 
-	EWindowState			State_;
 	irr::core::vector2di	CursorIPos_;
-	CBaseODLWPtr			RootODL_;
+	BaseODLWPtr				RootODL_;
 };
-
-typedef	std::shared_ptr<WindowController>	WindowControllerSPtr;
-
-#endif // WindowController_h__

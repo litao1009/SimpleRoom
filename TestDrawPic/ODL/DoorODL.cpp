@@ -49,13 +49,9 @@ void DoorODL::Set2DLineColor( const irr::video::SColor& clr )
 void DoorODL::Init()
 {
 	auto node = new DoorMeshNode2D(GetDataSceneNode()->GetSceneNode2D());
+	node->setPosition(irr::core::vector3df(0,400,0));
 	ImpUPtr_->MeshNode2D_ = node;
 	SetHoleSize(900, 2000, 200);
 	SetOffsetSize(0, 0, 50);
 	UpdateHole();
-}
-
-void DoorODL::Draw2DMesh()
-{
-	ImpUPtr_->MeshNode2D_->render();
 }

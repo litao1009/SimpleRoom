@@ -3,7 +3,7 @@
 #include "WindowODL.h"
 #include "ODL/MeshSceneNode/WindowMeshNode2D.h"
 
-class	CWindowODL::Imp
+class	WindowODL::Imp
 {
 public:
 
@@ -15,12 +15,12 @@ public:
 	WindowMeshNode2D*	MeshNode2D_;
 };
 
-CWindowODL::CWindowODL():ImpUPtr_(new Imp)
+WindowODL::WindowODL(const SRenderContextWPtr& rc):HoleODL(rc),ImpUPtr_(new Imp)
 {
 	
 }
 
-CWindowODL::~CWindowODL()
+WindowODL::~WindowODL()
 {
 	if ( ImpUPtr_->MeshNode2D_ )
 	{
@@ -28,24 +28,26 @@ CWindowODL::~CWindowODL()
 	}
 }
 
-void CWindowODL::Update2DZone( float xLength, float zLength )
+void WindowODL::UpdateHole()
 {
-	ImpUPtr_->MeshNode2D_->UpdateMesh(xLength, zLength);
+	HoleODL::UpdateHole();
+
+	auto size = GetHoleSize();
+
+	ImpUPtr_->MeshNode2D_->UpdateMesh(static_cast<float>(size.X()), static_cast<float>(size.Z()));
 }
 
-void CWindowODL::Set2DLineColor( const irr::video::SColor& clr )
+void WindowODL::Set2DLineColor( const irr::video::SColor& clr )
 {
 	ImpUPtr_->MeshNode2D_->SetLineColor(clr);
 }
 
-void CWindowODL::Init()
+void WindowODL::Init()
 {
 	auto node = new WindowMeshNode2D(GetDataSceneNode()->GetSceneNode2D());
-	node->UpdateMesh(700, 300);
+	node->setPosition(irr::core::vector3df(0,400,0));
 	ImpUPtr_->MeshNode2D_ = node;
-}
-
-void CWindowODL::Draw2DMesh()
-{
-	ImpUPtr_->MeshNode2D_->render();
+	SetHoleSize(900, 2000, 200);
+	SetOffsetSize(0, 0, 50);
+	UpdateHole();
 }

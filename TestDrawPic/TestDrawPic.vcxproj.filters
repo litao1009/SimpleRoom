@@ -259,6 +259,12 @@
     <ClCompile Include="RenderController\RoomLayoutDoorController.cpp">
       <Filter>RenderController\RoomLayout</Filter>
     </ClCompile>
+    <ClCompile Include="RenderController\RoomLayoutWindowCtrller.cpp">
+      <Filter>RenderController\RoomLayout</Filter>
+    </ClCompile>
+    <ClCompile Include="ODL\WindowODL.cpp">
+      <Filter>ODL</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BLL\BaseBLL.h">
@@ -590,6 +596,15 @@
     </ClInclude>
     <ClInclude Include="RenderController\RoomLayoutDoorController.h">
       <Filter>RenderController\RoomLayout</Filter>
+    </ClInclude>
+    <ClInclude Include="ODL\HoleODLFwd.h">
+      <Filter>ODL</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderController\RoomLayoutWindowCtrller.h">
+      <Filter>RenderController\RoomLayout</Filter>
+    </ClInclude>
+    <ClInclude Include="ODL\WindowODL.h">
+      <Filter>ODL</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
