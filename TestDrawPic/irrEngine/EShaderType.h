@@ -11,6 +11,8 @@ enum EShaderType
 	EST_VERTEX_ALPHA,
 
 	EST_FONT,
+
+	EST_ADS_LIGHT,
 	
 	EST_COUNT
 };

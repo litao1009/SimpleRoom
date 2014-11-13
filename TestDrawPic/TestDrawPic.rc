@@ -443,6 +443,17 @@ BEGIN
     LTEXT           "(mm)",IDC_STATIC,75,9,17,8
 END
 
+IDD_DLG_ROOMLAYOUT_WALLPROPERTY DIALOGEX 0, 0, 119, 52
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "确定",IDOK,7,28,50,14
+    PUSHBUTTON      "取消",IDCANCEL,59,28,50,14
+    EDITTEXT        IDC_TXT_NUM,68,7,40,14,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "墙壁厚度(mm)：",IDC_STATIC,7,9,57,8
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -577,6 +588,14 @@ BEGIN
         RIGHTMARGIN, 92
         TOPMARGIN, 7
         BOTTOMMARGIN, 23
+    END
+
+    IDD_DLG_ROOMLAYOUT_WALLPROPERTY, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 112
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 45
     END
 END
 #endif    // APSTUDIO_INVOKED

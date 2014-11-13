@@ -7,7 +7,7 @@
 
 #include <boost/filesystem/path.hpp>
 #include <windows.h>
-
+#include <functional>
 
 /*
 	渲染引擎实例，应用程序生存周期内只保存一个实例
@@ -16,6 +16,10 @@ class	IrrEngine
 {
 	class Imp;
 	std::unique_ptr<Imp>	ImpUPtr_;
+
+public:
+
+	typedef	std::function<void(const SRenderContextSPtr&)>	UpdateFunctor;
 
 public:
 
@@ -103,4 +107,8 @@ public:
 	bool						SetResPath(boost::filesystem::path dirPath);
 
 	const boost::filesystem::path&	GetResPath() const;
+
+	void						Update(const SRenderContextSPtr& rc);
+
+	void						Register(const UpdateFunctor& ftr);
 };

@@ -265,6 +265,9 @@
     <ClCompile Include="ODL\WindowODL.cpp">
       <Filter>ODL</Filter>
     </ClCompile>
+    <ClCompile Include="Dialog\DlgRoomLayoutWallProperty.cpp">
+      <Filter>src\Dialog</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BLL\BaseBLL.h">
@@ -576,9 +579,6 @@
     <ClInclude Include="RenderController\RoomLayoutBrowserCtrller.h">
       <Filter>RenderController\RoomLayout</Filter>
     </ClInclude>
-    <ClInclude Include="Dialog\DlgRoomLayoutDrawlinInfo.h">
-      <Filter>src\Dialog</Filter>
-    </ClInclude>
     <ClInclude Include="Dialog\DlgRoomLayoutPictureSize.h">
       <Filter>src\Dialog</Filter>
     </ClInclude>
@@ -605,6 +605,12 @@
     </ClInclude>
     <ClInclude Include="ODL\WindowODL.h">
       <Filter>ODL</Filter>
+    </ClInclude>
+    <ClInclude Include="Dialog\DlgRoomLayoutDrawlinInfo.h">
+      <Filter>src\Dialog</Filter>
+    </ClInclude>
+    <ClInclude Include="Dialog\DlgRoomLayoutWallProperty.h">
+      <Filter>src\Dialog</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -689,9 +695,6 @@
     </Filter>
     <Filter Include="DAL">
       <UniqueIdentifier>{7a7a1e6a-c201-48fd-a434-f13180943927}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Dlg">
-      <UniqueIdentifier>{37ab8372-3a8a-443b-8104-a1d1ed800d99}</UniqueIdentifier>
     </Filter>
     <Filter Include="res">
       <UniqueIdentifier>{d98f7524-7bf9-41e5-a302-00f53144e416}</UniqueIdentifier>

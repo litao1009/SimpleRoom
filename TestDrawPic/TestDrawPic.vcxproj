@@ -129,6 +129,7 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClInclude Include="DAL\DataManager.h" />
     <ClInclude Include="Dialog\DlgRoomLayoutPictureSize.h" />
     <ClInclude Include="Dialog\DlgRoomLayoutDrawlinInfo.h" />
+    <ClInclude Include="Dialog\DlgRoomLayoutWallProperty.h" />
     <ClInclude Include="DragDataListCtrl.h" />
     <ClInclude Include="irrEngine\IrrExtension\BaseSceneNode.h" />
     <ClInclude Include="irrEngine\IrrExtension\CameraFollowSplineAnimator.h" />
@@ -247,6 +248,7 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClCompile Include="DAL\DataManager.cpp" />
     <ClCompile Include="Dialog\DlgRoomLayoutPictureSize.cpp" />
     <ClCompile Include="Dialog\DlgRoomLayoutDrawlinInfo.cpp" />
+    <ClCompile Include="Dialog\DlgRoomLayoutWallProperty.cpp" />
     <ClCompile Include="irrEngine\IrrExtension\BaseSceneNode.cpp" />
     <ClCompile Include="irrEngine\IrrExtension\CameraFollowSplineAnimator.cpp" />
     <ClCompile Include="irrEngine\IrrExtension\CameraInterpolationAnimator.cpp" />

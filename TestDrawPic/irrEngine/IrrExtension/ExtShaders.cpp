@@ -197,3 +197,120 @@ const char* FontColorCB::GetPixelShader()
 {
 	return FontColor[1];
 }
+
+
+
+const char*	ADSLight[2] = 
+{
+	"uniform	mat4	mvMatrix;"
+	"uniform	mat3	normalMatrix;"
+	"uniform	vec3	vLightPos;"
+
+	"varying	vec3	vVaryingLightDir;"
+	"varying	vec3	vVaryingNormal;"
+
+	"void main()"
+	"{	"
+	"	vec4 pos4 = mvMatrix * gl_Vertex;"
+	"	vec3 pos3 = pos4.xyz/pos4.w;"
+	"	"
+	"	gl_Position 	= ftransform();"
+	"	"
+	"	vVaryingNormal	= normalMatrix * gl_Normal;"
+	"	"
+	"	gl_TexCoord[0] = gl_TextureMatrix[0] * gl_MultiTexCoord0;"
+	"	"
+	"	vVaryingLightDir = normalize(vLightPos - pos3);"
+	"}"
+	,
+
+	"uniform vec4		diffuseColor;"
+	"uniform vec4		ambientColor;"
+	"uniform vec4		FragColor;"
+	"uniform float		FragAlpha = 1;"
+	"uniform int		HasTexture;"
+	"uniform sampler2D	colorMap;"
+
+	"varying vec3 vVaryingNormal;"
+	"varying vec3 vVaryingLightDir;"
+
+
+	"void main(void)"
+	"{ "
+	"	float diff = max(0.0, dot(normalize(vVaryingNormal), normalize(vVaryingLightDir)));"
+
+	"	gl_FragColor = diff * diffuseColor;"
+
+	"	if ( 1 == HasTexture )"
+	"	{"
+	"		gl_FragColor *= texture2D(colorMap, gl_TexCoord[0].xy);"
+	"	}"
+	"	else"
+	"	{"
+	"		gl_FragColor *= FragColor;"
+	"	}"
+
+	"	gl_FragColor += ambientColor;"
+	"	gl_FragColor.a = FragAlpha;"
+	"}	"
+};
+
+void ADSLightCB::OnSetConstants( irr::video::IMaterialRendererServices* services, irr::s32 userData )
+{
+	auto driver = services->getVideoDriver();
+
+	irr::core::matrix4 mvMatrix;
+	mvMatrix = driver->getTransform(irr::video::ETS_VIEW);
+	mvMatrix = driver->getTransform(irr::video::ETS_WORLD);
+
+	auto norMat = mvMatrix;
+	norMat.makeInverse();
+	norMat = norMat.getTransposed();
+
+	irr::f32 normalMatrix[9] = {0};
+	normalMatrix[0] = norMat.pointer()[0];
+	normalMatrix[1] = norMat.pointer()[1];
+	normalMatrix[2] = norMat.pointer()[2];
+	normalMatrix[3] = norMat.pointer()[4];
+	normalMatrix[4] = norMat.pointer()[5];
+	normalMatrix[5] = norMat.pointer()[6];
+	normalMatrix[6] = norMat.pointer()[8];
+	normalMatrix[7] = norMat.pointer()[9];
+	normalMatrix[8] = norMat.pointer()[10];
+
+	irr::core::vector3df Camera = Smgr_->getActiveCamera()->getAbsolutePosition();
+
+	static irr::video::SColorf Whitecol(1.0f,1.0f,1.0f,0.0f);
+	static irr::video::SColorf Blackcol(0.1f,0.1f,0.1f,0.1f);
+	irr::video::SColorf fragColor(CurrentMaterial_.DiffuseColor);
+
+	services->setVertexShaderConstant("mvMatrix", mvMatrix.pointer(), 16);
+	services->setVertexShaderConstant("normalMatrix", normalMatrix, 9);		
+	services->setVertexShaderConstant("vLightPos", &Camera.X, 3);
+
+	services->setPixelShaderConstant("ambientColor",&Blackcol.r, 4);
+	services->setPixelShaderConstant("diffuseColor",&Whitecol.r, 4);
+	services->setPixelShaderConstant("FragAlpha",&CurrentMaterial_.Shininess, 1);
+	services->setPixelShaderConstant("FragColor",&fragColor.r, 4);
+
+	irr::s32 pos = 0;
+	irr::s32 hasTexture = CurrentMaterial_.getTexture(0) ? 1 : 0;
+
+	services->setPixelShaderConstant("colorMap", &pos, 1);
+	services->setPixelShaderConstant("HasTexture", &hasTexture, 1);
+}
+
+void ADSLightCB::OnSetMaterial( const irr::video::SMaterial& material )
+{
+	CurrentMaterial_ = material;
+}
+
+const char* ADSLightCB::GetVertexShader()
+{
+	return ADSLight[0];
+}
+
+const char* ADSLightCB::GetPixelShader()
+{
+	return ADSLight[1];
+}

@@ -9,6 +9,7 @@
 #include "irrEngine/IrrExtension/ExtShaders.h"
 
 #include <map>
+#include <vector>
 #include <string>
 #include <boost/format.hpp>
 #include <boost/filesystem.hpp>
@@ -21,6 +22,7 @@ public:
 	irr::SIrrlichtCreationParameters		Params_;
 	std::shared_ptr<irr::CIrrDeviceWin32>	DeviceSPtr_;
 	std::map<EShaderType,int>				ShaderMap_;
+	std::vector<UpdateFunctor>				UpdateList_;
 };
 
 
@@ -111,6 +113,20 @@ IrrEngine::IrrEngine(const irr::SIrrlichtCreationParameters& params):ImpUPtr_(ne
 		font->drop();
 		imp_.ShaderMap_[EST_FONT] = material;
 	}
+
+	{
+		auto ads = new ADSLightCB;
+		auto material = rawDevice->getVideoDriver()->getGPUProgrammingServices()->addHighLevelShaderMaterial(ADSLightCB::GetVertexShader(), ADSLightCB::GetPixelShader(), ads);
+		ads->drop();
+		imp_.ShaderMap_[EST_ADS_LIGHT] = material;
+
+		auto ftr = [ads](const SRenderContextSPtr& rc)
+		{
+			ads->SetSmgr(rc->Smgr_.get());
+		};
+
+		Register(ftr);
+	}
 }
 
 IrrEngine::~IrrEngine()
@@ -188,3 +204,17 @@ void IrrEngine::Dump( const char* simpleString )
 {
 	irr::os::Printer::print(simpleString);
 }
+
+void IrrEngine::Update( const SRenderContextSPtr& rc )
+{
+	for ( auto& curFtr : ImpUPtr_->UpdateList_ )
+	{
+		curFtr(rc);
+	}
+}
+
+void IrrEngine::Register( const UpdateFunctor& ftr )
+{
+	ImpUPtr_->UpdateList_.push_back(ftr);
+}
+

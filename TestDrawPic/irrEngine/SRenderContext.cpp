@@ -193,6 +193,8 @@ void SRenderContext::Render()
 
 	OnResize();
 
+	IrrEngine::GetInstance()->Update(shared_from_this());
+	
 	driver->beginScene(true, true, BackGroundClr_, VideoData_);	
 
 	auto absorbed3D = imp_.RenderController_->PreRender3D();

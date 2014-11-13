@@ -5,6 +5,7 @@
 
 #include "IShaderConstantSetCallBack.h"
 #include "SMaterial.h"
+#include "ISceneManager.h"
 
 class	LuminanceCB : public irr::video::IShaderConstantSetCallBack
 {
@@ -68,6 +69,30 @@ public:
 private:
 
 	irr::video::SMaterial	CurrentMaterial_;
+};
+
+class	ADSLightCB : public irr::video::IShaderConstantSetCallBack
+{
+public:
+
+	ADSLightCB()
+	{
+		Smgr_ = nullptr;
+	}
+
+	virtual void OnSetConstants(irr::video::IMaterialRendererServices* services, irr::s32 userData);
+
+	virtual void OnSetMaterial(const irr::video::SMaterial& material);
+
+	static	const char*	GetVertexShader();
+	static	const char*	GetPixelShader();
+
+	void	SetSmgr(irr::scene::ISceneManager* smgr) { Smgr_ = smgr; }
+
+private:
+
+	irr::video::SMaterial	CurrentMaterial_;
+	irr::scene::ISceneManager*	Smgr_;
 };
 
 #endif // ExtShaders_h__
