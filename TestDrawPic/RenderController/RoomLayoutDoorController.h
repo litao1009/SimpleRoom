@@ -31,6 +31,10 @@ public://IRenderController
 
 	virtual void	PostRender2D();
 
+public:
+
+	virtual	bool	Valid();
+
 private:
 
 	irr::core::vector2di	CursorIPos_;

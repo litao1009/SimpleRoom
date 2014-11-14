@@ -253,3 +253,8 @@ void RoomLayoutDoorController::PostRender2D()
 {
 
 }
+
+bool RoomLayoutDoorController::Valid()
+{
+	return false;
+}

@@ -25,15 +25,17 @@ public:
 
 	Imp()
 	{
-		
+		LMousePressDown_ = false;
 	}
 
 public:
 
+	bool							LMousePressDown_;
 	GraphODLWPtr					Graph_;
 	vector2di						CursorIPos_;
 	vector3df						CurrentPos_;
 	BaseODLWPtr						SweepingODL_;
+	BaseODLWPtr						PickingODL_;
 	IRoomLayoutODLBaseCtrllerSPtr	ActiveCtrller_;
 	std::map<EObjectDisplayLayerType,IRoomLayoutODLBaseCtrllerSPtr>	CtrllerMap_;
 };
@@ -61,29 +63,9 @@ bool RoomLayoutBrowserCtrller::OnPostEvent( const irr::SEvent& evt )
 {
 	auto& imp_ = *ImpUPtr_;
 
-	if ( evt.EventType == irr::EET_USER_EVENT && evt.UserEvent.UserData1 == EUT_ROOMLAYOUT_TEST_DOOR )
-	{
-		imp_.ActiveCtrller_ = imp_.CtrllerMap_[EODLT_DOOR];
-		imp_.ActiveCtrller_->SetEnable(true);
-	}
-
-	if ( evt.EventType == irr::EET_USER_EVENT && evt.UserEvent.UserData1 == EUT_ROOMLAYOUT_TEST_WINDOW )
-	{
-		imp_.ActiveCtrller_ = imp_.CtrllerMap_[EODLT_WINDOW];
-		imp_.ActiveCtrller_->SetEnable(true);
-	}
-
-	if ( imp_.ActiveCtrller_ && imp_.ActiveCtrller_->IsEnable() )
-	{
-		return imp_.ActiveCtrller_->OnPostEvent(evt);
-	}
-
 	if ( evt.EventType == EET_MOUSE_INPUT_EVENT && evt.MouseInput.Event == EMIE_LMOUSE_PRESSED_DOWN )
 	{
-		if ( imp_.ActiveCtrller_ )
-		{
-			imp_.ActiveCtrller_->SetEnable(true);
-		}
+		imp_.LMousePressDown_ = true;
 	}
 
 	if ( evt.EventType == EET_MOUSE_INPUT_EVENT && evt.MouseInput.Event == EMIE_MOUSE_MOVED )
@@ -92,17 +74,27 @@ bool RoomLayoutBrowserCtrller::OnPostEvent( const irr::SEvent& evt )
 		imp_.CursorIPos_.Y = evt.MouseInput.Y;
 	}
 
+	if ( evt.EventType == irr::EET_USER_EVENT && evt.UserEvent.UserData1 == EUT_ROOMLAYOUT_TEST_DOOR )
+	{
+		imp_.ActiveCtrller_ = imp_.CtrllerMap_[EODLT_DOOR];
+	}
+
+	if ( evt.EventType == irr::EET_USER_EVENT && evt.UserEvent.UserData1 == EUT_ROOMLAYOUT_TEST_WINDOW )
+	{
+		imp_.ActiveCtrller_ = imp_.CtrllerMap_[EODLT_WINDOW];
+	}
+
+	if ( imp_.ActiveCtrller_ )
+	{
+		return imp_.ActiveCtrller_->OnPostEvent(evt);
+	}
+
 	return false;
 }
 
 bool RoomLayoutBrowserCtrller::PreRender3D()
 {
 	auto& imp_ = *ImpUPtr_;
-
-	if ( imp_.ActiveCtrller_ && imp_.ActiveCtrller_->IsEnable() )
-	{
-		return imp_.ActiveCtrller_->PreRender3D();
-	}
 
 	plane3df plan(0,0,0,0,1,0);
 	auto line = GetRenderContextSPtr()->Smgr_->getSceneCollisionManager()->getRayFromScreenCoordinates(imp_.CursorIPos_);
@@ -118,8 +110,6 @@ bool RoomLayoutBrowserCtrller::PreRender3D()
 		if ( Standard_True == odl->GetBaseBndBox().IsOut(cursorPnt.Transformed(odl->GetAbsoluteTransform().Inverted())) )
 		{
 			imp_.SweepingODL_.reset();
-			imp_.ActiveCtrller_->ResetActiveODL();
-			imp_.ActiveCtrller_ = nullptr;
 		}
 		else
 		{
@@ -128,8 +118,6 @@ bool RoomLayoutBrowserCtrller::PreRender3D()
 				if ( Standard_False == subODL->GetBaseBndBox().IsOut(cursorPnt.Transformed(subODL->GetAbsoluteTransform().Inverted())) )
 				{
 					imp_.SweepingODL_.reset();
-					imp_.ActiveCtrller_->ResetActiveODL();
-					imp_.ActiveCtrller_ = nullptr;
 					break;
 				}
 			}
@@ -158,9 +146,6 @@ bool RoomLayoutBrowserCtrller::PreRender3D()
 				if ( Standard_False == subODL->GetBaseBndBox().IsOut(cursorPnt.Transformed(subODL->GetAbsoluteTransform().Inverted())) )
 				{
 					imp_.SweepingODL_ = subODL;
-					imp_.ActiveCtrller_ = imp_.CtrllerMap_[subODL->GetType()];
-					imp_.ActiveCtrller_->SetEnable(false);
-					imp_.ActiveCtrller_->SetActiveODL(subODL);
 					needBreak = true;
 					break;
 				}
@@ -174,17 +159,47 @@ bool RoomLayoutBrowserCtrller::PreRender3D()
 			if ( Standard_False == curODL->GetBaseBndBox().IsOut(cursorPnt.Transformed(curODL->GetAbsoluteTransform().Inverted())) )
 			{
 				imp_.SweepingODL_ = curODL;
-				imp_.ActiveCtrller_ = imp_.CtrllerMap_[curType];
-				imp_.ActiveCtrller_->SetEnable(false);
-				imp_.ActiveCtrller_->SetActiveODL(curODL);
 				break;
 			}
 		}
 	}
 
+	if ( imp_.LMousePressDown_ )
+	{
+		if ( !imp_.SweepingODL_.expired() )
+		{
+			imp_.PickingODL_ = imp_.SweepingODL_;
+			imp_.ActiveCtrller_ = imp_.CtrllerMap_[imp_.PickingODL_.lock()->GetType()];
+		}
+	}
+
 	if ( !imp_.SweepingODL_.expired() )
 	{
-		imp_.SweepingODL_.lock()->SetSweeping(true);
+		if ( imp_.SweepingODL_.lock() != imp_.PickingODL_.lock() )
+		{
+			imp_.SweepingODL_.lock()->SetSweeping(true);
+		}
+	}
+
+	if ( !imp_.PickingODL_.expired() )
+	{
+		imp_.PickingODL_.lock()->SetPicking(true);
+	}
+
+	imp_.LMousePressDown_ = false;
+
+	if ( imp_.ActiveCtrller_ )
+	{
+		auto ret = imp_.ActiveCtrller_->PreRender3D();
+		if ( imp_.ActiveCtrller_->Valid() )
+		{
+			return ret;
+		}
+		else
+		{
+			imp_.ActiveCtrller_ = nullptr;
+			imp_.PickingODL_.reset();
+		}
 	}
 
 	return false;
@@ -194,14 +209,22 @@ void RoomLayoutBrowserCtrller::PostRender3D()
 {
 	auto& imp_ = *ImpUPtr_;
 
-	if ( imp_.ActiveCtrller_ && imp_.ActiveCtrller_->IsEnable() )
-	{
-		imp_.ActiveCtrller_->PostRender3D();
-		return;
-	}
-
 	if ( !imp_.SweepingODL_.expired() )
 	{
-		imp_.SweepingODL_.lock()->SetSweeping(false);
+		if ( imp_.SweepingODL_.lock() != imp_.PickingODL_.lock() )
+		{
+			imp_.SweepingODL_.lock()->SetSweeping(false);
+		}
 	}
+
+	if ( !imp_.PickingODL_.expired() )
+	{
+		imp_.PickingODL_.lock()->SetPicking(false);
+	}
+
+	if ( imp_.ActiveCtrller_ )
+	{
+		imp_.ActiveCtrller_->PostRender3D();
+	}
+	
 }

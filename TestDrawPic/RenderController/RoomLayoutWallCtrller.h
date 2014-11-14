@@ -21,15 +21,13 @@ public://IRenderController
 
 	virtual	bool	OnPostEvent(const irr::SEvent& evt);
 
-	virtual	void	OnResize();
-
 	virtual bool	PreRender3D();
 
 	virtual void	PostRender3D();
 
-	virtual bool	PreRender2D();
+public:
 
-	virtual void	PostRender2D();
+	virtual	bool	Valid();
 
 private:
 

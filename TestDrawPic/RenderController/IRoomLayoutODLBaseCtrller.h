@@ -11,21 +11,15 @@ public:
 
 public:
 
-	void	SetActiveODL(const BaseODLSPtr& odl)
-	{
-		ActiveODL_ = odl;
-	}
+	void			SetPickingODL(const BaseODLSPtr& odl) { PickingODL_ = odl; }
 
-	BaseODLWPtr&	GetActiveODL() { return ActiveODL_; }
+	BaseODLWPtr&	GetPickingODL() { return PickingODL_; }
 
-	void	ResetActiveODL()
-	{
-		ActiveODL_.reset();
-	}
+	virtual	bool	Valid() = 0;
 
 private:
 
-	BaseODLWPtr	ActiveODL_;
+	BaseODLWPtr	PickingODL_;
 };
 
 typedef	std::shared_ptr<IRoomLayoutODLBaseCtrller>	IRoomLayoutODLBaseCtrllerSPtr;

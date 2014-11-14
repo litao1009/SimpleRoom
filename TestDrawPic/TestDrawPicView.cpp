@@ -59,6 +59,7 @@ BEGIN_MESSAGE_MAP(CTestDrawPicView, CCtrlFuncView)
 	ON_COMMAND(ID_BTN_ROOMLAYOUT_PICTURE_SETPOSITION, &CTestDrawPicView::OnBtnRoomLayoutPictureSetPosition)
 	ON_COMMAND(ID_BTN_ROOMLAYOUT_TEST_DOOR, &CTestDrawPicView::OnBtnRoomLayoutTestDoor)
 	ON_COMMAND(ID_BTN_ROOMLAYOUT_TEST_WINDOW, &CTestDrawPicView::OnBtnRoomlayoutTestWindow)
+	ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
 
@@ -109,11 +110,29 @@ void CTestDrawPicView::OnDraw(CDC* pDC)
 }
 void CTestDrawPicView::OnTimer(UINT_PTR nIDEvent)
 {
+	KillTimer(nIDEvent);
+
+	static auto saveTime = ::GetTickCount();
+
 	if ( m_Render3D )
 	{
 		Render();
 	}
 
+	auto curTime = ::GetTickCount();
+
+	auto elapsed = curTime - saveTime;
+	saveTime = curTime;
+	
+	if ( elapsed > 33 )
+	{
+		SetTimer(nIDEvent, 1, NULL);
+	}
+	else
+	{
+		SetTimer(nIDEvent, 33 - elapsed, NULL);
+	}
+	
 	CCtrlFuncView::OnTimer(nIDEvent);
 }
 
@@ -586,4 +605,13 @@ void CTestDrawPicView::OnBtnRoomlayoutTestWindow()
 	evt.UserEvent.UserData1 = EUT_ROOMLAYOUT_TEST_WINDOW;
 	evt.UserEvent.UserData2 = reinterpret_cast<int>(static_cast<void*>(&windowInfo));
 	m_spRenderContext->PostEvent(evt);
+}
+
+
+void CTestDrawPicView::OnDestroy()
+{
+	CCtrlFuncView::OnDestroy();
+
+	// TODO: 在此处添加消息处理程序代码
+	KillTimer(1000);
 }

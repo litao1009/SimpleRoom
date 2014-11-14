@@ -252,3 +252,8 @@ void RoomLayoutWindowCtrller::PostRender2D()
 {
 
 }
+
+bool RoomLayoutWindowCtrller::Valid()
+{
+	return false;
+}
