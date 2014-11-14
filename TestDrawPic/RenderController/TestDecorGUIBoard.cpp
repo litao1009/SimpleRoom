@@ -34,7 +34,7 @@ public:
 
 };
 
-TestDecorGUIBoard::TestDecorGUIBoard():ImpUPtr_(new Imp)
+TestDecorGUIBoard::TestDecorGUIBoard(const SRenderContextWPtr& rc):IRenderController(rc),ImpUPtr_(new Imp)
 {
 
 }

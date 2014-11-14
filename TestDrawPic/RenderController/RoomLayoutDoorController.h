@@ -1,9 +1,10 @@
 #pragma once
 
-#include "irrEngine/IRenderController.h"
-#include "ODL/BaseODLFwd.h"
+#include "RenderController/IRoomLayoutODLBaseCtrller.h"
+#include "ODL/GraphODLFwd.h"
+#include "ODL/DoorODL.h"
 
-class	RoomLayoutDoorController : public IRenderController
+class	RoomLayoutDoorController : public IRoomLayoutODLBaseCtrller
 {
 
 	class	Imp;
@@ -11,7 +12,7 @@ class	RoomLayoutDoorController : public IRenderController
 
 public:
 
-	RoomLayoutDoorController();
+	RoomLayoutDoorController(const GraphODLWPtr& graphODL, const SRenderContextWPtr& rc);
 	~RoomLayoutDoorController();
 
 public://IRenderController
@@ -30,12 +31,10 @@ public://IRenderController
 
 	virtual void	PostRender2D();
 
-public:
-
-	void	SetRootODL(BaseODLWPtr root) { RootODL_ = root; }
-
-public:
+private:
 
 	irr::core::vector2di	CursorIPos_;
-	BaseODLWPtr				RootODL_;
+	GraphODLWPtr			RootODL_;
 };
+
+typedef	std::shared_ptr<RoomLayoutDoorController>	RoomLayoutDoorControllerSPtr;

@@ -10,7 +10,7 @@ class	FlyCameraController : public IRenderController
 {
 public:
 
-	FlyCameraController();
+	FlyCameraController(const SRenderContextWPtr& rc);
 
 public://IRenderController
 

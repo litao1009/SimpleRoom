@@ -10,9 +10,6 @@
     <ClCompile Include="ODL\BaseODL.cpp">
       <Filter>ODL</Filter>
     </ClCompile>
-    <ClCompile Include="BLL\DecorBLL.cpp">
-      <Filter>BLL</Filter>
-    </ClCompile>
     <ClCompile Include="DAL\DecorDAL.cpp">
       <Filter>DAL</Filter>
     </ClCompile>
@@ -46,32 +43,11 @@
     <ClCompile Include="BLL\FloorBLL.cpp">
       <Filter>BLL</Filter>
     </ClCompile>
-    <ClCompile Include="BLL\RoomStyleBLL.cpp">
-      <Filter>BLL</Filter>
-    </ClCompile>
-    <ClCompile Include="BLL\RoomStyleLineBLL.cpp">
-      <Filter>BLL</Filter>
-    </ClCompile>
-    <ClCompile Include="BLL\SkinUnitBLL.cpp">
-      <Filter>BLL</Filter>
-    </ClCompile>
     <ClCompile Include="BLL\WallBLL.cpp">
-      <Filter>BLL</Filter>
-    </ClCompile>
-    <ClCompile Include="BLL\WallFaceBLL.cpp">
-      <Filter>BLL</Filter>
-    </ClCompile>
-    <ClCompile Include="BLL\WallFaceZoneBLL.cpp">
       <Filter>BLL</Filter>
     </ClCompile>
     <ClCompile Include="irrEngine\irrEngine.cpp">
       <Filter>IrrEngine</Filter>
-    </ClCompile>
-    <ClCompile Include="BLL\ObjGroupBLL.cpp">
-      <Filter>BLL</Filter>
-    </ClCompile>
-    <ClCompile Include="BLL\OrderBLL.cpp">
-      <Filter>BLL</Filter>
     </ClCompile>
     <ClCompile Include="ChildFrm.cpp">
       <Filter>src</Filter>
@@ -268,6 +244,9 @@
     <ClCompile Include="Dialog\DlgRoomLayoutWallProperty.cpp">
       <Filter>src\Dialog</Filter>
     </ClCompile>
+    <ClCompile Include="RenderController\RoomLayoutWallCtrller.cpp">
+      <Filter>RenderController\RoomLayout</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BLL\BaseBLL.h">
@@ -278,9 +257,6 @@
     </ClInclude>
     <ClInclude Include="ODL\BaseODL.h">
       <Filter>ODL</Filter>
-    </ClInclude>
-    <ClInclude Include="BLL\DecorBLL.h">
-      <Filter>BLL</Filter>
     </ClInclude>
     <ClInclude Include="DAL\DecorDAL.h">
       <Filter>DAL</Filter>
@@ -315,22 +291,7 @@
     <ClInclude Include="BLL\FloorBLL.h">
       <Filter>BLL</Filter>
     </ClInclude>
-    <ClInclude Include="BLL\RoomStyleBLL.h">
-      <Filter>BLL</Filter>
-    </ClInclude>
-    <ClInclude Include="BLL\RoomStyleLineBLL.h">
-      <Filter>BLL</Filter>
-    </ClInclude>
-    <ClInclude Include="BLL\SkinUnitBLL.h">
-      <Filter>BLL</Filter>
-    </ClInclude>
     <ClInclude Include="BLL\WallBLL.h">
-      <Filter>BLL</Filter>
-    </ClInclude>
-    <ClInclude Include="BLL\WallFaceBLL.h">
-      <Filter>BLL</Filter>
-    </ClInclude>
-    <ClInclude Include="BLL\WallFaceZoneBLL.h">
       <Filter>BLL</Filter>
     </ClInclude>
     <ClInclude Include="irrEngine\irrEngine.h">
@@ -341,12 +302,6 @@
     </ClInclude>
     <ClInclude Include="irrEngine\EShaderType.h">
       <Filter>IrrEngine</Filter>
-    </ClInclude>
-    <ClInclude Include="BLL\ObjGroupBLL.h">
-      <Filter>BLL</Filter>
-    </ClInclude>
-    <ClInclude Include="BLL\OrderBLL.h">
-      <Filter>BLL</Filter>
     </ClInclude>
     <ClInclude Include="ChildFrm.h">
       <Filter>src</Filter>
@@ -611,6 +566,12 @@
     </ClInclude>
     <ClInclude Include="Dialog\DlgRoomLayoutWallProperty.h">
       <Filter>src\Dialog</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderController\RoomLayoutWallCtrller.h">
+      <Filter>RenderController\RoomLayout</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderController\IRoomLayoutODLBaseCtrller.h">
+      <Filter>RenderController\RoomLayout</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

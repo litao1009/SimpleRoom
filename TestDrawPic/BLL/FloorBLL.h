@@ -2,13 +2,14 @@
 #define FloorBLL_h__
 
 #pragma once
+
 #include "basebll.h"
-class CFloorBLL :
-	public CBaseBLL
+
+class FloorBLL : public BaseBLL
 {
 public:
-	CFloorBLL(void);
-	~CFloorBLL(void);
+	FloorBLL(void);
+	~FloorBLL(void);
 };
 
 #endif // FloorBLL_h__

@@ -6,6 +6,7 @@
 
 #include "ODL/DoorODL.h"
 #include "ODL/WallODL.h"
+#include "ODL/GraphODL.h"
 
 #include "BRepBuilderAPI_MakeEdge.hxx"
 #include "BRepAdaptor_Curve.hxx"
@@ -39,9 +40,9 @@ public:
 	boost::optional<SEventDoorInfo>	NewInfo_;			
 };
 
-RoomLayoutDoorController::RoomLayoutDoorController():ImpUPtr_(new Imp)
+RoomLayoutDoorController::RoomLayoutDoorController(const GraphODLWPtr& graphODL, const SRenderContextWPtr& rc):IRoomLayoutODLBaseCtrller(rc),ImpUPtr_(new Imp)
 {
-	
+	RootODL_ = graphODL;
 }
 
 RoomLayoutDoorController::~RoomLayoutDoorController()
@@ -99,6 +100,7 @@ bool RoomLayoutDoorController::OnPostEvent( const irr::SEvent& evt )
 					}
 					ImpUPtr_->Checker_ = false;
 					ImpUPtr_->NewInfo_ = boost::none;
+					SetEnable(false);
 				}
 			}
 		}

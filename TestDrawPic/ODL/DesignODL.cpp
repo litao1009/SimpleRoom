@@ -17,18 +17,8 @@
 #include "RenderController/CameraController.h"
 #include "RenderController/FlyCameraController.h"
 #include "RenderController/UpdateTransformingCtrller.h"
-//#include "RenderController/2D/DrawingLineWallCtrller.h"
-//#include "RenderController/2D/DrawingRectWallCtrller.h"
-#include "RenderController/RoomLayoutDoorController.h"
-#include "RenderController/RoomLayoutWindowCtrller.h"
-#include "RenderController/RoomLayoutDrawingCtrller.h"
-#include "RenderController/RoomLayoutPictureCtrller.h"
-#include "RenderController/RoomLayoutBrowserCtrller.h"
 #include "RenderController/RoomLayoutCtrller.h"
-//--test
-#include "RenderController/TestDecorGUIBoard.h"
 
-//--test
 
 #include "BRepBuilderAPI_MakeEdge.hxx"
 #include "TopoDS_Edge.hxx"
@@ -52,20 +42,16 @@ class	DesignODL::Imp : public IRenderController
 public:
 
 	BaseODLWPtr							DesignODL_;
-	//DrawingLineWallCtrllerSPtr			DrawLineWallCtrller_;
-	//DrawingRectWallCtrllerSPtr			DrawRectWallCtrller_;
 	TopPickingControllerSPtr				TopPickingController_;
 	StatesController<ERenderState>::SPtr	StatesController_;
 	GUIControllerSPtr						GUIController_;
 	CameraControllerSPtr					CameraController_;
 	FlyCameraControllerSPtr					FlyCameraController_;
 	UpdateTransformingCtrllerSPtr			UpdateTransformingCtrller_;
-	//DoorControllerSPtr					DoorController_;
-	//WindowControllerSPtr					WindowController_;
 
 public:
 
-	Imp()
+	Imp():IRenderController(SRenderContextWPtr())
 	{
 		
 	}
@@ -363,27 +349,20 @@ void DesignODL::Init()
 	{//RC
 		RenderContext_ = IrrEngine::CreateRenderContext(Hwnd_, irr::video::SColor(~0));
 		RenderContext_->Init();
+		imp_.SetRenderContextWPtr(RenderContext_);
 	}
 
 	{//Imp
-		//imp_.DrawLineWallCtrller_ = std::make_shared<DrawingLineWallCtrller>();
-		//imp_.DrawRectWallCtrller_ = std::make_shared<DrawingRectWallCtrller>();
-		imp_.TopPickingController_ = std::make_shared<TopPickingController>();
-		imp_.StatesController_ = std::make_shared<StatesController<ERenderState>>();
-		imp_.GUIController_ = std::make_shared<GUIController>();
-		imp_.CameraController_ = std::make_shared<CameraController>();
-		imp_.FlyCameraController_ = std::make_shared<FlyCameraController>();
-		imp_.UpdateTransformingCtrller_ = std::make_shared<UpdateTransformingCtrller>();
-		//imp_.DoorController_ = std::make_shared<DoorController>();
-		//imp_.WindowController_ = std::make_shared<WindowController>();
+		imp_.TopPickingController_ = std::make_shared<TopPickingController>(RenderContext_);
+		imp_.StatesController_ = std::make_shared<StatesController<ERenderState>>(RenderContext_);
+		imp_.GUIController_ = std::make_shared<GUIController>(RenderContext_);
+		imp_.CameraController_ = std::make_shared<CameraController>(RenderContext_);
+		imp_.FlyCameraController_ = std::make_shared<FlyCameraController>(RenderContext_);
+		imp_.UpdateTransformingCtrller_ = std::make_shared<UpdateTransformingCtrller>(RenderContext_);
 
 		ImpSPtr_->DesignODL_ = shared_from_this();
-		//ImpSPtr_->DrawLineWallCtrller_->SetRootODL(shared_from_this());
-		//ImpSPtr_->DrawRectWallCtrller_->SetRootODL(shared_from_this());
 		ImpSPtr_->TopPickingController_->SetRootODL(shared_from_this());
 		ImpSPtr_->UpdateTransformingCtrller_->SetRootODL(shared_from_this());
-		//ImpSPtr_->DoorController_->SetRootODL(shared_from_this());
-		//ImpSPtr_->WindowController_->SetRootODL(shared_from_this());
 	}
 
 	{//DataSceneNode
@@ -397,67 +376,36 @@ void DesignODL::Init()
 	{//Controller
 		RenderContext_->PushController(ImpSPtr_->StatesController_);
 
-		ImpSPtr_->StatesController_->SetCurrentState(ERenderState::ERS_TOP_VIEW);
+		imp_.StatesController_->SetCurrentState(ERenderState::ERS_TOP_VIEW);
 		RenderContext_->PushController(std::static_pointer_cast<IRenderController>(ImpSPtr_));
 
-		auto gridCtrller = std::make_shared<GridController>();
+		auto gridCtrller = std::make_shared<GridController>(RenderContext_);
 
 		{//TopView
-			ImpSPtr_->StatesController_->AddController(ERenderState::ERS_TOP_VIEW, ImpSPtr_->GUIController_);
-			ImpSPtr_->StatesController_->AddController(ERenderState::ERS_TOP_VIEW, ImpSPtr_->UpdateTransformingCtrller_);
-			ImpSPtr_->StatesController_->AddController(ERenderState::ERS_TOP_VIEW, ImpSPtr_->CameraController_);
-			ImpSPtr_->StatesController_->AddController(ERenderState::ERS_TOP_VIEW, gridCtrller);
-			//ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->DrawLineWallCtrller_);
-			//ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->DrawRectWallCtrller_);
-			//ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->TopPickingController_);
-			//ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->DoorController_);
-			//ImpSPtr_->StatesController_->AddController(ERS_TOP_VIEW, ImpSPtr_->WindowController_);
-			//ImpSPtr_->StatesController_->AddController(ERenderState::ERS_TOP_VIEW, std::make_shared<TestDecorGUIBoard>());
+			imp_.StatesController_->AddController(ERenderState::ERS_TOP_VIEW, imp_.GUIController_);
+			imp_.StatesController_->AddController(ERenderState::ERS_TOP_VIEW, imp_.UpdateTransformingCtrller_);
+			imp_.StatesController_->AddController(ERenderState::ERS_TOP_VIEW, imp_.CameraController_);
+			imp_.StatesController_->AddController(ERenderState::ERS_TOP_VIEW, gridCtrller);
 
-			{//»§ÐÍÍ¼
-				auto roomlayout = std::make_shared<RoomLayoutCtrller>();
-				ImpSPtr_->StatesController_->AddController(ERenderState::ERS_TOP_VIEW, roomlayout);
-
-				//ÁÙÄ¡Í¼
-				auto roomPic = std::make_shared<RoomLayoutPictureCtrller>();
-				roomPic->SetRootODL(shared_from_this());
-				roomlayout->AddController(ERoomLayoutSatate::ERS_PICTURE, roomPic);
-
-				//»æÖÆ
-				roomlayout->AddController(ERoomLayoutSatate::ERS_DRAWING, std::make_shared<RoomLayoutDrawingCtrller>(graph));
-				
-				{//ä¯ÀÀ
-					roomlayout->AddController(ERoomLayoutSatate::ERS_BROWSE, std::make_shared<RoomLayoutBrowserCtrller>(graph));
-					
-					auto doorCtrller = std::make_shared<RoomLayoutDoorController>();
-					doorCtrller->SetRootODL(graph);
-					roomlayout->AddController(ERoomLayoutSatate::ERS_BROWSE, doorCtrller);
-
-					auto windowCtrller = std::make_shared<RoomLayoutWindowCtrller>();
-					windowCtrller->SetRootODL(graph);
-					roomlayout->AddController(ERoomLayoutSatate::ERS_BROWSE, windowCtrller);
-				}
-
-				//Ä¬ÈÏ×´Ì¬
-				roomlayout->SetCurrentState(ERoomLayoutSatate::ERS_BROWSE);
-			}
+			//»§ÐÍÍ¼
+			imp_.StatesController_->AddController(ERenderState::ERS_TOP_VIEW, std::make_shared<RoomLayoutCtrller>(graph, RenderContext_));
 		}
 
 		{//MayaView
-			ImpSPtr_->StatesController_->AddController(ERenderState::ERS_MAYA_VIEW, ImpSPtr_->GUIController_);
-			ImpSPtr_->StatesController_->AddController(ERenderState::ERS_MAYA_VIEW, ImpSPtr_->UpdateTransformingCtrller_);
-			ImpSPtr_->StatesController_->AddController(ERenderState::ERS_MAYA_VIEW, ImpSPtr_->CameraController_);
+			imp_.StatesController_->AddController(ERenderState::ERS_MAYA_VIEW, imp_.GUIController_);
+			imp_.StatesController_->AddController(ERenderState::ERS_MAYA_VIEW, imp_.UpdateTransformingCtrller_);
+			imp_.StatesController_->AddController(ERenderState::ERS_MAYA_VIEW, imp_.CameraController_);
 		}
 
 		{//FPSView
-			ImpSPtr_->StatesController_->AddController(ERenderState::ERS_FPS_VIEW, ImpSPtr_->GUIController_);
-			ImpSPtr_->StatesController_->AddController(ERenderState::ERS_FPS_VIEW, ImpSPtr_->UpdateTransformingCtrller_);
-			ImpSPtr_->StatesController_->AddController(ERenderState::ERS_FPS_VIEW, ImpSPtr_->CameraController_);
+			imp_.StatesController_->AddController(ERenderState::ERS_FPS_VIEW, imp_.GUIController_);
+			imp_.StatesController_->AddController(ERenderState::ERS_FPS_VIEW, imp_.UpdateTransformingCtrller_);
+			imp_.StatesController_->AddController(ERenderState::ERS_FPS_VIEW, imp_.CameraController_);
 		}
 
 		{//Animator
-			ImpSPtr_->StatesController_->AddController(ERenderState::ERS_ANIMATION, ImpSPtr_->FlyCameraController_);
-			ImpSPtr_->StatesController_->AddController(ERenderState::ERS_ANIMATION, ImpSPtr_->UpdateTransformingCtrller_);
+			imp_.StatesController_->AddController(ERenderState::ERS_ANIMATION, imp_.FlyCameraController_);
+			imp_.StatesController_->AddController(ERenderState::ERS_ANIMATION, imp_.UpdateTransformingCtrller_);
 		}
 	}
 }

@@ -10,7 +10,7 @@
 #include "irrEngine/IrrExtension/OrthoCameraRH.h"
 #include "irrEngine/IrrExtension/CameraFollowSplineAnimator.h"
 
-CameraController::CameraController()
+CameraController::CameraController(const SRenderContextWPtr& rc):IRenderController(rc)
 {
 	SetName("CameraController");
 }

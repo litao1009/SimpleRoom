@@ -6,6 +6,7 @@
 
 #include "ODL/WindowODL.h"
 #include "ODL/WallODL.h"
+#include "ODL/GraphODL.h"
 
 #include "BRepBuilderAPI_MakeEdge.hxx"
 #include "BRepAdaptor_Curve.hxx"
@@ -39,9 +40,9 @@ public:
 	boost::optional<SEventWindowInfo>	NewInfo_;			
 };
 
-RoomLayoutWindowCtrller::RoomLayoutWindowCtrller():ImpUPtr_(new Imp)
+RoomLayoutWindowCtrller::RoomLayoutWindowCtrller(const GraphODLWPtr& graphODL, const SRenderContextWPtr& rc):IRoomLayoutODLBaseCtrller(rc),ImpUPtr_(new Imp)
 {
-
+	RootODL_ = graphODL;
 }
 
 RoomLayoutWindowCtrller::~RoomLayoutWindowCtrller()

@@ -55,3 +55,15 @@ void DoorODL::Init()
 	SetOffsetSize(0, 0, 50);
 	UpdateHole();
 }
+
+void DoorODL::UpdateSweeping()
+{
+	if ( IsSweeping() )
+	{
+		Set2DLineColor(irr::video::SColor(0xFFFFFF00));
+	}
+	else
+	{
+		Set2DLineColor(irr::video::SColor(0xFF8F8F8F));
+	}
+}

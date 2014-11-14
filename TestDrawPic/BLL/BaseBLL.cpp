@@ -1,12 +1,12 @@
 #include "stdafx.h"
+
 #include "BaseBLL.h"
 
-
-CBaseBLL::CBaseBLL(void)
+BaseBLL::BaseBLL(void)
 {
 }
 
 
-CBaseBLL::~CBaseBLL(void)
+BaseBLL::~BaseBLL(void)
 {
 }

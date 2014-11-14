@@ -2,9 +2,9 @@
 
 #include "RenderController/IRoomLayoutODLBaseCtrller.h"
 #include "ODL/GraphODLFwd.h"
-#include "ODL/WindowODL.h"
+#include "ODL/WallODL.h"
 
-class	RoomLayoutWindowCtrller : public IRoomLayoutODLBaseCtrller
+class	RoomLayoutWallCtrller : public IRoomLayoutODLBaseCtrller
 {
 
 	class	Imp;
@@ -12,8 +12,8 @@ class	RoomLayoutWindowCtrller : public IRoomLayoutODLBaseCtrller
 
 public:
 
-	RoomLayoutWindowCtrller(const GraphODLWPtr& graphODL, const SRenderContextWPtr& rc);
-	~RoomLayoutWindowCtrller();
+	RoomLayoutWallCtrller(const GraphODLWPtr& graphODL, const SRenderContextWPtr& rc);
+	~RoomLayoutWallCtrller();
 
 public://IRenderController
 
@@ -37,4 +37,4 @@ private:
 	GraphODLWPtr			RootODL_;
 };
 
-typedef	std::shared_ptr<RoomLayoutWindowCtrller>	RoomLayoutWindowCtrllerSPtr;
+typedef	std::shared_ptr<RoomLayoutWallCtrller>	RoomLayoutWallCtrllerSPtr;

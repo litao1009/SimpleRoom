@@ -28,6 +28,10 @@ public://HoleODL
 public:
 
 	void	Set2DLineColor(const irr::video::SColor& clr);
+
+protected:
+
+	virtual	void	UpdateSweeping();
 };
 
 typedef	std::shared_ptr<DoorODL>	DoorODLSPtr;

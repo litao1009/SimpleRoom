@@ -183,11 +183,8 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClInclude Include="BLL\BaseBLL.h" />
     <ClInclude Include="ChildFrm.h" />
     <ClInclude Include="BLL\DesignBLL.h" />
-    <ClInclude Include="BLL\DecorBLL.h" />
     <ClInclude Include="DAL\DesignDAL.h" />
     <ClInclude Include="DAL\DecorDAL.h" />
-    <ClInclude Include="BLL\RoomStyleBLL.h" />
-    <ClInclude Include="BLL\RoomStyleLineBLL.h" />
     <ClInclude Include="irrEngine\EShaderType.h" />
     <ClInclude Include="irrEngine\irrEngine.h" />
     <ClInclude Include="irrEngine\irrEngineFwd.h" />
@@ -195,15 +192,14 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClInclude Include="irrEngine\SRenderContext.h" />
     <ClInclude Include="irrEngine\SRenderContextFwd.h" />
     <ClInclude Include="MainFrm.h" />
-    <ClInclude Include="BLL\ObjGroupBLL.h" />
     <ClInclude Include="DAL\ObjGroupDAL.h" />
-    <ClInclude Include="BLL\OrderBLL.h" />
     <ClInclude Include="DAL\OrderDAL.h" />
     <ClInclude Include="ODL\WallODL.h" />
     <ClInclude Include="ODL\WallODLFwd.h" />
     <ClInclude Include="ODL\WindowODL.h" />
     <ClInclude Include="PublicDefine.h" />
     <ClInclude Include="RenderController\CameraController.h" />
+    <ClInclude Include="RenderController\IRoomLayoutODLBaseCtrller.h" />
     <ClInclude Include="RenderController\RoomLayoutDoorController.h" />
     <ClInclude Include="RenderController\FlyCameraController.h" />
     <ClInclude Include="RenderController\GridController.h" />
@@ -211,6 +207,7 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClInclude Include="RenderController\RoomLayoutBrowserCtrller.h" />
     <ClInclude Include="RenderController\RoomLayoutCtrller.h" />
     <ClInclude Include="RenderController\RoomLayoutPictureCtrller.h" />
+    <ClInclude Include="RenderController\RoomLayoutWallCtrller.h" />
     <ClInclude Include="RenderController\StatesController.h" />
     <ClInclude Include="RenderController\TestDecorGUIBoard.h" />
     <ClInclude Include="RenderController\RoomLayoutDrawingCtrller.h" />
@@ -221,10 +218,8 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClInclude Include="RenderController\RoomLayoutWindowCtrller.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="BLL\WallBLL.h" />
-    <ClInclude Include="BLL\WallFaceZoneBLL.h" />
     <ClInclude Include="DAL\WallDAL.h" />
     <ClInclude Include="DAL\WallFaceZoneDAL.h" />
-    <ClInclude Include="BLL\SkinUnitBLL.h" />
     <ClInclude Include="DAL\SkinUnitDAL.h" />
     <ClInclude Include="DAL\SkinDAL.h" />
     <ClInclude Include="StatusMgr.h" />
@@ -233,7 +228,6 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClInclude Include="TestDrawPic.h" />
     <ClInclude Include="TestDrawPicDoc.h" />
     <ClInclude Include="TestDrawPicView.h" />
-    <ClInclude Include="BLL\WallFaceBLL.h" />
     <ClInclude Include="DAL\WallFaceDAL.h" />
   </ItemGroup>
   <ItemGroup>
@@ -287,23 +281,16 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClCompile Include="BLL\BaseBLL.cpp" />
     <ClCompile Include="ChildFrm.cpp" />
     <ClCompile Include="BLL\DesignBLL.cpp" />
-    <ClCompile Include="BLL\DecorBLL.cpp" />
     <ClCompile Include="DAL\DesignDAL.cpp" />
     <ClCompile Include="DAL\DecorDAL.cpp" />
-    <ClCompile Include="BLL\RoomStyleBLL.cpp" />
-    <ClCompile Include="BLL\RoomStyleLineBLL.cpp" />
     <ClCompile Include="irrEngine\irrEngine.cpp" />
     <ClCompile Include="irrEngine\SRenderContext.cpp" />
     <ClCompile Include="MainFrm.cpp" />
-    <ClCompile Include="BLL\ObjGroupBLL.cpp" />
     <ClCompile Include="DAL\ObjGroupDAL.cpp" />
-    <ClCompile Include="BLL\OrderBLL.cpp" />
     <ClCompile Include="BLL\WallBLL.cpp" />
-    <ClCompile Include="BLL\WallFaceZoneBLL.cpp" />
     <ClCompile Include="DAL\OrderDAL.cpp" />
     <ClCompile Include="DAL\WallDAL.cpp" />
     <ClCompile Include="DAL\WallFaceZoneDAL.cpp" />
-    <ClCompile Include="BLL\SkinUnitBLL.cpp" />
     <ClCompile Include="DAL\SkinUnitDAL.cpp" />
     <ClCompile Include="DAL\SkinDAL.cpp" />
     <ClCompile Include="ODL\RoomODL.cpp" />
@@ -318,6 +305,7 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClCompile Include="RenderController\RoomLayoutBrowserCtrller.cpp" />
     <ClCompile Include="RenderController\RoomLayoutCtrller.cpp" />
     <ClCompile Include="RenderController\RoomLayoutPictureCtrller.cpp" />
+    <ClCompile Include="RenderController\RoomLayoutWallCtrller.cpp" />
     <ClCompile Include="RenderController\TestDecorGUIBoard.cpp" />
     <ClCompile Include="RenderController\RoomLayoutDrawingCtrller.cpp" />
     <ClCompile Include="RenderController\TopPickingController.cpp" />
@@ -330,7 +318,6 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClCompile Include="TestDrawPic.cpp" />
     <ClCompile Include="TestDrawPicDoc.cpp" />
     <ClCompile Include="TestDrawPicView.cpp" />
-    <ClCompile Include="BLL\WallFaceBLL.cpp" />
     <ClCompile Include="DAL\WallFaceDAL.cpp" />
   </ItemGroup>
   <ItemGroup>

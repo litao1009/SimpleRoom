@@ -9,7 +9,7 @@ class	CameraController : public IRenderController
 {
 public:
 
-	CameraController();
+	CameraController(const SRenderContextWPtr& rc);
 
 	~CameraController();
 

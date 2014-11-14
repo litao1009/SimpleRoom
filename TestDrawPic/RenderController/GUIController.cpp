@@ -27,7 +27,7 @@ static	CGUIImageButton*	AddImage( IGUIEnvironment* env, video::ITexture* tex, co
 }
 
 
-GUIController::GUIController()
+GUIController::GUIController(const SRenderContextWPtr& rc):IRenderController(rc)
 {
 	Icon_ = irr::gui::ECI_NORMAL;
 	Minimum_ = false;

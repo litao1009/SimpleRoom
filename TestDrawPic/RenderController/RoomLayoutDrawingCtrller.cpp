@@ -152,7 +152,7 @@ public:
 	GraphODLWPtr				Graph_;
 };
 
-RoomLayoutDrawingCtrller::RoomLayoutDrawingCtrller(const GraphODLWPtr& graphODL):ImpUPtr_(new Imp)
+RoomLayoutDrawingCtrller::RoomLayoutDrawingCtrller(const GraphODLWPtr& graphODL, const SRenderContextWPtr& rc):IRenderController(rc),ImpUPtr_(new Imp)
 {
 	ImpUPtr_->Graph_ = graphODL;
 }

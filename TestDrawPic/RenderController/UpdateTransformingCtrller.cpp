@@ -14,7 +14,7 @@ void	Update(BaseODLSPtr& odl)
 }
 
 
-UpdateTransformingCtrller::UpdateTransformingCtrller()
+UpdateTransformingCtrller::UpdateTransformingCtrller(const SRenderContextWPtr& rc):IRenderController(rc)
 {
 
 }

@@ -2,11 +2,11 @@
 #include "FloorBLL.h"
 
 
-CFloorBLL::CFloorBLL(void)
+FloorBLL::FloorBLL(void)
 {
 }
 
 
-CFloorBLL::~CFloorBLL(void)
+FloorBLL::~FloorBLL(void)
 {
 }

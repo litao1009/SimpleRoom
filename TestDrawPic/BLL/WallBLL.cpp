@@ -2,11 +2,11 @@
 #include "WallBLL.h"
 
 
-CWallBLL::CWallBLL(void)
+WallBLL::WallBLL(void)
 {
 }
 
 
-CWallBLL::~CWallBLL(void)
+WallBLL::~WallBLL(void)
 {
 }

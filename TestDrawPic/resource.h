@@ -143,6 +143,7 @@
 #define ID_BTN_EDIT_ZONE_RECT           32812
 #define ID_BTN_STATE                    32823
 #define ID_BUTTON2                      32824
+#define ID_BTN_ROOMLAYOUT_TEST_PLILLAR  32824
 #define ID_BTN_VIEW_ZERO                32825
 #define ID_BTN_ROOMLAYOUT_PICTURE_SETSCALE 32826
 #define ID_BTN_ROOMLAYOUT_TEST_DOOR     32827
@@ -162,7 +163,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        330
 #define _APS_NEXT_COMMAND_VALUE         32838
-#define _APS_NEXT_CONTROL_VALUE         1034
+#define _APS_NEXT_CONTROL_VALUE         1035
 #define _APS_NEXT_SYMED_VALUE           321
 #endif
 #endif

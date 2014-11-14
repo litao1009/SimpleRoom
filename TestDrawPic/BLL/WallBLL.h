@@ -2,13 +2,14 @@
 #define WallBLL_h__
 
 #pragma once
+
 #include "basebll.h"
-class CWallBLL :
-	public CBaseBLL
+
+class WallBLL : public BaseBLL
 {
 public:
-	CWallBLL(void);
-	~CWallBLL(void);
+	WallBLL(void);
+	~WallBLL(void);
 };
 
 #endif // WallBLL_h__

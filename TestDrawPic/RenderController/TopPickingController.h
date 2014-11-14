@@ -12,7 +12,7 @@ class	TopPickingController : public IRenderController
 {
 public:
 
-	TopPickingController();
+	TopPickingController(const SRenderContextWPtr& rc);
 	~TopPickingController();
 
 public:

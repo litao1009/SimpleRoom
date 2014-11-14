@@ -21,7 +21,7 @@ class	IRenderController : public irr::IEventReceiver, public std::enable_shared_
 {
 public:
 
-	IRenderController()
+	IRenderController(const SRenderContextWPtr& rc):RC_(rc)
 	{
 		Enable_ = true;
 		HasInit_ = false;

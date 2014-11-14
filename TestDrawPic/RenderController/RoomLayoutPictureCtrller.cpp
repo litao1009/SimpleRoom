@@ -3,7 +3,7 @@
 #include "RoomLayoutPictureCtrller.h"
 #include "UserEvent.h"
 
-#include "ODL/BaseODL.h"
+#include "ODL/GraphODL.h"
 
 #include "StatusMgr.h"
 
@@ -212,7 +212,7 @@ public:
 	
 };
 
-RoomLayoutPictureCtrller::RoomLayoutPictureCtrller():ImpUPtr_(new Imp)
+RoomLayoutPictureCtrller::RoomLayoutPictureCtrller(const GraphODLWPtr& odl, const SRenderContextWPtr& rc):IRenderController(rc),ImpUPtr_(new Imp), BaseODL_(odl)
 {
 
 }

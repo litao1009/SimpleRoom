@@ -12,7 +12,7 @@ class	TestDecorGUIBoard : public IRenderController
 
 public:
 
-	TestDecorGUIBoard();
+	TestDecorGUIBoard(const SRenderContextWPtr& rc);
 	~TestDecorGUIBoard();
 
 public:

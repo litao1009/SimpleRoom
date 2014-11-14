@@ -2,11 +2,11 @@
 #include "DesignBLL.h"
 
 
-CDesignBLL::CDesignBLL(void)
+DesignBLL::DesignBLL(void)
 {
 }
 
 
-CDesignBLL::~CDesignBLL(void)
+DesignBLL::~DesignBLL(void)
 {
 }

@@ -9,6 +9,9 @@
 
 class	MetaRenderController : public IRenderController
 {
+public:
+
+	MetaRenderController();
 
 public://IRenderController
 

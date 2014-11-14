@@ -10,7 +10,7 @@ class	UpdateTransformingCtrller : public IRenderController
 {
 public:
 
-	UpdateTransformingCtrller();
+	UpdateTransformingCtrller(const SRenderContextWPtr& rc);
 	~UpdateTransformingCtrller();
 
 public://IRenderController

@@ -17,7 +17,7 @@
 static irr::core::plane3df sPickingPlane(0,0,0,0,1,0);
 
 
-TopPickingController::TopPickingController()
+TopPickingController::TopPickingController(const SRenderContextWPtr& rc):IRenderController(rc)
 {
 	Ignore_ = false;
 	Picking_ = false;

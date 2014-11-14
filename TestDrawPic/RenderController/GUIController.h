@@ -16,7 +16,7 @@ class	GUIController : public IRenderController
 {
 public:
 
-	GUIController();
+	GUIController(const SRenderContextWPtr& rc);
 
 public://IRenderController
 

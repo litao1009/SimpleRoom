@@ -17,6 +17,8 @@ public:
 
 public://IRenderController
 
+	StatesController(const SRenderContextWPtr& rc):IRenderController(rc) {}
+
 	virtual	void	Init()
 	{
 

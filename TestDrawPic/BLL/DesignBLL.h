@@ -2,13 +2,14 @@
 #define DesignBLL_h__
 
 #pragma once
+
 #include "basebll.h"
-class CDesignBLL :
-	public CBaseBLL
+
+class DesignBLL : public BaseBLL
 {
 public:
-	CDesignBLL(void);
-	~CDesignBLL(void);
+	DesignBLL(void);
+	~DesignBLL(void);
 };
 
 #endif // DesignBLL_h__

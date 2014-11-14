@@ -29,6 +29,8 @@
 
 #include "Dialog/DlgRoomLayoutPictureSize.h"
 #include "Dialog/DlgRoomLayoutDrawlinInfo.h"
+#include "Dialog/DlgRoomLayoutWallProperty.h"
+
 #include "resource.h"
 
 #include <boost/filesystem/path.hpp>
@@ -235,6 +237,13 @@ LRESULT CTestDrawPicView::DefWindowProc(UINT message, WPARAM wParam, LPARAM lPar
 		if ( WM_USER_ROOMLAYOUT_LINELENGTH_SET == wParam )
 		{
 			ImpUPtr_->DlgRoomLayoutDrawlinInfo_->SetNum(lParam);
+		}
+
+		if ( WM_USER_ROOMLAYOUT_WALL_PROPERTY == wParam )
+		{
+			DlgRoomLayoutWallProperty dlg;
+			dlg.DoModal();
+
 		}
 
 		return TRUE;

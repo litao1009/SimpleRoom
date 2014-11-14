@@ -6,14 +6,14 @@
 #include <memory>
 #include <vector>
 
-class CBaseBLL
+class BaseBLL
 {
 public:
-	CBaseBLL(void);
-	virtual ~CBaseBLL(void);
+	BaseBLL(void);
+	virtual ~BaseBLL(void);
 };
 
-typedef	std::shared_ptr<CBaseBLL>	CBaseBLLSPtr;
-typedef	std::weak_ptr<CBaseBLL>		CBaseBLLWPtr;
+typedef	std::shared_ptr<BaseBLL>	BaseBLLSPtr;
+typedef	std::weak_ptr<BaseBLL>		BaseBLLWPtr;
 
 #endif // BaseBLL_h__

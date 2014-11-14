@@ -2,9 +2,19 @@
 
 #include "RoomLayoutBrowserCtrller.h"
 #include "irrEngine/SRenderContext.h"
+
 #include "ODL/GraphODL.h"
 #include "ODL/CornerODL.h"
 #include "ODL/WallODL.h"
+
+#include "UserEvent.h"
+
+#include "RenderController/IRoomLayoutODLBaseCtrller.h"
+#include "RenderController/RoomLayoutDoorController.h"
+#include "RenderController/RoomLayoutWindowCtrller.h"
+#include "RenderController/RoomLayoutWallCtrller.h"
+
+#include <map>
 
 using namespace irr;
 using namespace core;
@@ -15,28 +25,20 @@ public:
 
 	Imp()
 	{
-		LMousePressDown_ = false;
-		DeletePressDown_ = false;
+		
 	}
 
 public:
 
-
-	bool			LMousePressDown_;
-	bool			DeletePressDown_;
-
-	vector2di		CursorIPos_;
-	vector3df		CurrentPos_;
-
-	WallODLWPtr		SweepingWall_;
-	WallODLWPtr		PickingWall_;
-	CornerODLWPtr	SweepingCorner_;
-	CornerODLWPtr	PickingCorner_;
-
-	GraphODLWPtr	Graph_;
+	GraphODLWPtr					Graph_;
+	vector2di						CursorIPos_;
+	vector3df						CurrentPos_;
+	BaseODLWPtr						SweepingODL_;
+	IRoomLayoutODLBaseCtrllerSPtr	ActiveCtrller_;
+	std::map<EObjectDisplayLayerType,IRoomLayoutODLBaseCtrllerSPtr>	CtrllerMap_;
 };
 
-RoomLayoutBrowserCtrller::RoomLayoutBrowserCtrller( const GraphODLWPtr& graphODL ):ImpUPtr_(new Imp)
+RoomLayoutBrowserCtrller::RoomLayoutBrowserCtrller( const GraphODLWPtr& graphODL, const SRenderContextWPtr& rc ):IRenderController(rc),ImpUPtr_(new Imp)
 {
 	ImpUPtr_->Graph_ = graphODL;
 }
@@ -48,21 +50,40 @@ RoomLayoutBrowserCtrller::~RoomLayoutBrowserCtrller()
 
 void RoomLayoutBrowserCtrller::Init()
 {
+	auto& imp_ = *ImpUPtr_;
 
+	imp_.CtrllerMap_[EODLT_DOOR] = std::make_shared<RoomLayoutDoorController>(ImpUPtr_->Graph_, GetRenderContextSPtr());
+	imp_.CtrllerMap_[EODLT_WINDOW] = std::make_shared<RoomLayoutWindowCtrller>(ImpUPtr_->Graph_, GetRenderContextSPtr());
+	imp_.CtrllerMap_[EODLT_WALL] = std::make_shared<RoomLayoutWallCtrller>(ImpUPtr_->Graph_, GetRenderContextSPtr());
 }
 
 bool RoomLayoutBrowserCtrller::OnPostEvent( const irr::SEvent& evt )
 {
 	auto& imp_ = *ImpUPtr_;
 
-	if ( evt.EventType == EET_MOUSE_INPUT_EVENT && evt.MouseInput.Event == EMIE_LMOUSE_PRESSED_DOWN )
+	if ( evt.EventType == irr::EET_USER_EVENT && evt.UserEvent.UserData1 == EUT_ROOMLAYOUT_TEST_DOOR )
 	{
-		imp_.LMousePressDown_ = true;
+		imp_.ActiveCtrller_ = imp_.CtrllerMap_[EODLT_DOOR];
+		imp_.ActiveCtrller_->SetEnable(true);
 	}
 
-	if ( evt.EventType == EET_KEY_INPUT_EVENT && evt.KeyInput.Key == KEY_DELETE && evt.KeyInput.PressedDown )
+	if ( evt.EventType == irr::EET_USER_EVENT && evt.UserEvent.UserData1 == EUT_ROOMLAYOUT_TEST_WINDOW )
 	{
-		imp_.DeletePressDown_ = true;
+		imp_.ActiveCtrller_ = imp_.CtrllerMap_[EODLT_WINDOW];
+		imp_.ActiveCtrller_->SetEnable(true);
+	}
+
+	if ( imp_.ActiveCtrller_ && imp_.ActiveCtrller_->IsEnable() )
+	{
+		return imp_.ActiveCtrller_->OnPostEvent(evt);
+	}
+
+	if ( evt.EventType == EET_MOUSE_INPUT_EVENT && evt.MouseInput.Event == EMIE_LMOUSE_PRESSED_DOWN )
+	{
+		if ( imp_.ActiveCtrller_ )
+		{
+			imp_.ActiveCtrller_->SetEnable(true);
+		}
 	}
 
 	if ( evt.EventType == EET_MOUSE_INPUT_EVENT && evt.MouseInput.Event == EMIE_MOUSE_MOVED )
@@ -78,6 +99,11 @@ bool RoomLayoutBrowserCtrller::PreRender3D()
 {
 	auto& imp_ = *ImpUPtr_;
 
+	if ( imp_.ActiveCtrller_ && imp_.ActiveCtrller_->IsEnable() )
+	{
+		return imp_.ActiveCtrller_->PreRender3D();
+	}
+
 	plane3df plan(0,0,0,0,1,0);
 	auto line = GetRenderContextSPtr()->Smgr_->getSceneCollisionManager()->getRayFromScreenCoordinates(imp_.CursorIPos_);
 	plan.getIntersectionWithLine(line.start, line.getVector(), imp_.CurrentPos_);
@@ -85,69 +111,81 @@ bool RoomLayoutBrowserCtrller::PreRender3D()
 
 	gp_Pnt cursorPnt(imp_.CurrentPos_.X, imp_.CurrentPos_.Y, imp_.CurrentPos_.Z);
 
-	if ( !imp_.SweepingWall_.expired() )
+	if ( !imp_.SweepingODL_.expired() )
 	{
-		auto wall = imp_.SweepingWall_.lock();
+		auto odl = imp_.SweepingODL_.lock();
 
-		if ( Standard_True == wall->GetBaseBndBox().IsOut(cursorPnt.Transformed(wall->GetAbsoluteTransform().Inverted())) )
+		if ( Standard_True == odl->GetBaseBndBox().IsOut(cursorPnt.Transformed(odl->GetAbsoluteTransform().Inverted())) )
 		{
-			wall->SetSweeping(false);
-			imp_.SweepingWall_.reset();
+			imp_.SweepingODL_.reset();
+			imp_.ActiveCtrller_->ResetActiveODL();
+			imp_.ActiveCtrller_ = nullptr;
+		}
+		else
+		{
+			for ( auto& subODL : imp_.SweepingODL_.lock()->GetChildrenList() )
+			{
+				if ( Standard_False == subODL->GetBaseBndBox().IsOut(cursorPnt.Transformed(subODL->GetAbsoluteTransform().Inverted())) )
+				{
+					imp_.SweepingODL_.reset();
+					imp_.ActiveCtrller_->ResetActiveODL();
+					imp_.ActiveCtrller_ = nullptr;
+					break;
+				}
+			}
 		}
 	}
 
-	if ( imp_.SweepingWall_.expired() )
+	if ( imp_.SweepingODL_.expired() )
 	{
-		for ( auto& curWall : imp_.Graph_.lock()->GetChildrenList() )
+		for ( auto& curODL : imp_.Graph_.lock()->GetChildrenList() )
 		{
-			if ( EODLT_WALL != curWall->GetType() )
+			auto curType = curODL->GetType();
+			if ( 0 == imp_.CtrllerMap_.count(curType) )
 			{
 				continue;
 			}
 
-			auto curTrueWall = std::static_pointer_cast<WallODL>(curWall);
+			auto needBreak = false;
 
-			auto transform = curTrueWall->GetAbsoluteTransform();
-			
-			if ( Standard_False == curTrueWall->GetBaseBndBox().IsOut(cursorPnt.Transformed(curTrueWall->GetAbsoluteTransform().Inverted())) )
+			for ( auto& subODL : curODL->GetChildrenList() )
 			{
-				imp_.SweepingWall_ = curTrueWall;
+				if ( 0 == imp_.CtrllerMap_.count(subODL->GetType()) )
+				{
+					continue;
+				}
+
+				if ( Standard_False == subODL->GetBaseBndBox().IsOut(cursorPnt.Transformed(subODL->GetAbsoluteTransform().Inverted())) )
+				{
+					imp_.SweepingODL_ = subODL;
+					imp_.ActiveCtrller_ = imp_.CtrllerMap_[subODL->GetType()];
+					imp_.ActiveCtrller_->SetEnable(false);
+					imp_.ActiveCtrller_->SetActiveODL(subODL);
+					needBreak = true;
+					break;
+				}
+			}
+			
+			if ( needBreak )
+			{
+				break;
+			}
+
+			if ( Standard_False == curODL->GetBaseBndBox().IsOut(cursorPnt.Transformed(curODL->GetAbsoluteTransform().Inverted())) )
+			{
+				imp_.SweepingODL_ = curODL;
+				imp_.ActiveCtrller_ = imp_.CtrllerMap_[curType];
+				imp_.ActiveCtrller_->SetEnable(false);
+				imp_.ActiveCtrller_->SetActiveODL(curODL);
 				break;
 			}
 		}
 	}
 
-	if ( imp_.LMousePressDown_ )
+	if ( !imp_.SweepingODL_.expired() )
 	{
-		if ( !imp_.PickingWall_.expired() )
-		{
-			imp_.PickingWall_.lock()->SetPicking(false);
-		}
-
-		imp_.PickingWall_ = imp_.SweepingWall_;
+		imp_.SweepingODL_.lock()->SetSweeping(true);
 	}
-
-	if ( imp_.DeletePressDown_ )
-	{
-		if ( !imp_.PickingWall_.expired() )
-		{
-			imp_.Graph_.lock()->RemoveWall(imp_.PickingWall_.lock());
-			imp_.PickingWall_.reset();
-		}
-	}
-
-	if ( !imp_.SweepingWall_.expired() )
-	{
-		imp_.SweepingWall_.lock()->SetSweeping(true);
-	}
-
-	if ( !imp_.PickingWall_.expired() )
-	{
-		imp_.PickingWall_.lock()->SetPicking(true);
-	}
-
-	imp_.LMousePressDown_ = false;
-	imp_.DeletePressDown_ = false;
 
 	return false;
 }
@@ -156,8 +194,14 @@ void RoomLayoutBrowserCtrller::PostRender3D()
 {
 	auto& imp_ = *ImpUPtr_;
 
-	if ( !imp_.SweepingWall_.expired() )
+	if ( imp_.ActiveCtrller_ && imp_.ActiveCtrller_->IsEnable() )
 	{
-		imp_.SweepingWall_.lock()->SetSweeping(false);
+		imp_.ActiveCtrller_->PostRender3D();
+		return;
+	}
+
+	if ( !imp_.SweepingODL_.expired() )
+	{
+		imp_.SweepingODL_.lock()->SetSweeping(false);
 	}
 }

@@ -10,7 +10,7 @@ class	GridController : public IRenderController
 {
 public:
 
-	GridController();
+	GridController(const SRenderContextWPtr& rc);
 
 	~GridController();
 

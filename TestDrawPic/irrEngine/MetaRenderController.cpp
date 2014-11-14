@@ -6,6 +6,12 @@
 #include "Irrlicht/os.h"
 #endif
 
+
+MetaRenderController::MetaRenderController():IRenderController(SRenderContextWPtr())
+{
+
+}
+
 bool MetaRenderController::OnEvent( const irr::SEvent& event )
 {
 	return OnGUIEvent(event);
@@ -127,8 +133,6 @@ void MetaRenderController::PushController( IRenderControllerSPtr controller )
 
 	if ( controller )
 	{
-		auto rc = GetRenderContextSPtr();
-		controller->SetRenderContextWPtr(rc);
 		ControllerList_.push_back(controller);
 
 		if ( !controller->HasInit() )

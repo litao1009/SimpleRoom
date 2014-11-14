@@ -1,6 +1,6 @@
 #pragma once
 
-#include "irrEngine/IRenderController.h"
+#include "RenderController/StatesController.h"
 #include "ODL/GraphODLFwd.h"
 
 class	RoomLayoutBrowserCtrller : public IRenderController
@@ -10,7 +10,7 @@ class	RoomLayoutBrowserCtrller : public IRenderController
 
 public:
 
-	RoomLayoutBrowserCtrller(const GraphODLWPtr& graphODL);
+	RoomLayoutBrowserCtrller(const GraphODLWPtr& graphODL, const SRenderContextWPtr& rc);
 	~RoomLayoutBrowserCtrller();
 
 public:

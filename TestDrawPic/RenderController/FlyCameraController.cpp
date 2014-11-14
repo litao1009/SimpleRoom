@@ -3,7 +3,7 @@
 #include "FlyCameraController.h"
 #include "ISceneManager.h"
 
-FlyCameraController::FlyCameraController()
+FlyCameraController::FlyCameraController(const SRenderContextWPtr& rc):IRenderController(rc)
 {
 	ActiveCamera_ = nullptr;
 	ToSwitchCamera_ = nullptr;

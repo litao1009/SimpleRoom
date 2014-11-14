@@ -14,7 +14,7 @@ class	RoomLayoutDrawingCtrller : public IRenderController
 
 public:
 
-	RoomLayoutDrawingCtrller(const GraphODLWPtr& graphODL);
+	RoomLayoutDrawingCtrller(const GraphODLWPtr& graphODL, const SRenderContextWPtr& rc);
 	~RoomLayoutDrawingCtrller();
 
 public:

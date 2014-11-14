@@ -1,7 +1,7 @@
 #pragma once
 
 #include "irrEngine/IRenderController.h"
-#include "ODL/BaseODLFwd.h"
+#include "ODL/GraphODLFwd.h"
 
 class	RoomLayoutPictureCtrller : public IRenderController
 {
@@ -10,7 +10,7 @@ class	RoomLayoutPictureCtrller : public IRenderController
 
 public:
 
-	RoomLayoutPictureCtrller();
+	RoomLayoutPictureCtrller(const GraphODLWPtr& odl, const SRenderContextWPtr& rc);
 	~RoomLayoutPictureCtrller();
 
 public://IRenderController
@@ -23,13 +23,9 @@ public://IRenderController
 
 	virtual bool	OnPostEvent(const irr::SEvent& event);
 
-public:
-
-	void	SetRootODL(const BaseODLWPtr& odl) { BaseODL_ = odl; }
-
 private:
 
-	BaseODLWPtr	BaseODL_;
+	GraphODLWPtr	BaseODL_;
 
 };
 

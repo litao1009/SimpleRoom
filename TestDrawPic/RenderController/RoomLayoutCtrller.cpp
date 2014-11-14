@@ -3,6 +3,16 @@
 #include "RoomLayoutCtrller.h"
 #include "UserEvent.h"
 
+#include "RenderController/RoomLayoutDrawingCtrller.h"
+#include "RenderController/RoomLayoutPictureCtrller.h"
+#include "RenderController/RoomLayoutBrowserCtrller.h"
+
+RoomLayoutCtrller::RoomLayoutCtrller( const GraphODLWPtr& odl, const SRenderContextWPtr& rc ):StatesController(rc), GraphODL_(odl)
+{
+
+}
+
+
 bool RoomLayoutCtrller::OnPostEvent( const irr::SEvent& evt )
 {
 	if ( evt.EventType == irr::EET_USER_EVENT )
@@ -35,4 +45,19 @@ bool RoomLayoutCtrller::OnPostEvent( const irr::SEvent& evt )
 	}
 
 	return StatesController::OnPostEvent(evt);
+}
+
+void RoomLayoutCtrller::Init()
+{
+	//ÁÙÄ¡Í¼
+	AddController(ERoomLayoutSatate::ERS_PICTURE, std::make_shared<RoomLayoutPictureCtrller>(GraphODL_, GetRenderContextSPtr()));
+
+	//»æÖÆ
+	AddController(ERoomLayoutSatate::ERS_DRAWING, std::make_shared<RoomLayoutDrawingCtrller>(GraphODL_, GetRenderContextSPtr()));
+
+	//ä¯ÀÀ
+	AddController(ERoomLayoutSatate::ERS_BROWSE, std::make_shared<RoomLayoutBrowserCtrller>(GraphODL_, GetRenderContextSPtr()));
+
+	//Ä¬ÈÏ×´Ì¬
+	SetCurrentState(ERoomLayoutSatate::ERS_BROWSE);
 }
