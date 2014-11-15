@@ -6,10 +6,13 @@
 
 class DlgRoomLayoutWallProperty : public CDialogEx
 {
+	class Imp;
+	std::unique_ptr<Imp> ImpUPtr_;
+
 	DECLARE_DYNAMIC(DlgRoomLayoutWallProperty)
 
 public:
-	DlgRoomLayoutWallProperty(CWnd* pParent = NULL);   // 标准构造函数
+	DlgRoomLayoutWallProperty(int data, CWnd* pParent = NULL);   // 标准构造函数
 	virtual ~DlgRoomLayoutWallProperty();
 
 // 对话框数据
@@ -21,11 +24,18 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
 
-	afx_msg void OnEnChangeTxtNum();
-
 private:
 
-	CEdit	Num_;
 	CButton	OKBtn_;
-	int		Result_;
+	int		HeightValue_;
+	int		ThicknessValue_;
+	bool	HeightValid_;
+	bool	ThicknessValid_;
+public:
+	CEdit HeightNum_;
+	CEdit ThicknessNum_;
+	afx_msg void OnEnChangeTxtThicknessNum();
+	afx_msg void OnEnChangeTxtHeightNum();
+	afx_msg void OnBnClickedOk();
+	virtual BOOL OnInitDialog();
 };

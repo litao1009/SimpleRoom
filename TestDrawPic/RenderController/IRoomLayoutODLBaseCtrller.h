@@ -15,7 +15,7 @@ public:
 
 	BaseODLWPtr&	GetPickingODL() { return PickingODL_; }
 
-	virtual	bool	Valid() = 0;
+	virtual	bool	CheckValid() = 0;
 
 private:
 

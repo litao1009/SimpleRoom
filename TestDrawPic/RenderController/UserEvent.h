@@ -60,6 +60,13 @@ public:
 	float	SetupHeight_;
 };
 
+class	SEventWallInfo
+{
+public:
+	float	Thickness_;
+	float	Height_;
+};
+
 
 
 #define WM_USER_ROOMLAYOUT_PICTUREREFLINE_SIZE	DEFINE_USER_MESSAGE(EUT_ROOMLAYOUT_PICTUREREFLINE_SIZE)

@@ -21,23 +21,16 @@ public://IRenderController
 
 	virtual	bool	OnPostEvent(const irr::SEvent& evt);
 
-	virtual	void	OnResize();
-
 	virtual bool	PreRender3D();
 
 	virtual void	PostRender3D();
 
-	virtual bool	PreRender2D();
-
-	virtual void	PostRender2D();
-
 public:
 
-	virtual	bool	Valid();
+	virtual	bool	CheckValid();
 
 private:
 
-	irr::core::vector2di	CursorIPos_;
 	GraphODLWPtr			RootODL_;
 };
 

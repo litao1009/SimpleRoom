@@ -45,6 +45,10 @@ public:
 	bool				IsPicking() const { return Picking_; }
 	void				SetPicking(bool val) { Picking_ = val; UpdatePicking(); }
 
+	BaseBLLSPtr			GetBLL() const { return BaseBLL_; }
+
+	void				SetBLL(const BaseBLLSPtr& bll) { BaseBLL_ = bll; }
+
 protected:
 
 	virtual void		UpdateSweeping() {}
@@ -53,6 +57,7 @@ protected:
 
 private:
 
+	BaseBLLSPtr			BaseBLL_;
 	gp_Trsf				AbsoluteTransform_;
 	bool				Dirty_;
 	bool				Sweeping_;

@@ -114,7 +114,10 @@
 #define IDC_TXT_MIN_3                   1033
 #define IDC_TXT_MAX_3                   1034
 #define IDC_TXT_MIN_4                   1035
+#define IDC_TXT_THICKNESS_NUM           1035
 #define IDC_TXT_MAX_4                   1036
+#define IDC_TXT_THICKNESS_NUM2          1036
+#define IDC_TXT_HEIGHT_NUM              1036
 #define IDC_TXT_MIN_5                   1037
 #define IDC_TXT_MAX_5                   1038
 #define ID_WRITE_PASTEASHYPERLINK       32770
@@ -163,7 +166,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        330
 #define _APS_NEXT_COMMAND_VALUE         32838
-#define _APS_NEXT_CONTROL_VALUE         1035
+#define _APS_NEXT_CONTROL_VALUE         1036
 #define _APS_NEXT_SYMED_VALUE           321
 #endif
 #endif

@@ -14,29 +14,42 @@
 
 #include <boost/optional.hpp>
 
+using namespace irr;
+using namespace core;
+
+enum class EDoorState
+{
+	EDS_SWEEPING,
+	EDS_CREATING_INIT,
+	EDS_CREATING,
+	EDS_PICKING
+};
+
 class	RoomLayoutDoorController::Imp
 {
 public:
 
-	enum EDoorState
-	{
-		EDS_NONE,
-		EDS_CREATE,
-		EDS_PICKING
-	};
-
 	Imp()
 	{
-		State_ = EDS_NONE;
+		State_ = EDoorState::EDS_SWEEPING;
 		Checker_ = false;
+		EscapePressDown_ = false;
+		LMouseLeftUp_ = false;
+		LMousePressDown_ = false;
 	}
 
 public:
 
+	bool			EscapePressDown_;
+	bool			LMouseLeftUp_;
+	bool			LMousePressDown_;
+	bool			Checker_;
 	EDoorState		State_;
 	DoorODLSPtr		CreatedDoor_;
 	WallODLWPtr		PickingWall_;
-	bool			Checker_;
+	vector2di		CursorIPos_;
+	vector3df		CurrentPos_;
+
 	boost::optional<SEventDoorInfo>	NewInfo_;			
 };
 
@@ -61,76 +74,57 @@ bool RoomLayoutDoorController::OnPostEvent( const irr::SEvent& evt )
 
 	if ( evt.EventType == irr::EET_MOUSE_INPUT_EVENT && evt.MouseInput.Event == irr::EMIE_MOUSE_MOVED )
 	{
-		CursorIPos_.X = evt.MouseInput.X;
-		CursorIPos_.Y = evt.MouseInput.Y;
+		imp_.CursorIPos_.X = evt.MouseInput.X;
+		imp_.CursorIPos_.Y = evt.MouseInput.Y;
 	}
 
 	if ( evt.EventType == irr::EET_USER_EVENT && evt.UserEvent.UserData1 == EUT_ROOMLAYOUT_TEST_DOOR )
 	{
 		auto doorInfo = static_cast<SEventDoorInfo*>(reinterpret_cast<void*>(evt.UserEvent.UserData2));
 		imp_.NewInfo_ = *doorInfo;
-
+		imp_.State_ = EDoorState::EDS_CREATING_INIT;
 	}
 
-	switch (imp_.State_)
+	if ( evt.EventType == irr::EET_KEY_INPUT_EVENT && evt.KeyInput.Key == irr::KEY_ESCAPE && evt.KeyInput.PressedDown )
 	{
-	case Imp::EDS_NONE:
-		break;
-	case Imp::EDS_CREATE:
-		{
-			if ( evt.EventType == irr::EET_KEY_INPUT_EVENT && evt.KeyInput.Key == irr::KEY_ESCAPE && !evt.KeyInput.PressedDown )
-			{
-				imp_.State_ = Imp::EDS_NONE;
-				if ( ImpUPtr_->CreatedDoor_ )
-				{
-					ImpUPtr_->CreatedDoor_->RemoveFromParent();
-					ImpUPtr_->CreatedDoor_.reset();
-				}
-			}
+		imp_.EscapePressDown_ = true;
+	}
 
-			if ( evt.EventType == irr::EET_MOUSE_INPUT_EVENT && evt.MouseInput.Event == irr::EMIE_LMOUSE_LEFT_UP )
-			{
-				if ( ImpUPtr_->Checker_ )
-				{
-					ImpUPtr_->PickingWall_.lock()->CutHole(ImpUPtr_->CreatedDoor_);
-					imp_.State_ = Imp::EDS_NONE;
-					if ( ImpUPtr_->CreatedDoor_ )
-					{
-						ImpUPtr_->CreatedDoor_.reset();
-					}
-					ImpUPtr_->Checker_ = false;
-					ImpUPtr_->NewInfo_ = boost::none;
-					SetEnable(false);
-				}
-			}
-		}
-		break;
-	case Imp::EDS_PICKING:
-		break;
-	default:
-		break;
+	if ( evt.EventType == irr::EET_MOUSE_INPUT_EVENT && evt.MouseInput.Event == irr::EMIE_LMOUSE_LEFT_UP )
+	{
+		imp_.LMouseLeftUp_ = true;
+	}
+
+	if ( evt.EventType == irr::EET_MOUSE_INPUT_EVENT && evt.MouseInput.Event == irr::EMIE_LMOUSE_PRESSED_DOWN )
+	{
+		imp_.LMousePressDown_ = true;;
 	}
 
 	return false;
 }
 
-void RoomLayoutDoorController::OnResize()
-{
-
-}
 
 bool RoomLayoutDoorController::PreRender3D()
 {
 	auto& imp_ = *ImpUPtr_;
 
+	plane3df plan(0,0,0,0,1,0);
+	auto line = GetRenderContextSPtr()->Smgr_->getSceneCollisionManager()->getRayFromScreenCoordinates(imp_.CursorIPos_);
+	plan.getIntersectionWithLine(line.start, line.getVector(), imp_.CurrentPos_);
+	imp_.CurrentPos_.Y = 0;
+	gp_Pnt cursorPnt(imp_.CurrentPos_.X, imp_.CurrentPos_.Y, imp_.CurrentPos_.Z);
+
 	switch (imp_.State_)
 	{
-	case Imp::EDS_NONE:
+	case EDoorState::EDS_SWEEPING:
 		{
-			if ( !imp_.NewInfo_ )
-			{
-				break;
-			}
+			auto activeDoor = std::static_pointer_cast<DoorODL>(GetPickingODL().lock());
+			activeDoor->SetSweeping(true);
+		}
+		break;
+	case EDoorState::EDS_CREATING_INIT:
+		{
+			assert(imp_.NewInfo_);
 
 			imp_.CreatedDoor_ = DoorODL::Create<DoorODL>(GetRenderContextSPtr());
 			imp_.CreatedDoor_->SetHoleSize(imp_.NewInfo_->XLength_, imp_.NewInfo_->YLength_, imp_.NewInfo_->ZLength_);
@@ -139,41 +133,58 @@ bool RoomLayoutDoorController::PreRender3D()
 
 			RootODL_.lock()->AddChild(imp_.CreatedDoor_);
 
-			auto line = GetRenderContextSPtr()->Smgr_->getSceneCollisionManager()->getRayFromScreenCoordinates(CursorIPos_);
-
-			irr::core::plane3df curPlan(0,imp_.NewInfo_->YLength_/2, 0, 0, 1, 0);
-			irr::core::vector3df newPos;
-			curPlan.getIntersectionWithLine(line.start, line.getVector(), newPos);
+			auto newPos = imp_.CurrentPos_;
 			newPos.Y = imp_.NewInfo_->YLength_/2;
 
 			imp_.CreatedDoor_->SetTranslation(gp_XYZ(newPos.X, newPos.Y, newPos.Z));
 			imp_.CreatedDoor_->GetDataSceneNode()->setPosition(newPos);
 
-			imp_.State_ = Imp::EDS_CREATE;
+			imp_.State_ = EDoorState::EDS_CREATING;
 		}
 		break;
-	case Imp::EDS_CREATE:
+	case EDoorState::EDS_CREATING:
 		{
-			auto curZone = imp_.CreatedDoor_->GetHoleSize();
-			irr::core::plane3df curPlan(0,static_cast<float>(curZone.Y()/2), 0, 0, 1, 0);
-			auto line = GetRenderContextSPtr()->Smgr_->getSceneCollisionManager()->getRayFromScreenCoordinates(CursorIPos_);
-			irr::core::vector3df newPos;
-			curPlan.getIntersectionWithLine(line.start, line.getVector(), newPos);
-			newPos.Y = static_cast<float>(curZone.Y()/2);
-			gp_Pnt lineStartPnt(line.start.X, line.start.Y, line.start.Z);
+			if ( imp_.LMousePressDown_ )
+			{
+				if ( imp_.Checker_ )
+				{
+					ImpUPtr_->PickingWall_.lock()->CutHole(ImpUPtr_->CreatedDoor_);
+					if ( ImpUPtr_->CreatedDoor_ )
+					{
+						ImpUPtr_->CreatedDoor_.reset();
+					}
+					ImpUPtr_->Checker_ = false;
+					ImpUPtr_->NewInfo_ = boost::none;
 
-			auto curEdge = BRepBuilderAPI_MakeEdge(lineStartPnt, gp_Pnt(line.end.X, line.end.Y, line.end.Z)).Edge();
-			BRepAdaptor_Curve edgeAdaptor(curEdge);
-			auto curGpLine = edgeAdaptor.Line();
+					imp_.State_ = EDoorState::EDS_SWEEPING;
+					break;
+				}
+			}
+
+			if ( imp_.EscapePressDown_ )
+			{
+				if ( imp_.CreatedDoor_ )
+				{
+					imp_.CreatedDoor_->RemoveFromParent();
+					imp_.CreatedDoor_.reset();
+				}
+
+				imp_.State_ = EDoorState::EDS_SWEEPING;
+				break;
+			}
+
+			auto curZone = imp_.CreatedDoor_->GetHoleSize();
+			
+			gp_Lin cursorLin(cursorPnt, gp::DY().Reversed());
 
 			auto spPickingNode = imp_.PickingWall_.lock();
 			if ( spPickingNode )
 			{
-				if ( !spPickingNode->GetBaseBndBox().IsOut(curGpLine.Transformed(spPickingNode->GetAbsoluteTransform().Inverted())) )
+				if ( !spPickingNode->GetBaseBndBox().IsOut(cursorLin.Transformed(spPickingNode->GetAbsoluteTransform().Inverted())) )
 				{
 					const auto& box = spPickingNode->GetBaseBndBox();
 					auto transform = spPickingNode->GetAbsoluteTransform().Inverted();
-					gp_Pnt curPnt(newPos.X, newPos.Y, newPos.Z);
+					gp_Pnt curPnt = cursorPnt;
 					curPnt.Transform(transform);
 
 					Standard_Real xMin,yMin,zMin,xMax,yMax,zMax;
@@ -182,7 +193,7 @@ bool RoomLayoutDoorController::PreRender3D()
 					imp_.CreatedDoor_->SetTranslation(gp_XYZ(curPnt.X(), (curZone.Y()-(yMax-yMin))/2, 0));
 					imp_.CreatedDoor_->GetDataSceneNode()->setPosition(irr::core::vector3df(static_cast<float>(curPnt.X()), (static_cast<float>(curZone.Y()-(yMax-yMin)))/2, 0));
 					
-					return false;
+					break;
 				}
 				else
 				{
@@ -198,7 +209,7 @@ bool RoomLayoutDoorController::PreRender3D()
 					continue;
 				}
 
-				if ( wallODL->GetBaseBndBox().IsOut(curGpLine.Transformed(wallODL->GetAbsoluteTransform().Inverted())) )
+				if ( wallODL->GetBaseBndBox().IsOut(cursorLin.Transformed(wallODL->GetAbsoluteTransform().Inverted())) )
 				{
 					continue;
 				}
@@ -210,7 +221,7 @@ bool RoomLayoutDoorController::PreRender3D()
 				imp_.CreatedDoor_->SetHoleSize(curZone.X(), curZone.Y(), static_cast<float>(std::abs(zMax-zMin)));
 				imp_.CreatedDoor_->UpdateHole();
 				auto transform = wallODL->GetAbsoluteTransform().Inverted();
-				gp_Pnt curPnt(newPos.X, newPos.Y, newPos.Z);
+				gp_Pnt curPnt = cursorPnt;
 				curPnt.Transform(transform);
 
 				imp_.PickingWall_ = std::static_pointer_cast<WallODL>(wallODL);
@@ -221,40 +232,97 @@ bool RoomLayoutDoorController::PreRender3D()
 				imp_.CreatedDoor_->Set2DLineColor(irr::video::SColor(0xFF8F8F8F));
 				imp_.Checker_ = true;
 
-				return false;
+				break;
 			}
 
-			imp_.CreatedDoor_->SetTranslation(gp_XYZ(newPos.X, newPos.Y, newPos.Z));
-			imp_.CreatedDoor_->GetDataSceneNode()->setPosition(newPos);
-			imp_.CreatedDoor_->Set2DLineColor(irr::video::SColor(0xFFFF0000));
-			imp_.Checker_ = false;
+			if ( imp_.PickingWall_.expired() )
+			{
+				auto newPos = imp_.CurrentPos_;
+				newPos.Y = imp_.NewInfo_->YLength_/2;
+				imp_.CreatedDoor_->SetTranslation(gp_XYZ(newPos.X, newPos.Y, newPos.Z));
+				imp_.CreatedDoor_->GetDataSceneNode()->setPosition(newPos);
+				imp_.CreatedDoor_->Set2DLineColor(irr::video::SColor(0xFFFF0000));
+				imp_.Checker_ = false;
+			}
 		}
 		break;
-	case Imp::EDS_PICKING:
+	case EDoorState::EDS_PICKING:
 		break;
 	default:
 		break;
 	}
+
+	imp_.LMousePressDown_ = false;
+	imp_.LMouseLeftUp_ = false;
+	imp_.LMousePressDown_ = false;
 
 	return false;
 }
 
 void RoomLayoutDoorController::PostRender3D()
 {
-	
+	auto& imp_ = *ImpUPtr_;
+
+	switch (imp_.State_)
+	{
+	case EDoorState::EDS_SWEEPING:
+		{
+			if ( !GetPickingODL().expired() )
+			{
+				auto activeDoor = std::static_pointer_cast<DoorODL>(GetPickingODL().lock());
+				activeDoor->SetSweeping(false);
+			}
+		}
+		break;
+	case EDoorState::EDS_CREATING_INIT:
+		{
+
+		}
+		break;
+	case EDoorState::EDS_CREATING:
+		{
+
+		}
+		break;
+	case EDoorState::EDS_PICKING:
+		{
+
+		}
+		break;
+	default:
+		break;
+	}
 }
 
-bool RoomLayoutDoorController::PreRender2D()
+bool RoomLayoutDoorController::CheckValid()
 {
-	return false;
-}
+	auto& imp_ = *ImpUPtr_;
 
-void RoomLayoutDoorController::PostRender2D()
-{
+	switch (imp_.State_)
+	{
+	case EDoorState::EDS_SWEEPING:
+		{
+			return false;
+		}
+		break;
+	case EDoorState::EDS_CREATING_INIT:
+		{
+			return true;
+		}
+		break;
+	case EDoorState::EDS_CREATING:
+		{
+			return true;
+		}
+		break;
+	case EDoorState::EDS_PICKING:
+		{
 
-}
+		}
+		break;
+	default:
+		break;
+	}
 
-bool RoomLayoutDoorController::Valid()
-{
 	return false;
 }

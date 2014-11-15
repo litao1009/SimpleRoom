@@ -86,6 +86,9 @@ void WindowMeshNode2D::render()
 	driver->drawMeshBuffer(MeshBuffer_);
 	driver->drawVertexPrimitiveList(MeshBuffer_->getVertices(), MeshBuffer_->getVertexCount(), MeshBuffer_->getIndices(), MeshBuffer_->getIndexCount()/2, EVT_STANDARD, irr::scene::EPT_TRIANGLE_FAN);
 
+	matrix4 mat;
+	mat.setTranslation(vector3df(0, 10, 0));
+	driver->setTransform(video::ETS_WORLD, mat * AbsoluteTransformation);
 	driver->setMaterial(LineMaterial_);
 	driver->drawVertexPrimitiveList(MeshBuffer_->getVertices(), MeshBuffer_->getVertexCount(), MeshBuffer_->getIndices(), MeshBuffer_->getIndexCount(), EVT_STANDARD, EPT_LINE_LOOP);
 }

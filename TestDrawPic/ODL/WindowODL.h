@@ -21,6 +21,10 @@ public:
 
 	virtual	void	Init();
 
+protected:
+
+	virtual	void	UpdateSweeping();
+
 public://HoleODL
 
 	virtual	void	UpdateHole();

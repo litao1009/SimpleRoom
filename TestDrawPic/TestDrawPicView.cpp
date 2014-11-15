@@ -260,9 +260,15 @@ LRESULT CTestDrawPicView::DefWindowProc(UINT message, WPARAM wParam, LPARAM lPar
 
 		if ( WM_USER_ROOMLAYOUT_WALL_PROPERTY == wParam )
 		{
-			DlgRoomLayoutWallProperty dlg;
-			dlg.DoModal();
+			DlgRoomLayoutWallProperty dlg(lParam);
+			
+			auto ret = dlg.DoModal();
 
+			irr::SEvent evt;
+			evt.EventType = irr::EET_USER_EVENT;
+			evt.UserEvent.UserData1 = EUT_ROOMLAYOUT_WALL_PROPERTY;
+			evt.UserEvent.UserData2 = 1 == ret ? 1 : 0;
+			m_spRenderContext->PostEvent(evt);
 		}
 
 		return TRUE;

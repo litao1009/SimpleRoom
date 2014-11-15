@@ -27,7 +27,7 @@ public://IRenderController
 
 public:
 
-	virtual	bool	Valid();
+	virtual	bool	CheckValid();
 
 private:
 
