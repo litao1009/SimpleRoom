@@ -105,6 +105,10 @@ void DoorMeshNode2D::render()
 		driver->drawVertexPrimitiveList(RectBuffer_->getVertices(), RectBuffer_->getVertexCount(), RectBuffer_->getIndices(), RectBuffer_->getIndexCount()/2, irr::video::EVT_STANDARD, irr::scene::EPT_TRIANGLE_FAN);
 	}
 	
+	irr::core::matrix4 mat;
+	mat.setTranslation(irr::core::vector3df(0,10,0));
+	driver->setTransform(irr::video::ETS_WORLD, mat * AbsoluteTransformation);
+
 	driver->setMaterial(CircleBuffer_->getMaterial());
 	driver->drawVertexPrimitiveList(RectBuffer_->getVertices(), RectBuffer_->getVertexCount(), RectBuffer_->getIndices(), RectBuffer_->getIndexCount(), irr::video::EVT_STANDARD, irr::scene::EPT_LINE_LOOP);
 
