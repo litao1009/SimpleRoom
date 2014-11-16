@@ -52,6 +52,8 @@ public:
 
 	CornerODLWPtr		GetSecondCorner() const { return SecondCorner_; }
 
+	gp_Dir				GetDirection(const CornerODLSPtr& fromCorner = nullptr) const;
+
 	CornerODLWPtr		GetOtherCorner(const CornerODLSPtr& corner ) const
 	{
 		assert(FirstCorner_.lock()==corner || SecondCorner_.lock()==corner);

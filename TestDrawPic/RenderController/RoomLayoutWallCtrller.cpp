@@ -13,6 +13,7 @@ enum class EWallState
 {
 	EWS_SWEEPING,
 	EWS_MOUSEHOLDING,
+	EWS_MOVING_INIT,
 	EWS_MOVING,
 	EWS_PROPERTY,
 	EWS_PROPERTY_WAIT,
@@ -45,6 +46,9 @@ public:
 	vector3df		CurrentPos_;
 	SEventWallInfo	EventInfo_;
 	GraphODLWPtr	Graph_;
+
+	//for moving
+
 };
 
 RoomLayoutWallCtrller::RoomLayoutWallCtrller( const GraphODLWPtr& graphODL, const SRenderContextWPtr& rc ):IRoomLayoutODLBaseCtrller(rc), ImpUPtr_(new Imp)
@@ -124,7 +128,7 @@ bool RoomLayoutWallCtrller::PreRender3D()
 
 			if ( imp_.SavePos_.getDistanceFromSQ(imp_.CurrentPos_) > thickness * thickness / 4 )
 			{
-				imp_.State_ = EWallState::EWS_MOVING;
+				imp_.State_ = EWallState::EWS_MOVING_INIT;
 			}
 			else if ( imp_.LMouseLeftUp_ )
 			{
@@ -137,9 +141,43 @@ bool RoomLayoutWallCtrller::PreRender3D()
 			}
 		}
 		break;
-	case EWallState::EWS_MOVING:
+	case EWallState::EWS_MOVING_INIT:
 		{
+			auto needCreateC1 = false;
+			auto firstCorner = activeWall->GetFirstCorner().lock();
+			auto wallsOnCorner1 = imp_.Graph_.lock()->GetWallsOnCorner(firstCorner);
+			std::sort(wallsOnCorner1.begin(), wallsOnCorner1.end(), [&firstCorner](const WallODLSPtr& wall1, const WallODLSPtr& wall2)
+			{
+				auto angle1 = wall1->GetDirection(firstCorner).AngleWithRef(gp::DX(), gp::DY().Reversed());
+				angle1 = angle1 < 0 ? 2 * M_PI + angle1 : angle1;
 
+				auto angle2 = wall2->GetDirection(firstCorner).AngleWithRef(gp::DX(), gp::DY().Reversed());
+				angle2 = angle2 < 0 ? 2 * M_PI + angle2 : angle2;
+
+				return angle1 < angle2;
+			});
+
+			if ( wallsOnCorner1.empty() )
+			{
+				needCreateC1 = false;
+			}
+			else if ( 1 == wallsOnCorner1.size() )
+			{
+				needCreateC1 = Standard_True == activeWall->GetDirection().IsParallel(wallsOnCorner1.front()->GetDirection(), Precision::Angular());
+			}
+			else 
+			{
+				std::adjacent_find(wallsOnCorner1.begin(), wallsOnCorner1.end(), [&needCreateC1](const WallODLSPtr& wall1, const WallODLSPtr& wall2)
+				{
+					needCreateC1 = Standard_False == wall1->GetDirection().IsParallel(wall2->GetDirection(), Precision::Angular());
+					if ( needCreateC1 )
+					{
+						return true;
+					}
+
+					return false;
+				});
+			}
 		}
 		break;
 	case EWallState::EWS_PROPERTY:
@@ -206,7 +244,7 @@ void RoomLayoutWallCtrller::PostRender3D()
 			
 		}
 		break;
-	case EWallState::EWS_MOVING:
+	case EWallState::EWS_MOVING_INIT:
 		{
 
 		}

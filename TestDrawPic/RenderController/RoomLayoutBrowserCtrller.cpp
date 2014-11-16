@@ -27,17 +27,15 @@ public:
 
 	Imp()
 	{
-		//LMousePressDown_ = false;
+		
 	}
 
 public:
 
-	//bool							LMousePressDown_;
 	GraphODLWPtr					Graph_;
 	vector2di						CursorIPos_;
 	vector3df						CurrentPos_;
 	BaseODLWPtr						SweepingODL_;
-	//BaseODLWPtr					PickingODL_;
 	IRoomLayoutODLBaseCtrllerSPtr	ActiveCtrller_;
 	std::map<EObjectDisplayLayerType,IRoomLayoutODLBaseCtrllerSPtr>	CtrllerMap_;
 };
@@ -64,11 +62,6 @@ void RoomLayoutBrowserCtrller::Init()
 bool RoomLayoutBrowserCtrller::OnPostEvent( const irr::SEvent& evt )
 {
 	auto& imp_ = *ImpUPtr_;
-
-	if ( evt.EventType == EET_MOUSE_INPUT_EVENT && evt.MouseInput.Event == EMIE_LMOUSE_PRESSED_DOWN )
-	{
-		//imp_.LMousePressDown_ = true;
-	}
 
 	if ( evt.EventType == EET_MOUSE_INPUT_EVENT && evt.MouseInput.Event == EMIE_MOUSE_MOVED )
 	{
@@ -168,30 +161,6 @@ bool RoomLayoutBrowserCtrller::PreRender3D()
 		}
 	}
 
-// 	if ( imp_.LMousePressDown_ )
-// 	{
-// 		if ( !imp_.SweepingODL_.expired() )
-// 		{
-// 			imp_.PickingODL_ = imp_.SweepingODL_;
-// 			//imp_.ActiveCtrller_ = imp_.CtrllerMap_[imp_.PickingODL_.lock()->GetType()];
-// 		}
-// 	}
-
-	if ( !imp_.SweepingODL_.expired() )
-	{
-		//if ( imp_.SweepingODL_.lock() != imp_.PickingODL_.lock() )
-		{
-			//imp_.SweepingODL_.lock()->SetSweeping(true);
-		}
-	}
-
-// 	if ( !imp_.PickingODL_.expired() )
-// 	{
-// 		imp_.PickingODL_.lock()->SetPicking(true);
-// 	}
-
-	//imp_.LMousePressDown_ = false;
-
 	if ( imp_.ActiveCtrller_ && !imp_.ActiveCtrller_->CheckValid() )
 	{
 		imp_.ActiveCtrller_ = nullptr;
@@ -214,19 +183,6 @@ bool RoomLayoutBrowserCtrller::PreRender3D()
 void RoomLayoutBrowserCtrller::PostRender3D()
 {
 	auto& imp_ = *ImpUPtr_;
-
-	if ( !imp_.SweepingODL_.expired() )
-	{
-		//if ( imp_.SweepingODL_.lock() != imp_.PickingODL_.lock() )
-		{
-			//imp_.SweepingODL_.lock()->SetSweeping(false);
-		}
-	}
-
-// 	if ( !imp_.PickingODL_.expired() )
-// 	{
-// 		imp_.PickingODL_.lock()->SetPicking(false);
-// 	}
 
 	if ( imp_.ActiveCtrller_ )
 	{
