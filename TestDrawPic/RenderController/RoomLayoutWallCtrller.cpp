@@ -28,13 +28,8 @@ enum class EWallState
 	EWS_MOUSEHOLDING,
 	//准备基线
 	EWS_MOVING_INIT,
-	//计算轨道
-	EWS_MOVING_BEGIN,
-	//准备拆分
-	EWS_MOVING_TOSPLIT,
 	//移动
 	EWS_MOVING,
-	EWS_MOVING_FINISH,
 	EWS_PROPERTY,
 	EWS_PROPERTY_WAIT,
 	EWS_COUNT
@@ -196,26 +191,25 @@ bool RoomLayoutWallCtrller::PreRender3D()
 	case EWallState::EWS_MOVING_INIT:
 		{
 			imp_.BaseLin_ = BRepAdaptor_Curve(activeWall->GetEdge());
-			imp_.State_ = EWallState::EWS_MOVING_BEGIN;
+			imp_.State_ = EWallState::EWS_MOVING;
 		}
-	case EWallState::EWS_MOVING_BEGIN:
+	case EWallState::EWS_MOVING:
 		{
 			static	gp_Pln	compareIntCCPln(gp_Ax3(gp::Origin(), gp::DY().Reversed(), gp::DX()));
 
-			if ( imp_.LMousePressDown_ )
+			if ( imp_.LMouseLeftUp_ )
 			{
-				if ( imp_.Valid_ )
-				{
-					imp_.State_ = EWallState::EWS_SWEEPING;
-					break;
-				}
+				imp_.State_ = EWallState::EWS_SWEEPING;
+				break;
 			}
 
-			BRepAdaptor_Curve cursorBC(BRepBuilderAPI_MakeEdge(gp_Lin(cursorPnt, imp_.BaseLin_.Line().Direction())));
+			BRepAdaptor_Curve wallBC(activeWall->GetEdge());
+			BRepAdaptor_Curve cursorBC(BRepBuilderAPI_MakeEdge(gp_Lin(cursorPnt, activeWall->GetDirection())));
 			auto cursorBC2D = GeomAPI::To2d(cursorBC.Curve().Curve(), compareIntCCPln);
+
 			gp_Vec cursorVec;
 			{
-				GeomAPI_ProjectPointOnCurve cursorProj(cursorPnt, imp_.BaseLin_.Curve().Curve());
+				GeomAPI_ProjectPointOnCurve cursorProj(cursorPnt, wallBC.Curve().Curve());
 				if ( cursorProj.LowerDistance() < activeWall->GetThickness() )
 				{//不变
 					//TODO
@@ -256,67 +250,85 @@ bool RoomLayoutWallCtrller::PreRender3D()
 
 				firstTrackWall = wallsOnCorner.empty() ? nullptr : wallsOnCorner.front();
 				firstTrackBC = firstTrackWall ? firstTrackWall->GetEdge(imp_.FirstCorner_) : BRepBuilderAPI_MakeEdge(gp_Lin(imp_.FirstCorner_->GetPosition(), cursorVec));
-				needSplitFirst = firstTrackWall && firstTrackWall->GetDirection().IsParallel(activeWall->GetDirection(), Precision::Angular());
 
 				auto track2D = GeomAPI::To2d(firstTrackBC.Curve().Curve(), compareIntCCPln);
 				Geom2dAPI_InterCurveCurve icc(track2D, cursorBC2D);
 				gp_Pnt firstPnt(icc.Point(1).X(), 0, icc.Point(1).Y());
 				GeomAPI_ProjectPointOnCurve firstPPC(firstPnt, firstTrackBC.Curve().Curve());
 				
-				if ( firstPPC.LowerDistanceParameter() < firstTrackBC.FirstParameter() )//需要新建顶点
+				auto hasDiffDirWall = std::adjacent_find(wallsOnCorner.begin(), wallsOnCorner.end(), [](const WallODLSPtr& wall1, const WallODLSPtr& wall2)
 				{
-					needCreateFirst = true;
-				}
-				else if ( (firstTrackBC.LastParameter() > firstPPC.LowerDistanceParameter() && firstTrackBC.LastParameter()-firstPPC.LowerDistanceParameter() < alignRadius ) ||
-					firstPPC.LowerDistanceParameter() > firstTrackBC.LastParameter() )//需要吸附
+					return Standard_False == wall1->GetDirection().IsParallel(wall2->GetDirection(), Precision::Angular());
+				});
+
+				if ( firstPPC.LowerDistanceParameter() > firstTrackBC.FirstParameter() )//(0,180)
 				{
-					assert(firstTrackWall);
-
-					auto endCorner = firstTrackWall->GetOtherCorner(imp_.FirstCorner_).lock();
-					auto wallsOnEnd = imp_.Graph_.lock()->GetWallsOnCorner(endCorner);
-					wallsOnEnd.erase(std::find(wallsOnEnd.begin(), wallsOnEnd.end(), firstTrackWall), wallsOnEnd.end());
-
-					auto valid = true;
-					WallODLSPtr invalidWall;
-					for ( auto& curWall : wallsOnEnd )
+					if ( firstPPC.LowerDistanceParameter() > firstTrackBC.LastParameter() || firstTrackBC.LastParameter()-firstPPC.LowerDistanceParameter() < alignRadius )//吸附
 					{
-						auto rad = curWall->GetDirection(endCorner).Angle(wallDir);
+						assert(firstTrackWall);
 
-						if ( rad < 15 * M_PI / 180 )
+						auto endCorner = firstTrackWall->GetOtherCorner(imp_.FirstCorner_).lock();
+						auto wallsOnEnd = imp_.Graph_.lock()->GetWallsOnCorner(endCorner);
+						wallsOnEnd.erase(std::find(wallsOnEnd.begin(), wallsOnEnd.end(), firstTrackWall), wallsOnEnd.end());
+
+						auto valid = true;
+						WallODLSPtr invalidWall;
+						for ( auto& curWall : wallsOnEnd )
 						{
-							invalidWall = curWall;
-							valid = false;
-							break;
+							auto rad = curWall->GetDirection(endCorner).Angle(wallDir);
+
+							if ( rad < 15 * M_PI / 180 )
+							{
+								invalidWall = curWall;
+								valid = false;
+								break;
+							}
 						}
-					}
 
-					if ( !valid )
-					{
-						gp_Vec disVec(imp_.FirstCorner_->GetPosition(), endCorner->GetPosition());
-						disVec.Dot(cursorVec.Normalized());
+						if ( !valid )
+						{
+							gp_Vec disVec(imp_.FirstCorner_->GetPosition(), endCorner->GetPosition());
+							disVec.Dot(cursorVec.Normalized());
 
-						if ( disVec.SquareMagnitude() < invalidWall->GetThickness()/2 + activeWall->GetThickness()/2 )
-						{//禁止移动
-							imp_.Valid_ = false;
+							if ( disVec.SquareMagnitude() < invalidWall->GetThickness()/2 + activeWall->GetThickness()/2 )
+							{//禁止移动
+								imp_.Valid_ = false;
+							}
+							else
+							{
+								auto cosRad = disVec.Normalized().Dot(cursorVec.Normalized());
+								auto deltaPar = std::acos(invalidWall->GetThickness()/2);
+
+								firstTrackBC.D0(firstTrackBC.LastParameter()-deltaPar, cursorPnt);
+
+								cursorBC = BRepBuilderAPI_MakeEdge(gp_Lin(cursorPnt, activeWall->GetDirection())).Edge();
+								cursorBC2D = GeomAPI::To2d(cursorBC.Curve().Curve(), compareIntCCPln);
+
+								GeomAPI_ProjectPointOnCurve cursorProj(cursorPnt, wallBC.Curve().Curve());
+								cursorVec = gp_Vec(cursorProj.NearestPoint(), cursorPnt);
+							}
 						}
 						else
 						{
-							auto cosRad = disVec.Normalized().Dot(cursorVec.Normalized());
-							auto deltaPar = std::acos(invalidWall->GetThickness()/2);
-
-							firstTrackBC.D0(firstTrackBC.LastParameter()-deltaPar, cursorPnt);
-							
-							cursorBC = BRepBuilderAPI_MakeEdge(gp_Lin(cursorPnt, imp_.BaseLin_.Line().Direction())).Edge();
-							cursorBC2D = GeomAPI::To2d(cursorBC.Curve().Curve(), compareIntCCPln);
-
-							GeomAPI_ProjectPointOnCurve cursorProj(cursorPnt, imp_.BaseLin_.Curve().Curve());
-							cursorVec = gp_Vec(cursorProj.NearestPoint(), cursorPnt);
+							firstCombineCorner = endCorner;
+							needCombineFirst = true;
 						}
 					}
-					else
+					else if ( hasDiffDirWall != wallsOnCorner.end() )//需要拆分
 					{
-						firstCombineCorner = endCorner;
-						needCombineFirst = true;
+						needSplitFirst = true;
+					}
+				}
+				else if ( firstTrackWall && Standard_True == firstTrackWall->GetDirection().IsParallel(activeWall->GetDirection(), Precision::Angular()) )//180
+				{
+					needCreateFirst = true;
+				}
+				else if ( firstPPC.LowerDistanceParameter() < firstTrackBC.FirstParameter() )//(180, 360)
+				{
+					assert(!wallsOnCorner.empty());
+					if ( 1 < wallsOnCorner.size() )
+					{
+						needCreateFirst = true;
 					}
 				}
 			}
@@ -355,62 +367,146 @@ bool RoomLayoutWallCtrller::PreRender3D()
 				gp_Pnt secondPnt(icc.Point(1).X(), 0, icc.Point(1).Y());
 				GeomAPI_ProjectPointOnCurve secondPPC(secondPnt, secondTrackBC.Curve().Curve());
 
-				if ( secondPPC.LowerDistanceParameter() < secondTrackBC.FirstParameter() )
+				auto hasDiffDirWall = std::adjacent_find(wallsOnCorner.begin(), wallsOnCorner.end(), [](const WallODLSPtr& wall1, const WallODLSPtr& wall2)
 				{
-					needCreateSecond = true;
-				}
-				else if ( (secondTrackBC.LastParameter() > secondPPC.LowerDistanceParameter() && secondTrackBC.LastParameter()-secondPPC.LowerDistanceParameter() < alignRadius ) ||
-					secondPPC.LowerDistanceParameter() > secondTrackBC.LastParameter() )
+					return Standard_False == wall1->GetDirection().IsParallel(wall2->GetDirection(), Precision::Angular());
+				});
+
+				if ( secondPPC.LowerDistanceParameter() > secondTrackBC.FirstParameter() )//(0,180)
 				{
-					assert(secondTrackWall);
-
-					auto endCorner = secondTrackWall->GetOtherCorner(imp_.SecondCorner_).lock();
-					auto wallsOnEnd = imp_.Graph_.lock()->GetWallsOnCorner(endCorner);
-					wallsOnEnd.erase(std::find(wallsOnEnd.begin(), wallsOnEnd.end(), secondTrackWall), wallsOnEnd.end());
-
-					auto valid = true;
-					WallODLSPtr invalidWall;
-					for ( auto& curWall : wallsOnEnd )
+					if ( secondPPC.LowerDistanceParameter() > secondTrackBC.LastParameter() || secondTrackBC.LastParameter()-secondPPC.LowerDistanceParameter() < alignRadius )//吸附
 					{
-						auto rad = curWall->GetDirection(endCorner).Angle(wallDir);
+						assert(secondTrackWall);
 
-						if ( rad < 15 * M_PI / 180 )
+						auto endCorner = secondTrackWall->GetOtherCorner(imp_.SecondCorner_).lock();
+						auto wallsOnEnd = imp_.Graph_.lock()->GetWallsOnCorner(endCorner);
+						wallsOnEnd.erase(std::find(wallsOnEnd.begin(), wallsOnEnd.end(), secondTrackWall), wallsOnEnd.end());
+
+						auto valid = true;
+						WallODLSPtr invalidWall;
+						for ( auto& curWall : wallsOnEnd )
 						{
-							invalidWall = curWall;
-							valid = false;
-							break;
+							auto rad = curWall->GetDirection(endCorner).Angle(wallDir);
+
+							if ( rad < 15 * M_PI / 180 )
+							{
+								invalidWall = curWall;
+								valid = false;
+								break;
+							}
 						}
-					}
 
-					if ( !valid )
-					{
-						gp_Vec disVec(imp_.SecondCorner_->GetPosition(), endCorner->GetPosition());
-						disVec.Dot(cursorVec.Normalized());
+						if ( !valid )
+						{
+							gp_Vec disVec(imp_.SecondCorner_->GetPosition(), endCorner->GetPosition());
+							disVec.Dot(cursorVec.Normalized());
 
-						if ( disVec.SquareMagnitude() < invalidWall->GetThickness()/2 + activeWall->GetThickness()/2 )
-						{//禁止移动
-							imp_.Valid_ = false;
+							if ( disVec.SquareMagnitude() < invalidWall->GetThickness()/2 + activeWall->GetThickness()/2 )
+							{//禁止移动
+								imp_.Valid_ = false;
+							}
+							else
+							{
+								auto cosRad = disVec.Normalized().Dot(cursorVec.Normalized());
+								auto deltaPar = std::acos(invalidWall->GetThickness()/2);
+
+								secondTrackBC.D0(secondTrackBC.LastParameter()-deltaPar, cursorPnt);
+
+								cursorBC = BRepBuilderAPI_MakeEdge(gp_Lin(cursorPnt, activeWall->GetDirection())).Edge();
+								cursorBC2D = GeomAPI::To2d(cursorBC.Curve().Curve(), compareIntCCPln);
+
+								GeomAPI_ProjectPointOnCurve cursorProj(cursorPnt, wallBC.Curve().Curve());
+								cursorVec = gp_Vec(cursorProj.NearestPoint(), cursorPnt);
+							}
 						}
 						else
 						{
-							auto cosRad = disVec.Normalized().Dot(cursorVec.Normalized());
-							auto deltaPar = std::acos(invalidWall->GetThickness()/2);
-
-							secondTrackBC.D0(secondTrackBC.LastParameter()-deltaPar, cursorPnt);
-
-							cursorBC = BRepBuilderAPI_MakeEdge(gp_Lin(cursorPnt, imp_.BaseLin_.Line().Direction())).Edge();
-							cursorBC2D = GeomAPI::To2d(cursorBC.Curve().Curve(), compareIntCCPln);
-
-							GeomAPI_ProjectPointOnCurve cursorProj(cursorPnt, imp_.BaseLin_.Curve().Curve());
-							cursorVec = gp_Vec(cursorProj.NearestPoint(), cursorPnt);
+							secondCombineCorner = endCorner;
+							needCombineSecond = true;
 						}
 					}
-					else
+					else if ( hasDiffDirWall != wallsOnCorner.end() )//需要拆分
 					{
-						secondCombineCorner = endCorner;
-						needCombineSecond = true;
+						needSplitSecond = true;
 					}
 				}
+				else if ( secondTrackWall && Standard_True == secondTrackWall->GetDirection().IsParallel(activeWall->GetDirection(), Precision::Angular()) )//180
+				{
+					needCreateSecond = true;
+				}
+				else if ( secondPPC.LowerDistanceParameter() < secondTrackBC.FirstParameter() )//(180, 360)
+				{
+					assert(!wallsOnCorner.empty());
+					if ( 1 < wallsOnCorner.size() )
+					{
+						needCreateSecond = true;
+					}
+				}
+
+// 				else if ( secondTrackWall && Standard_True == secondTrackWall->GetDirection().IsParallel(activeWall->GetDirection(), Precision::Angular()) )
+// 				{
+// 					needCreateSecond = true;
+// 				}
+// 				else if ( secondPPC.LowerDistanceParameter() < secondTrackBC.FirstParameter() )
+// 				{
+// 					assert(!wallsOnCorner.empty());
+// 					if ( 1 < wallsOnCorner.size() )
+// 					{
+// 						needCreateSecond = true;
+// 					}
+// 				}
+// 				else if ( (secondTrackBC.LastParameter() > secondPPC.LowerDistanceParameter() && secondTrackBC.LastParameter()-secondPPC.LowerDistanceParameter() < alignRadius ) ||
+// 					secondPPC.LowerDistanceParameter() > secondTrackBC.LastParameter() )
+// 				{
+// 					assert(secondTrackWall);
+// 
+// 					auto endCorner = secondTrackWall->GetOtherCorner(imp_.SecondCorner_).lock();
+// 					auto wallsOnEnd = imp_.Graph_.lock()->GetWallsOnCorner(endCorner);
+// 					wallsOnEnd.erase(std::find(wallsOnEnd.begin(), wallsOnEnd.end(), secondTrackWall), wallsOnEnd.end());
+// 
+// 					auto valid = true;
+// 					WallODLSPtr invalidWall;
+// 					for ( auto& curWall : wallsOnEnd )
+// 					{
+// 						auto rad = curWall->GetDirection(endCorner).Angle(wallDir);
+// 
+// 						if ( rad < 15 * M_PI / 180 )
+// 						{
+// 							invalidWall = curWall;
+// 							valid = false;
+// 							break;
+// 						}
+// 					}
+// 
+// 					if ( !valid )
+// 					{
+// 						gp_Vec disVec(imp_.SecondCorner_->GetPosition(), endCorner->GetPosition());
+// 						disVec.Dot(cursorVec.Normalized());
+// 
+// 						if ( disVec.SquareMagnitude() < invalidWall->GetThickness()/2 + activeWall->GetThickness()/2 )
+// 						{//禁止移动
+// 							imp_.Valid_ = false;
+// 						}
+// 						else
+// 						{
+// 							auto cosRad = disVec.Normalized().Dot(cursorVec.Normalized());
+// 							auto deltaPar = std::acos(invalidWall->GetThickness()/2);
+// 
+// 							secondTrackBC.D0(secondTrackBC.LastParameter()-deltaPar, cursorPnt);
+// 
+// 							cursorBC = BRepBuilderAPI_MakeEdge(gp_Lin(cursorPnt, activeWall->GetDirection())).Edge();
+// 							cursorBC2D = GeomAPI::To2d(cursorBC.Curve().Curve(), compareIntCCPln);
+// 
+// 							GeomAPI_ProjectPointOnCurve cursorProj(cursorPnt, wallBC.Curve().Curve());
+// 							cursorVec = gp_Vec(cursorProj.NearestPoint(), cursorPnt);
+// 						}
+// 					}
+// 					else
+// 					{
+// 						secondCombineCorner = endCorner;
+// 						needCombineSecond = true;
+// 					}
+// 				}
 			}
 
 			if ( !imp_.Valid_ )
