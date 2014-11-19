@@ -501,7 +501,7 @@ void WallODL::CutHole( const HoleODLSPtr& hole )
 	SetDefaultTexture();
 }
 
-gp_Dir WallODL::GetDirection(const CornerODLSPtr& fromCorner = nullptr) const
+gp_Dir WallODL::GetDirection(const CornerODLSPtr& fromCorner) const
 {
 	assert(!fromCorner || fromCorner == FirstCorner_.lock() || fromCorner == SecondCorner_.lock());
 

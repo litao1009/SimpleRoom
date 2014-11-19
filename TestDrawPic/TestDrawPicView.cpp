@@ -108,30 +108,17 @@ void CTestDrawPicView::OnDraw(CDC* pDC)
 	if (!pDoc)
 		return;
 }
+
 void CTestDrawPicView::OnTimer(UINT_PTR nIDEvent)
 {
-	KillTimer(nIDEvent);
-
 	static auto saveTime = ::GetTickCount();
 
-	if ( m_Render3D )
+	auto elapsed = ::GetTickCount() - saveTime;
+	if ( m_Render3D && elapsed > 30 )
 	{
 		Render();
-	}
-
-	auto curTime = ::GetTickCount();
-
-	auto elapsed = curTime - saveTime;
-	saveTime = curTime;
-	
-	if ( elapsed > 33 )
-	{
-		SetTimer(nIDEvent, 1, NULL);
-	}
-	else
-	{
-		SetTimer(nIDEvent, 33 - elapsed, NULL);
-	}
+		saveTime = ::GetTickCount();
+	}	
 	
 	CCtrlFuncView::OnTimer(nIDEvent);
 }
@@ -191,7 +178,7 @@ BOOL CTestDrawPicView::Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName, DWO
 	{
 		m_pDrop->Register(this);
 	}
-	SetTimer(1000, 20/*ms*/,NULL);
+	SetTimer(1000, 1/*ms*/,NULL);
 
 	ImpUPtr_->DlgRoomLayoutDrawlinInfo_ = std::make_shared<DlgRoomLayoutDrawlinInfo>(m_spRenderContext, this);
 	ImpUPtr_->DlgRoomLayoutDrawlinInfo_->Create(DlgRoomLayoutDrawlinInfo::IDD, this);
@@ -616,8 +603,9 @@ void CTestDrawPicView::OnBtnRoomlayoutTestWindow()
 
 void CTestDrawPicView::OnDestroy()
 {
-	CCtrlFuncView::OnDestroy();
-
+	m_Render3D = false;
 	// TODO: 在此处添加消息处理程序代码
 	KillTimer(1000);
+
+	CCtrlFuncView::OnDestroy();
 }
