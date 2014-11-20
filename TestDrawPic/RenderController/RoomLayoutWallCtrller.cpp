@@ -512,17 +512,25 @@ bool RoomLayoutWallCtrller::PreRender3D()
 				if ( needSplitFirst )
 				{
 					assert(firstTrackWall);
-					imp_.FirstCorner_ = imp_.Graph_.lock()->CreateCornerBySplitWall(firstTrackWall, firstPnt);
+					imp_.FirstCorner_ = imp_.Graph_.lock()->CreateCornerBySplitWall(firstTrackWall, firstPnt, false, false);
+				}
+				else
+				{
+					imp_.FirstCorner_->SetPosition(firstPnt);
 				}
 
 				if ( needSplitSecond )
 				{
 					assert(secondTrackWall);
-					imp_.SecondCorner_ = imp_.Graph_.lock()->CreateCornerBySplitWall(secondTrackWall, secondPnt);
+					imp_.SecondCorner_ = imp_.Graph_.lock()->CreateCornerBySplitWall(secondTrackWall, secondPnt, false, false);
+				}
+				else
+				{
+					imp_.SecondCorner_->SetPosition(secondPnt);
 				}
 
-				imp_.Graph_.lock()->RemoveWall(activeWall, true, false, false);
 				auto newWall = imp_.Graph_.lock()->AddWall(imp_.FirstCorner_, imp_.SecondCorner_, false, false);
+				imp_.Graph_.lock()->RemoveWall(activeWall, true, false, false);
 				SetPickingODL(newWall);
 				activeWall = newWall;
 			}
@@ -613,20 +621,31 @@ bool RoomLayoutWallCtrller::PreRender3D()
 			{
 				imp_.FirstCorner_->SetPosition(firstPnt);
 				imp_.SecondCorner_->SetPosition(secondPnt);
+
+				for ( auto& curWall : imp_.Graph_.lock()->GetWallsOnCorner(imp_.FirstCorner_) )
+				{
+					curWall->SetDirty(true);
+				}
+
+				for ( auto& curWall : imp_.Graph_.lock()->GetWallsOnCorner(imp_.SecondCorner_) )
+				{
+					curWall->SetDirty(true);
+				}
 			}
 
 			if ( oldFirstPnt.SquareDistance(firstPnt) > 1 || oldSecondPnt.SquareDistance(secondPnt) > 1)
 			{
 				if ( firstTrackWall )
 				{
-					firstTrackWall->SetDirty(false);
+					firstTrackWall->SetDirty(true);
 				}
 				if ( secondTrackWall )
 				{
-					firstTrackWall->SetDirty(false);
+					secondTrackWall->SetDirty(true);
 				}
+				activeWall->SetDirty(true);
 				
-				imp_.Graph_.lock()->SearchRooms();
+				//imp_.Graph_.lock()->SearchRooms();
 				imp_.Graph_.lock()->UpdateWallMeshIfNeeded();
 			}
 			

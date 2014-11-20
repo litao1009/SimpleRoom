@@ -44,6 +44,12 @@ public:
 				return;
 			}
 
+			if ( CurCorners_.size() < 3 )
+			{
+				FoundRooms_.pop_back();
+				return;
+			}
+
 			FoundRooms_.back()->SetWallList(CurWalls_);
 			FoundRooms_.back()->SetCornerList(CurCorners_);
 
@@ -639,7 +645,7 @@ void GraphODL::UpdateWallMeshIfNeeded()
 	{
 		if ( curWall->IsDirty() )
 		{
-			curWall->UpdateBaseMesh();
+			curWall->Update2DMesh();
 			curWall->SetDirty(false);
 		}
 	}

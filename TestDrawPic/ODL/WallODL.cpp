@@ -526,10 +526,6 @@ void WallODL::Update2DMesh()
 			ImpUPtr_->Lable_->setRotation(irr::core::vector3df(0, 180, 0));
 		}
 	}
-
-	{//ÉèÖÃĞ§¹û
-		SetDefaultTexture();
-	}
 }
 
 
