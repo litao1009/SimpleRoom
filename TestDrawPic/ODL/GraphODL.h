@@ -38,15 +38,19 @@ public:
 
 	CornerODLSPtr	CreateCorner(const gp_Pnt& position);
 
-	CornerODLSPtr	CreateCornerBySplitWall(const WallODLSPtr& toSplit, const gp_Pnt& position);
+	CornerODLSPtr	CreateCornerBySplitWall(const WallODLSPtr& toSplit, const gp_Pnt& position, bool researchRoom = true, bool updateMesh = true);
 
 	bool			RemoveCorner(const CornerODLSPtr& corner);
 
-	WallODLSPtr		AddWall(const CornerODLSPtr& corner1, const CornerODLSPtr& corner2 );
+	WallODLSPtr		AddWall(const CornerODLSPtr& corner1, const CornerODLSPtr& corner2, bool researchRoom = true, bool updateMesh = true );
 
-	bool			RemoveWall(const WallODLSPtr& wall );
+	bool			RemoveWall(const WallODLSPtr& wall, bool needMerge = true, bool researchRoom = true, bool updateMesh = true );
 
-	void			MergeWallIfNeeded(const CornerODLSPtr& corner);
+	void			MergeWallIfNeeded(const CornerODLSPtr& corner, bool researchRoom = true, bool updateMesh = true );
+
+	void			SearchRooms();
+
+	void			UpdateWallMeshIfNeeded();
 
 private:
 

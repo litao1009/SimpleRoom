@@ -424,6 +424,115 @@ void WallODL::UpdateBaseMesh()
 	}
 }
 
+void WallODL::Update2DMesh()
+{
+	if ( IsBezierCurve() )
+	{
+		//TODO
+	}
+	else
+	{
+		auto thisSPtr = std::static_pointer_cast<WallODL>(shared_from_this());
+
+		Imp::CalculateSideMesh(thisSPtr, FirstCorner_.lock());
+		Imp::CalculateSideMesh(thisSPtr, SecondCorner_.lock());
+	}
+
+	BRepBuilderAPI_MakePolygon mp;
+	for ( auto& curPnt : MeshPoints_ )
+	{
+		mp.Add(curPnt);
+	}
+	mp.Close();
+
+	assert(mp.IsDone());
+
+	auto bottomFace = BRepBuilderAPI_MakeFace(mp.Wire()).Face();
+	auto solid = BRepPrimAPI_MakePrism(bottomFace, gp_Vec(gp::Origin(), gp_Pnt(0, Height_, 0))).Shape();
+
+	gp_Trsf absoluteToRelation;
+	{//设置位置
+		gp_Trsf rotToDZ;
+		gp_Trsf transToCenter;
+
+		gp_Dir wallDir = gp_Vec(FirstCorner_.lock()->GetPosition(), SecondCorner_.lock()->GetPosition());
+		wallDir.Cross(gp::DY());
+		rotToDZ.SetRotation(gp_Quaternion(wallDir, gp::DZ()));
+		solid.Move(rotToDZ);
+
+		Bnd_Box wallBox;
+		gp_Pnt wallCenter;
+		{
+			BRepBndLib::Add(solid, wallBox);
+			Standard_Real xMin,yMin,zMin,xMax,yMax,zMax;
+			wallBox.Get(xMin, yMin, zMin, xMax, yMax, zMax);
+			wallCenter.SetXYZ(gp_XYZ((xMin+xMax)/2, (yMin+yMax)/2, (zMin+zMax)/2));
+		}
+
+		transToCenter.SetTranslationPart(gp_Vec(gp::Origin(), wallCenter).Reversed());
+
+		solid.Move(transToCenter);
+
+		absoluteToRelation = transToCenter * rotToDZ;
+
+		auto relationToAbsolute = absoluteToRelation.Inverted();
+		auto translation = relationToAbsolute.TranslationPart();
+		auto rotation = relationToAbsolute.GetRotation();
+
+		SetBaseShape(solid);
+
+		SetTranslation(translation);
+		GetDataSceneNode()->setPosition(irr::core::vector3df(static_cast<float>(translation.X()), static_cast<float>(translation.Y()), static_cast<float>(translation.Z())));
+
+		SetRoration(rotation);
+		Standard_Real rX,rY,rZ;
+		rotation.GetEulerAngles(gp_Extrinsic_XYZ, rX, rY, rZ);
+		GetDataSceneNode()->setRotation(irr::core::vector3df(static_cast<float>(irr::core::radToDeg(rX)), static_cast<float>(irr::core::radToDeg(rY)), static_cast<float>(irr::core::radToDeg(rZ))));
+	}
+
+	{//2D模型
+		auto transformedFace = bottomFace.Moved(absoluteToRelation);
+		gp_Trsf tfs;
+		tfs.SetTranslationPart(gp_Vec(gp::Origin(), gp_Pnt(0, 200, 0)));
+		transformedFace.Move(tfs);
+		ImpUPtr_->Node2D_->UpdateMesh(transformedFace);
+
+		//标注
+		auto length = static_cast<int>(FirstCorner_.lock()->GetPosition().Distance(SecondCorner_.lock()->GetPosition()) + 0.5f);
+		auto lableTxt = std::to_wstring(length);
+		lableTxt += L"mm";
+
+		auto font = FreetypeFontMgr::GetInstance().GetTtFont(ImpUPtr_->Lable_->getSceneManager()->getVideoDriver(), "arial.ttf", 32);
+		assert(font);
+
+		auto txtTexture = font->GenerateTextTexture(lableTxt.c_str());
+		assert(txtTexture);
+
+		ImpUPtr_->Lable_->getMaterial(0).setTexture(0, txtTexture);
+
+		auto txtSize = txtTexture->getSize();
+		auto border = 10;
+		auto factor = (Thickness_ - border * 2) / txtSize.Height;
+		ImpUPtr_->Lable_->setScale(irr::core::vector3df(factor * txtSize.Width, 1, factor * txtSize.Height));
+		static_cast<irr::scene::SMesh*>(ImpUPtr_->Lable_->getMesh())->recalculateBoundingBox();
+
+		gp_Dir wallDir = gp_Vec(FirstCorner_.lock()->GetPosition(), SecondCorner_.lock()->GetPosition());
+		wallDir.Cross(gp::DY());
+		auto angle = wallDir.AngleWithRef(gp::DZ(), gp::DY());
+		angle = angle < 0 ? 2 * M_PI + angle : angle;
+
+		if ( angle > M_PI_2 && angle < M_PI_2 * 3 )
+		{
+			ImpUPtr_->Lable_->setRotation(irr::core::vector3df(0, 180, 0));
+		}
+	}
+
+	{//设置效果
+		SetDefaultTexture();
+	}
+}
+
+
 void WallODL::SetDefaultTexture()
 {
 	auto tex = GetDataSceneNode()->getSceneManager()->getVideoDriver()->getTexture("../Data/Resource/3D/wall.jpg");

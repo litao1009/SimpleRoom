@@ -116,7 +116,14 @@ void CTestDrawPicView::OnTimer(UINT_PTR nIDEvent)
 	auto elapsed = ::GetTickCount() - saveTime;
 	if ( m_Render3D && elapsed > 30 )
 	{
-		Render();
+		static auto isRender = false;
+		if ( !isRender )
+		{
+			isRender = true;
+			Render();
+			isRender = false;
+		}
+
 		saveTime = ::GetTickCount();
 	}	
 	

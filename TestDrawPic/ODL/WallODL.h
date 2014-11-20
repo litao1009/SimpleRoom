@@ -70,6 +70,8 @@ public:
 
 	void				UpdateBaseMesh();
 
+	void				Update2DMesh();
+
 	const MeshPoints&	GetMeshPoints() { return MeshPoints_; }
 
 	void				SetDefaultTexture();

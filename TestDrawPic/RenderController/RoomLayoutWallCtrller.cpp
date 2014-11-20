@@ -199,6 +199,7 @@ bool RoomLayoutWallCtrller::PreRender3D()
 
 			if ( imp_.LMouseLeftUp_ )
 			{
+				imp_.Graph_.lock()->SearchRooms();
 				imp_.State_ = EWallState::EWS_SWEEPING;
 				break;
 			}
@@ -212,7 +213,6 @@ bool RoomLayoutWallCtrller::PreRender3D()
 				GeomAPI_ProjectPointOnCurve cursorProj(cursorPnt, wallBC.Curve().Curve());
 				if ( cursorProj.LowerDistance() < activeWall->GetThickness() )
 				{//不变
-					//TODO
 					break;
 				}
 				cursorVec = gp_Vec(cursorProj.NearestPoint(), cursorPnt);
@@ -249,21 +249,19 @@ bool RoomLayoutWallCtrller::PreRender3D()
 				});
 
 				firstTrackWall = wallsOnCorner.empty() ? nullptr : wallsOnCorner.front();
-				firstTrackBC = firstTrackWall ? firstTrackWall->GetEdge(imp_.FirstCorner_) : BRepBuilderAPI_MakeEdge(gp_Lin(imp_.FirstCorner_->GetPosition(), cursorVec));
+				firstTrackBC = firstTrackWall ? firstTrackWall->GetEdge(imp_.FirstCorner_) : BRepBuilderAPI_MakeEdge(gp_Lin(imp_.FirstCorner_->GetPosition(), cursorVec)).Edge();
 
-				auto track2D = GeomAPI::To2d(firstTrackBC.Curve().Curve(), compareIntCCPln);
-				Geom2dAPI_InterCurveCurve icc(track2D, cursorBC2D);
-				gp_Pnt firstPnt(icc.Point(1).X(), 0, icc.Point(1).Y());
-				GeomAPI_ProjectPointOnCurve firstPPC(firstPnt, firstTrackBC.Curve().Curve());
-				
-				auto hasDiffDirWall = std::adjacent_find(wallsOnCorner.begin(), wallsOnCorner.end(), [](const WallODLSPtr& wall1, const WallODLSPtr& wall2)
-				{
-					return Standard_False == wall1->GetDirection().IsParallel(wall2->GetDirection(), Precision::Angular());
-				});
+				auto trackRad = firstTrackBC.Line().Direction().AngleWithRef(wallDir, wallRefDir);
+				trackRad = trackRad < 0 ? 2 * M_PI + trackRad : trackRad;
 
-				if ( firstPPC.LowerDistanceParameter() > firstTrackBC.FirstParameter() )//(0,180)
+				if ( trackRad > Precision::Angular() && trackRad + Precision::Angular() < M_PI )//(0,180)
 				{
-					if ( firstPPC.LowerDistanceParameter() > firstTrackBC.LastParameter() || firstTrackBC.LastParameter()-firstPPC.LowerDistanceParameter() < alignRadius )//吸附
+					auto track2D = GeomAPI::To2d(firstTrackBC.Curve().Curve(), compareIntCCPln);
+					Geom2dAPI_InterCurveCurve icc(track2D, cursorBC2D);
+					gp_Pnt firstPnt(icc.Point(1).X(), 0, icc.Point(1).Y());
+					GeomAPI_ProjectPointOnCurve firstPPC(firstPnt, firstTrackBC.Curve().Curve());
+
+					if ( firstPPC.LowerDistanceParameter() > firstTrackBC.LastParameter() || firstTrackBC.LastParameter()-firstPPC.LowerDistanceParameter() < alignRadius )//吸附到lastParameter
 					{
 						assert(firstTrackWall);
 
@@ -312,18 +310,36 @@ bool RoomLayoutWallCtrller::PreRender3D()
 						{
 							firstCombineCorner = endCorner;
 							needCombineFirst = true;
+
+							cursorPnt = firstCombineCorner->GetPosition();
+							cursorBC = BRepBuilderAPI_MakeEdge(gp_Lin(cursorPnt, activeWall->GetDirection())).Edge();
+							cursorBC2D = GeomAPI::To2d(cursorBC.Curve().Curve(), compareIntCCPln);
+
+							GeomAPI_ProjectPointOnCurve cursorProj(cursorPnt, wallBC.Curve().Curve());
+							cursorVec = gp_Vec(cursorProj.NearestPoint(), cursorPnt);
 						}
 					}
-					else if ( hasDiffDirWall != wallsOnCorner.end() )//需要拆分
+					else
 					{
-						needSplitFirst = true;
+						auto hasDiffDirWall = std::adjacent_find(wallsOnCorner.begin(), wallsOnCorner.end(), [](const WallODLSPtr& wall1, const WallODLSPtr& wall2)
+						{
+							return Standard_False == wall1->GetDirection().IsParallel(wall2->GetDirection(), Precision::Angular());
+						});
+
+						if ( hasDiffDirWall != wallsOnCorner.end() )//需要拆分
+						{
+							needSplitFirst = true;
+						}
 					}
+					
 				}
-				else if ( firstTrackWall && Standard_True == firstTrackWall->GetDirection().IsParallel(activeWall->GetDirection(), Precision::Angular()) )//180
+				else if ( std::abs(trackRad-M_PI) < Precision::Angular() )//180
 				{
+					firstTrackBC = BRepBuilderAPI_MakeEdge(gp_Lin(imp_.FirstCorner_->GetPosition(), cursorVec)).Edge();
+					firstTrackWall = nullptr;
 					needCreateFirst = true;
 				}
-				else if ( firstPPC.LowerDistanceParameter() < firstTrackBC.FirstParameter() )//(180, 360)
+				else if ( trackRad > M_PI + Precision::Angular() )//(180, 360)
 				{
 					assert(!wallsOnCorner.empty());
 					if ( 1 < wallsOnCorner.size() )
@@ -359,21 +375,32 @@ bool RoomLayoutWallCtrller::PreRender3D()
 				});
 
 				secondTrackWall = wallsOnCorner.empty() ? nullptr : wallsOnCorner.front();
-				secondTrackBC = secondTrackWall ? secondTrackWall->GetEdge(imp_.SecondCorner_) : BRepBuilderAPI_MakeEdge(gp_Lin(imp_.SecondCorner_->GetPosition(), cursorVec));
-				needSplitSecond = secondTrackWall && secondTrackWall->GetDirection().IsParallel(activeWall->GetDirection(), Precision::Angular());
-
-				auto track2D = GeomAPI::To2d(secondTrackBC.Curve().Curve(), compareIntCCPln);
-				Geom2dAPI_InterCurveCurve icc(track2D, cursorBC2D);
-				gp_Pnt secondPnt(icc.Point(1).X(), 0, icc.Point(1).Y());
-				GeomAPI_ProjectPointOnCurve secondPPC(secondPnt, secondTrackBC.Curve().Curve());
-
-				auto hasDiffDirWall = std::adjacent_find(wallsOnCorner.begin(), wallsOnCorner.end(), [](const WallODLSPtr& wall1, const WallODLSPtr& wall2)
+				if ( secondTrackWall )
 				{
-					return Standard_False == wall1->GetDirection().IsParallel(wall2->GetDirection(), Precision::Angular());
-				});
-
-				if ( secondPPC.LowerDistanceParameter() > secondTrackBC.FirstParameter() )//(0,180)
+					if ( Standard_True == secondTrackWall->GetDirection().IsParallel(wallDir, Precision::Angular()) )
+					{//平行
+						secondTrackBC = BRepBuilderAPI_MakeEdge(gp_Lin(imp_.SecondCorner_->GetPosition(), cursorVec)).Edge();
+					}
+					else
+					{
+						secondTrackBC = secondTrackWall->GetEdge(imp_.SecondCorner_);
+					}
+				}
+				else
 				{
+					secondTrackBC = BRepBuilderAPI_MakeEdge(gp_Lin(imp_.SecondCorner_->GetPosition(), cursorVec)).Edge();
+				}				
+
+				auto trackRad = secondTrackBC.Line().Direction().AngleWithRef(wallDir, wallRefDir);
+				trackRad = trackRad < 0 ? 2 * M_PI + trackRad : trackRad;
+
+				if ( trackRad > Precision::Angular() && trackRad + Precision::Angular() < M_PI )//(0,180)
+				{
+					auto track2D = GeomAPI::To2d(secondTrackBC.Curve().Curve(), compareIntCCPln);
+					Geom2dAPI_InterCurveCurve icc(track2D, cursorBC2D);
+					gp_Pnt secondPnt(icc.Point(1).X(), 0, icc.Point(1).Y());
+					GeomAPI_ProjectPointOnCurve secondPPC(secondPnt, secondTrackBC.Curve().Curve());
+
 					if ( secondPPC.LowerDistanceParameter() > secondTrackBC.LastParameter() || secondTrackBC.LastParameter()-secondPPC.LowerDistanceParameter() < alignRadius )//吸附
 					{
 						assert(secondTrackWall);
@@ -423,18 +450,36 @@ bool RoomLayoutWallCtrller::PreRender3D()
 						{
 							secondCombineCorner = endCorner;
 							needCombineSecond = true;
+
+							cursorPnt = secondCombineCorner->GetPosition();
+							cursorBC = BRepBuilderAPI_MakeEdge(gp_Lin(cursorPnt, activeWall->GetDirection())).Edge();
+							cursorBC2D = GeomAPI::To2d(cursorBC.Curve().Curve(), compareIntCCPln);
+
+							GeomAPI_ProjectPointOnCurve cursorProj(cursorPnt, wallBC.Curve().Curve());
+							cursorVec = gp_Vec(cursorProj.NearestPoint(), cursorPnt);
 						}
 					}
-					else if ( hasDiffDirWall != wallsOnCorner.end() )//需要拆分
+					else
 					{
-						needSplitSecond = true;
+						auto hasDiffDirWall = std::adjacent_find(wallsOnCorner.begin(), wallsOnCorner.end(), [](const WallODLSPtr& wall1, const WallODLSPtr& wall2)
+						{
+							return Standard_False == wall1->GetDirection().IsParallel(wall2->GetDirection(), Precision::Angular());
+						});
+
+						if ( hasDiffDirWall != wallsOnCorner.end() )//需要拆分
+						{
+							needSplitSecond = true;
+						}
 					}
+					
 				}
-				else if ( secondTrackWall && Standard_True == secondTrackWall->GetDirection().IsParallel(activeWall->GetDirection(), Precision::Angular()) )//180
+				else if ( std::abs(trackRad-M_PI) < Precision::Angular() )//180
 				{
+					secondTrackBC = BRepBuilderAPI_MakeEdge(gp_Lin(imp_.SecondCorner_->GetPosition(), cursorVec)).Edge();
+					secondTrackWall = nullptr;
 					needCreateSecond = true;
 				}
-				else if ( secondPPC.LowerDistanceParameter() < secondTrackBC.FirstParameter() )//(180, 360)
+				else if ( trackRad > M_PI + Precision::Angular() )//(180, 360)
 				{
 					assert(!wallsOnCorner.empty());
 					if ( 1 < wallsOnCorner.size() )
@@ -442,71 +487,6 @@ bool RoomLayoutWallCtrller::PreRender3D()
 						needCreateSecond = true;
 					}
 				}
-
-// 				else if ( secondTrackWall && Standard_True == secondTrackWall->GetDirection().IsParallel(activeWall->GetDirection(), Precision::Angular()) )
-// 				{
-// 					needCreateSecond = true;
-// 				}
-// 				else if ( secondPPC.LowerDistanceParameter() < secondTrackBC.FirstParameter() )
-// 				{
-// 					assert(!wallsOnCorner.empty());
-// 					if ( 1 < wallsOnCorner.size() )
-// 					{
-// 						needCreateSecond = true;
-// 					}
-// 				}
-// 				else if ( (secondTrackBC.LastParameter() > secondPPC.LowerDistanceParameter() && secondTrackBC.LastParameter()-secondPPC.LowerDistanceParameter() < alignRadius ) ||
-// 					secondPPC.LowerDistanceParameter() > secondTrackBC.LastParameter() )
-// 				{
-// 					assert(secondTrackWall);
-// 
-// 					auto endCorner = secondTrackWall->GetOtherCorner(imp_.SecondCorner_).lock();
-// 					auto wallsOnEnd = imp_.Graph_.lock()->GetWallsOnCorner(endCorner);
-// 					wallsOnEnd.erase(std::find(wallsOnEnd.begin(), wallsOnEnd.end(), secondTrackWall), wallsOnEnd.end());
-// 
-// 					auto valid = true;
-// 					WallODLSPtr invalidWall;
-// 					for ( auto& curWall : wallsOnEnd )
-// 					{
-// 						auto rad = curWall->GetDirection(endCorner).Angle(wallDir);
-// 
-// 						if ( rad < 15 * M_PI / 180 )
-// 						{
-// 							invalidWall = curWall;
-// 							valid = false;
-// 							break;
-// 						}
-// 					}
-// 
-// 					if ( !valid )
-// 					{
-// 						gp_Vec disVec(imp_.SecondCorner_->GetPosition(), endCorner->GetPosition());
-// 						disVec.Dot(cursorVec.Normalized());
-// 
-// 						if ( disVec.SquareMagnitude() < invalidWall->GetThickness()/2 + activeWall->GetThickness()/2 )
-// 						{//禁止移动
-// 							imp_.Valid_ = false;
-// 						}
-// 						else
-// 						{
-// 							auto cosRad = disVec.Normalized().Dot(cursorVec.Normalized());
-// 							auto deltaPar = std::acos(invalidWall->GetThickness()/2);
-// 
-// 							secondTrackBC.D0(secondTrackBC.LastParameter()-deltaPar, cursorPnt);
-// 
-// 							cursorBC = BRepBuilderAPI_MakeEdge(gp_Lin(cursorPnt, activeWall->GetDirection())).Edge();
-// 							cursorBC2D = GeomAPI::To2d(cursorBC.Curve().Curve(), compareIntCCPln);
-// 
-// 							GeomAPI_ProjectPointOnCurve cursorProj(cursorPnt, wallBC.Curve().Curve());
-// 							cursorVec = gp_Vec(cursorProj.NearestPoint(), cursorPnt);
-// 						}
-// 					}
-// 					else
-// 					{
-// 						secondCombineCorner = endCorner;
-// 						needCombineSecond = true;
-// 					}
-// 				}
 			}
 
 			if ( !imp_.Valid_ )
@@ -527,81 +507,127 @@ bool RoomLayoutWallCtrller::PreRender3D()
 				oldSecondPnt = imp_.SecondCorner_->GetPosition();
 			}
 
-			if ( needSplitFirst )
+			if ( needSplitFirst || needSplitSecond )//split
 			{
-				if ( firstTrackWall )
+				if ( needSplitFirst )
 				{
+					assert(firstTrackWall);
 					imp_.FirstCorner_ = imp_.Graph_.lock()->CreateCornerBySplitWall(firstTrackWall, firstPnt);
 				}
-				else
-				{
-					auto newCorner = imp_.Graph_.lock()->CreateCorner(firstPnt);
-					imp_.Graph_.lock()->AddWall(imp_.FirstCorner_, newCorner);
-					imp_.FirstCorner_ = newCorner;
-				}
-			}
 
-			if ( needSplitSecond )
-			{
-				if ( secondTrackWall )
+				if ( needSplitSecond )
 				{
+					assert(secondTrackWall);
 					imp_.SecondCorner_ = imp_.Graph_.lock()->CreateCornerBySplitWall(secondTrackWall, secondPnt);
 				}
+
+				imp_.Graph_.lock()->RemoveWall(activeWall, true, false, false);
+				auto newWall = imp_.Graph_.lock()->AddWall(imp_.FirstCorner_, imp_.SecondCorner_, false, false);
+				SetPickingODL(newWall);
+				activeWall = newWall;
+			}
+			else if ( needCombineFirst || needCombineSecond )//combine
+			{
+				if ( needCombineFirst )
+				{
+					imp_.FirstCorner_ = firstCombineCorner;
+				}
 				else
 				{
-					auto newCorner = imp_.Graph_.lock()->CreateCorner(secondPnt);
-					imp_.Graph_.lock()->AddWall(imp_.SecondCorner_, newCorner);
-					imp_.SecondCorner_ = newCorner;
+					imp_.FirstCorner_->SetPosition(firstPnt);
+				}
+
+				if ( needCombineSecond )
+				{
+					imp_.SecondCorner_ = secondCombineCorner;
+				}
+				else
+				{
+					imp_.SecondCorner_->SetPosition(secondPnt);
+				}
+
+				auto newWall = imp_.Graph_.lock()->AddWall(imp_.FirstCorner_, imp_.SecondCorner_, false, false);
+				imp_.Graph_.lock()->RemoveWall(activeWall, true, false, false);
+				SetPickingODL(newWall);
+				activeWall = newWall;
+
+				if ( needCombineFirst )
+				{
+					auto parent = firstTrackWall->GetParent().lock();
+					if ( parent )
+					{
+						auto otherCorner = firstTrackWall->GetOtherCorner(imp_.FirstCorner_).lock();
+						auto walls = imp_.Graph_.lock()->GetWallsOnCorner(otherCorner);
+						if ( 1 == walls.size() )
+						{
+							imp_.Graph_.lock()->RemoveWall(firstTrackWall, false, false, false);
+						}
+					}
+				}
+
+				if ( needCombineSecond )
+				{
+					auto parent = secondTrackWall->GetParent().lock();
+					if ( parent )
+					{
+						auto otherCorner = secondTrackWall->GetOtherCorner(imp_.SecondCorner_).lock();
+						auto walls = imp_.Graph_.lock()->GetWallsOnCorner(otherCorner);
+						if ( 1 == walls.size() )
+						{
+							imp_.Graph_.lock()->RemoveWall(secondTrackWall, false, false, false);
+						}
+					}
 				}
 			}
-
-			if ( needCreateFirst )
+			else if ( needCreateFirst || needCreateSecond )//create
 			{
-				auto newCorner = imp_.Graph_.lock()->CreateCorner(firstPnt);
-				imp_.Graph_.lock()->AddWall(imp_.FirstCorner_, newCorner);
-				imp_.FirstCorner_ = newCorner;
-			}
+				if ( needCreateFirst )
+				{
+					auto newCorner = imp_.Graph_.lock()->CreateCorner(firstPnt);
+					imp_.Graph_.lock()->AddWall(imp_.FirstCorner_, newCorner, false, false);
+					imp_.FirstCorner_ = newCorner;
+				}
+				else
+				{
+					imp_.FirstCorner_->SetPosition(firstPnt);
+				}
 
-			if ( needCreateSecond )
-			{
-				auto newCorner = imp_.Graph_.lock()->CreateCorner(secondPnt);
-				imp_.Graph_.lock()->AddWall(imp_.SecondCorner_, newCorner);
-				imp_.SecondCorner_ = newCorner;
-			}
+				if ( needCreateSecond )
+				{
+					auto newCorner = imp_.Graph_.lock()->CreateCorner(secondPnt);
+					imp_.Graph_.lock()->AddWall(imp_.SecondCorner_, newCorner, false, false);
+					imp_.SecondCorner_ = newCorner;
+				}
+				else
+				{
+					imp_.SecondCorner_->SetPosition(secondPnt);
+				}
 
-			if ( needCombineFirst )
-			{
-				imp_.FirstCorner_ = firstCombineCorner;
-			}
+				auto newWall = imp_.Graph_.lock()->AddWall(imp_.FirstCorner_, imp_.SecondCorner_, false, false);
+				imp_.Graph_.lock()->RemoveWall(activeWall, false, false, false);
 
-			if ( needCombineSecond )
-			{
-				imp_.SecondCorner_ = secondCombineCorner;
-			}
-
-			imp_.FirstCorner_->SetPosition(firstPnt);
-			imp_.SecondCorner_->SetPosition(secondPnt);
-
-			if ( activeWall->GetFirstCorner().lock() != imp_.FirstCorner_ || activeWall->GetSecondCorner().lock() != imp_.SecondCorner_ )
-			{
-				auto newWall = imp_.Graph_.lock()->AddWall(imp_.FirstCorner_, imp_.SecondCorner_);
-				newWall->SetPicking(true);
 				SetPickingODL(newWall);
-				imp_.Graph_.lock()->RemoveWall(activeWall);
 				activeWall = newWall;
+			}
+			else//move
+			{
+				imp_.FirstCorner_->SetPosition(firstPnt);
+				imp_.SecondCorner_->SetPosition(secondPnt);
 			}
 
 			if ( oldFirstPnt.SquareDistance(firstPnt) > 1 || oldSecondPnt.SquareDistance(secondPnt) > 1)
 			{
-				for ( auto& curWall : imp_.Graph_.lock()->GetWallsOnCorner(imp_.FirstCorner_) )
+				if ( firstTrackWall )
 				{
-					curWall->UpdateBaseMesh();
+					firstTrackWall->SetDirty(false);
 				}
-
-				for ( auto& curWall : imp_.Graph_.lock()->GetWallsOnCorner(imp_.SecondCorner_) )
+				if ( secondTrackWall )
 				{
-					curWall->UpdateBaseMesh();
+					firstTrackWall->SetDirty(false);
 				}
+				
+				imp_.Graph_.lock()->SearchRooms();
+				imp_.Graph_.lock()->UpdateWallMeshIfNeeded();
 			}
 			
 			activeWall->SetPicking(true);
@@ -627,14 +653,7 @@ bool RoomLayoutWallCtrller::PreRender3D()
 				{
 					curWall->SetDirty(true);
 				}
-				for ( auto& curWall : imp_.Graph_.lock()->GetAllWalls() )
-				{
-					if ( curWall->IsDirty() )
-					{
-						curWall->UpdateBaseMesh();
-						curWall->SetDirty(false);
-					}
-				}
+				imp_.Graph_.lock()->UpdateWallMeshIfNeeded();
 				imp_.State_ = EWallState::EWS_SWEEPING;
 			}
 		}

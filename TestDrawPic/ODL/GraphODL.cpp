@@ -338,7 +338,7 @@ public:
 		}
 	}
 
-	static WallODLSPtr AddWall( const GraphODLSPtr& graph, const CornerODLSPtr& corner1, const CornerODLSPtr& corner2, bool researchRomm )
+	static WallODLSPtr AddWall( const GraphODLSPtr& graph, const CornerODLSPtr& corner1, const CornerODLSPtr& corner2, bool researchRomm, bool updateMesh )
 	{
 		auto newWall = std::make_shared<WallODL>(graph, corner1, corner2);
 		newWall->CreateEmptyDataSceneNode();
@@ -353,7 +353,15 @@ public:
 		//newWall->SetIndex(index.first);
 		UpdateEdgeIndex(graph->Graph_);
 
-		newWall->UpdateBaseMesh();
+		if ( updateMesh )
+		{
+			newWall->UpdateBaseMesh();
+		}
+		else
+		{
+			newWall->SetDirty(true);
+		}
+		
 
 		if ( researchRomm )
 		{
@@ -363,7 +371,7 @@ public:
 		return newWall;
 	}
 
-	static bool RemoveWall( const GraphODLSPtr& graphODL, const WallODLSPtr& wall, bool needMerge, bool researchRomm )
+	static bool RemoveWall( const GraphODLSPtr& graphODL, const WallODLSPtr& wall, bool needMerge, bool researchRomm, bool updateMesh )
 	{
 		auto& edgeIndex = wall->GetIndex();
 		auto& graph_ = graphODL->Graph_;
@@ -390,7 +398,14 @@ public:
 			needMergeSrc = true;
 			for ( auto& curWall : graphODL->GetWallsOnCorner(corner) )
 			{
-				curWall->UpdateBaseMesh();
+				if ( updateMesh )
+				{
+					curWall->UpdateBaseMesh();
+				}
+				else
+				{
+					curWall->SetDirty(true);
+				}
 			}
 		}
 
@@ -405,7 +420,14 @@ public:
 			needMergeTarget = true;
 			for ( auto& curWall : graphODL->GetWallsOnCorner(corner) )
 			{
-				curWall->UpdateBaseMesh();
+				if ( updateMesh )
+				{
+					curWall->UpdateBaseMesh();
+				}
+				else
+				{
+					curWall->SetDirty(true);
+				}
 			}
 		}
 
@@ -417,7 +439,7 @@ public:
 		}
 		else if ( needMergeSrc && needMerge )
 		{
-			graphODL->MergeWallIfNeeded(srcCorner);
+			graphODL->MergeWallIfNeeded(srcCorner, researchRomm, updateMesh);
 		}
 
 		if ( needDelTarget )
@@ -426,7 +448,7 @@ public:
 		}
 		else if ( needMergeTarget && needMerge )
 		{
-			graphODL->MergeWallIfNeeded(targetCorner);
+			graphODL->MergeWallIfNeeded(targetCorner, researchRomm, updateMesh);
 		}
 
 		if ( researchRomm )
@@ -508,7 +530,7 @@ CornerODLSPtr GraphODL::CreateCorner( const gp_Pnt& position )
 	return newCorner;
 }
 
-CornerODLSPtr GraphODL::CreateCornerBySplitWall( const WallODLSPtr& toSplit, const gp_Pnt& position )
+CornerODLSPtr GraphODL::CreateCornerBySplitWall( const WallODLSPtr& toSplit, const gp_Pnt& position, bool researchRoom, bool updateMesh )
 {
 	auto& edgeIndex = toSplit->GetIndex();
 
@@ -525,8 +547,8 @@ CornerODLSPtr GraphODL::CreateCornerBySplitWall( const WallODLSPtr& toSplit, con
 
 	auto thisSPtr = std::static_pointer_cast<GraphODL>(shared_from_this());
 
-	Imp::AddWall(thisSPtr, srcProp, newCorner, false);
-	Imp::AddWall(thisSPtr, newCorner, targetPorp, true);
+	Imp::AddWall(thisSPtr, srcProp, newCorner, false, updateMesh);
+	Imp::AddWall(thisSPtr, newCorner, targetPorp, researchRoom, updateMesh);
 
 	return newCorner;
 }
@@ -543,17 +565,17 @@ bool GraphODL::RemoveCorner( const CornerODLSPtr& corner )
 	return true;
 }
 
-WallODLSPtr GraphODL::AddWall( const CornerODLSPtr& corner1, const CornerODLSPtr& corner2 )
+WallODLSPtr GraphODL::AddWall( const CornerODLSPtr& corner1, const CornerODLSPtr& corner2, bool researchRoom, bool updateMesh )
 {
 	auto thisSPtr = std::static_pointer_cast<GraphODL>(shared_from_this());
-	return Imp::AddWall(thisSPtr, corner1, corner2, true);
+	return Imp::AddWall(thisSPtr, corner1, corner2, researchRoom, updateMesh);
 }
 
-bool GraphODL::RemoveWall( const WallODLSPtr& wall )
+bool GraphODL::RemoveWall( const WallODLSPtr& wall, bool needMerge, bool researchRoom, bool updateMesh )
 {
 	auto thisSPtr = std::static_pointer_cast<GraphODL>(shared_from_this());
 
-	return Imp::RemoveWall(thisSPtr, wall, true, true);
+	return Imp::RemoveWall(thisSPtr, wall, needMerge, researchRoom, updateMesh);
 }
 
 RoomODLList GraphODL::GetAllRooms()
@@ -573,7 +595,7 @@ RoomODLList GraphODL::GetAllRooms()
 	return ret;
 }
 
-void GraphODL::MergeWallIfNeeded( const CornerODLSPtr& corner )
+void GraphODL::MergeWallIfNeeded( const CornerODLSPtr& corner, bool researchRoom, bool updateMesh )
 {
 	auto walls = GetWallsOnCorner(corner);
 
@@ -598,8 +620,27 @@ void GraphODL::MergeWallIfNeeded( const CornerODLSPtr& corner )
 
 	auto thisSPtr = std::static_pointer_cast<GraphODL>(shared_from_this());
 
-	Imp::AddWall(thisSPtr, corner1.lock(),corner2.lock(), false);
+	Imp::AddWall(thisSPtr, corner1.lock(),corner2.lock(), false, updateMesh);
 
-	Imp::RemoveWall(thisSPtr, wall1, false, false);
-	Imp::RemoveWall(thisSPtr, wall2, false, true);
+	Imp::RemoveWall(thisSPtr, wall1, false, false, updateMesh);
+	Imp::RemoveWall(thisSPtr, wall2, false, researchRoom, updateMesh);
+}
+
+void GraphODL::SearchRooms()
+{
+	auto thisSPtr = std::static_pointer_cast<GraphODL>(shared_from_this());
+
+	Imp::SearchRoom(thisSPtr);
+}
+
+void GraphODL::UpdateWallMeshIfNeeded()
+{
+	for ( auto& curWall : GetAllWalls() )
+	{
+		if ( curWall->IsDirty() )
+		{
+			curWall->UpdateBaseMesh();
+			curWall->SetDirty(false);
+		}
+	}
 }
