@@ -42,6 +42,10 @@ enum EUserType
 
 	//«Ω Ù–‘
 	EUT_ROOMLAYOUT_WALL_PROPERTY,
+	EUT_ROOMLAYOUT_WALL_NONE,
+	EUT_ROOMLAYOUT_WALL_UPDATE,
+	EUT_ROOMLAYOUT_WALL_MOVE,
+	EUT_ROOMLAYOUT_WALL_DELETE,
 //-----------------------------------------------------------------------------ªß–ÕÕº
 
 	EUT_END

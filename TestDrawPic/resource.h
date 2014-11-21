@@ -57,42 +57,18 @@
 #define IDS_EDIT_MENU                   306
 #define IDR_RIBBON                      307
 #define IDR_MENU_POPUP                  310
-#define IDD_DLG_ROOM_STYLE              311
-#define IDD_DLG_SELECT                  312
 #define IDD_BASEDIALOG                  313
 #define IDR_TOOLBAR_EDIT_ZONE           316
 #define IDR_DOCK_SELECT                 318
 #define IDR_DOCK_PROPERTY               319
 #define IDR_DOCK_LAYER                  320
 #define IDR_VIEW_SUBVIEWER              321
-#define IDD_DLG_WALL_FACE_INFO          322
-#define IDD_DLG_SIZE_INFO               323
-#define IDD_DLG_ZONE_INFO               324
-#define IDD_DLG_LAYER                   325
 #define IDD_DLG_SHADER                  326
 #define IDD_DLG_PIC_REF_SIZE            327
 #define IDD_DLG_ROOMLAYOUT_PICTURE_SIZE 327
 #define IDD_DLG_ROOMLAYOUT_DRAWLINEINFO 328
 #define IDD_DLG_ROOMLAYOUT_WALLPROPERTY 329
-#define IDC_LIST_ROOM_STYLE             1000
-#define IDC_CBX_GTYPE                   1001
-#define IDC_LIST_OBJ                    1002
 #define IDC_PROP_OBJ                    1003
-#define IDC_RDO_EDIT_ZONE               1004
-#define IDC_RDO_EDIT_SKIN               1005
-#define IDC_LBL_XLEN                    1007
-#define IDC_LBL_YLEN                    1008
-#define IDC_TXT_YLEN                    1009
-#define IDC_TXT_ZLEN                    1010
-#define IDC_LBL_ZLEN                    1011
-#define IDC_LBL_YPOS                    1012
-#define IDC_TXT_YPOS                    1013
-#define IDC_TXT_GROUT_Y                 1013
-#define IDC_TXT_GROUT_X                 1014
-#define IDC_TXT_ROTATE                  1015
-#define IDC_CBX_COLOR                   1016
-#define IDC_TREE_OBJ                    1017
-#define IDC_CBX_WRAP_MODE               1018
 #define IDC_SLIDER1                     1019
 #define IDC_SLIDER2                     1020
 #define IDC_SLIDER3                     1021
@@ -100,7 +76,6 @@
 #define IDC_SLIDER5                     1023
 #define IDC_TXT_VALUE_1                 1024
 #define IDC_TXT_VALUE_2                 1025
-#define IDC_TXT_XLEN                    1026
 #define IDC_TXT_VALUE_3                 1026
 #define IDC_TXT_VALUE_4                 1027
 #define IDC_TXT_VALUE_5                 1028
@@ -119,7 +94,10 @@
 #define IDC_TXT_THICKNESS_NUM2          1036
 #define IDC_TXT_HEIGHT_NUM              1036
 #define IDC_TXT_MIN_5                   1037
+#define IDC_BTN_MOVE                    1037
 #define IDC_TXT_MAX_5                   1038
+#define IDC_BUTTON2                     1038
+#define IDC_BTN_DELETE                  1038
 #define ID_WRITE_PASTEASHYPERLINK       32770
 #define ID_BTN_VIEW_TOP                 32774
 #define ID_BTN_CREATE_ROOM_AUTO         32775
@@ -166,7 +144,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        330
 #define _APS_NEXT_COMMAND_VALUE         32838
-#define _APS_NEXT_CONTROL_VALUE         1036
+#define _APS_NEXT_CONTROL_VALUE         1039
 #define _APS_NEXT_SYMED_VALUE           321
 #endif
 #endif

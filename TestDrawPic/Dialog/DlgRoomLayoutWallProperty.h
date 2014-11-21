@@ -1,6 +1,7 @@
 #pragma once
 #include "afxwin.h"
 
+#include "irrEngine/SRenderContextFwd.h"
 
 // DlgRoomLayoutWallProperty 对话框
 
@@ -12,7 +13,7 @@ class DlgRoomLayoutWallProperty : public CDialogEx
 	DECLARE_DYNAMIC(DlgRoomLayoutWallProperty)
 
 public:
-	DlgRoomLayoutWallProperty(int data, CWnd* pParent = NULL);   // 标准构造函数
+	DlgRoomLayoutWallProperty(const SRenderContextSPtr& rc, int data, CWnd* pParent = NULL);   // 标准构造函数
 	virtual ~DlgRoomLayoutWallProperty();
 
 // 对话框数据
@@ -38,4 +39,7 @@ public:
 	afx_msg void OnEnChangeTxtHeightNum();
 	afx_msg void OnBnClickedOk();
 	virtual BOOL OnInitDialog();
+	afx_msg void OnBnClickedBtnMove();
+	afx_msg void OnBnClickedBtnDelete();
+	afx_msg void OnBnClickedCancel();
 };

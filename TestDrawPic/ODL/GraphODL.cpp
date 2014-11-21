@@ -291,7 +291,10 @@ public:
 				TRACE("\tRoom:\t");
 				for ( auto& curCorner : curRoom.Room_->GetCornerList() )
 				{
-					TRACE((std::to_string(curCorner->GetIndex())+" ").c_str());
+					if ( curCorner )
+					{
+						TRACE((std::to_string(curCorner->GetIndex())+" ").c_str());
+					}
 				}
 				TRACE("\n");
 			}
@@ -645,7 +648,7 @@ void GraphODL::UpdateWallMeshIfNeeded()
 	{
 		if ( curWall->IsDirty() )
 		{
-			curWall->Update2DMesh();
+			curWall->UpdateBaseMesh();
 			curWall->SetDirty(false);
 		}
 	}
