@@ -24,6 +24,7 @@ public:
 
 	SEventWallInfo*		pWallInfo_;
 	SRenderContextSPtr	RC_;
+	POINT				InitPoint_;
 };
 
 IMPLEMENT_DYNAMIC(DlgRoomLayoutWallProperty, CDialogEx)
@@ -175,11 +176,10 @@ BOOL DlgRoomLayoutWallProperty::OnInitDialog()
 
 	auto width = r.right - r.left;
 	auto height = r.bottom - r.top;
-	POINT p;
-	GetCursorPos(&p);
-	this->ScreenToClient(&r);
 
-	MoveWindow(p.x, p.y, width, height);
+	GetCursorPos(&ImpUPtr_->InitPoint_);
+
+	MoveWindow(ImpUPtr_->InitPoint_.x-width/2, ImpUPtr_->InitPoint_.y-height/2, width, height);
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	// 异常: OCX 属性页应返回 FALSE
@@ -189,6 +189,9 @@ BOOL DlgRoomLayoutWallProperty::OnInitDialog()
 void DlgRoomLayoutWallProperty::OnBnClickedBtnMove()
 {
 	// TODO: 在此添加控件通知处理程序代码
+
+	SetCursorPos(ImpUPtr_->InitPoint_.x, ImpUPtr_->InitPoint_.y);
+
 	irr::SEvent evt;
 	evt.EventType = irr::EET_USER_EVENT;
 	evt.UserEvent.UserData1 = EUT_ROOMLAYOUT_WALL_PROPERTY;
