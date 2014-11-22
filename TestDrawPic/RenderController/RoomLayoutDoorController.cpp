@@ -151,6 +151,7 @@ bool RoomLayoutDoorController::PreRender3D()
 			{
 				imp_.State_ = EDoorState::EDS_MOVING;
 				imp_.PickingWall_ = std::static_pointer_cast<WallODL>(activeDoor->GetParent().lock());
+				imp_.PickingWall_.lock()->SeamHole(activeDoor);
 				imp_.Checker_ = true;
 			}
 			else 
@@ -312,6 +313,7 @@ bool RoomLayoutDoorController::PreRender3D()
 				{
 					imp_.State_ = EDoorState::EDS_MOVING;
 					imp_.PickingWall_ = std::static_pointer_cast<WallODL>(activeDoor->GetParent().lock());
+					imp_.PickingWall_.lock()->SeamHole(activeDoor);
 					imp_.Checker_ = true;
 				}
 				break;

@@ -68,9 +68,9 @@ public:
 
 	float				GetHeight() const { return Height_; }
 
-	void				UpdateBaseMesh();
+	void				UpdateBaseShape();
 
-	void				Update2DMesh();
+	void				UpdateBaseMesh();
 
 	const MeshPoints&	GetMeshPoints() { return MeshPoints_; }
 
@@ -79,6 +79,8 @@ public:
 	ChildrenList		GetHoles() const;
 
 	void				CutHole(const HoleODLSPtr& hole);
+
+	void				SeamHole(const HoleODLSPtr& hole);
 
 private:
 
@@ -92,6 +94,7 @@ private:
 	MeshPoints		MeshPoints_;
 
 	TopoDS_Shape	CutShape_;
+	TopoDS_Shape	BottomShape_;
 
 	GraphODLWPtr	GraphODL_;
 };

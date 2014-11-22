@@ -25,6 +25,8 @@
 #include "BRepPrimAPI_MakePrism.hxx"
 #include "BRepBndLib.hxx"
 #include "BRepAlgoAPI_Cut.hxx"
+#include "BRepAlgoAPI_Fuse.hxx"
+#include "ShapeUpgrade_UnifySameDomain.hxx"
 
 #include <boost/filesystem.hpp>
 
@@ -303,7 +305,8 @@ TopoDS_Edge WallODL::GetEdge(const CornerODLSPtr& fromCorner) const
 	return BRepBuilderAPI_MakeEdge(beginCorner->GetPosition(), endCorner->GetPosition()).Edge();
 }
 
-void WallODL::UpdateBaseMesh()
+
+void WallODL::UpdateBaseShape()
 {
 	if ( IsBezierCurve() )
 	{
@@ -325,7 +328,7 @@ void WallODL::UpdateBaseMesh()
 	mp.Close();
 
 	assert(mp.IsDone());
-	
+
 	auto bottomFace = BRepBuilderAPI_MakeFace(mp.Wire()).Face();
 	auto solid = BRepPrimAPI_MakePrism(bottomFace, gp_Vec(gp::Origin(), gp_Pnt(0, Height_, 0))).Shape();
 
@@ -367,10 +370,19 @@ void WallODL::UpdateBaseMesh()
 		Standard_Real rX,rY,rZ;
 		rotation.GetEulerAngles(gp_Extrinsic_XYZ, rX, rY, rZ);
 		GetDataSceneNode()->setRotation(irr::core::vector3df(static_cast<float>(irr::core::radToDeg(rX)), static_cast<float>(irr::core::radToDeg(rY)), static_cast<float>(irr::core::radToDeg(rZ))));
+
+		bottomFace.Move(absoluteToRelation);
+		BottomShape_ = bottomFace;
 	}
+}
+
+
+void WallODL::UpdateBaseMesh()
+{
+	UpdateBaseShape();
 
 	{//3D模型
-		auto meshBuf = ODLTools::NEW_CreateMeshBuffer(solid);
+		auto meshBuf = ODLTools::NEW_CreateMeshBuffer(GetBaseShape());
 		assert(meshBuf);
 		auto newMesh = new irr::scene::SMesh;
 		newMesh->addMeshBuffer(meshBuf);
@@ -382,10 +394,10 @@ void WallODL::UpdateBaseMesh()
 	}
 	
 	{//2D模型
-		auto transformedFace = bottomFace.Moved(absoluteToRelation);
 		gp_Trsf tfs;
 		tfs.SetTranslationPart(gp_Vec(gp::Origin(), gp_Pnt(0, 200, 0)));
-		transformedFace.Move(tfs);
+		auto transformedFace = BottomShape_.Moved(tfs);
+
 		ImpUPtr_->Node2D_->UpdateMesh(transformedFace);
 
 		//标注
@@ -421,110 +433,6 @@ void WallODL::UpdateBaseMesh()
 	{//设置效果
 		GetDataSceneNode()->AddToDepthPass();
 		SetDefaultTexture();
-	}
-}
-
-void WallODL::Update2DMesh()
-{
-	if ( IsBezierCurve() )
-	{
-		//TODO
-	}
-	else
-	{
-		auto thisSPtr = std::static_pointer_cast<WallODL>(shared_from_this());
-
-		Imp::CalculateSideMesh(thisSPtr, FirstCorner_.lock());
-		Imp::CalculateSideMesh(thisSPtr, SecondCorner_.lock());
-	}
-
-	BRepBuilderAPI_MakePolygon mp;
-	for ( auto& curPnt : MeshPoints_ )
-	{
-		mp.Add(curPnt);
-	}
-	mp.Close();
-
-	assert(mp.IsDone());
-
-	auto bottomFace = BRepBuilderAPI_MakeFace(mp.Wire()).Face();
-	auto solid = BRepPrimAPI_MakePrism(bottomFace, gp_Vec(gp::Origin(), gp_Pnt(0, Height_, 0))).Shape();
-
-	gp_Trsf absoluteToRelation;
-	{//设置位置
-		gp_Trsf rotToDZ;
-		gp_Trsf transToCenter;
-
-		gp_Dir wallDir = gp_Vec(FirstCorner_.lock()->GetPosition(), SecondCorner_.lock()->GetPosition());
-		wallDir.Cross(gp::DY());
-		rotToDZ.SetRotation(gp_Quaternion(wallDir, gp::DZ()));
-		solid.Move(rotToDZ);
-
-		Bnd_Box wallBox;
-		gp_Pnt wallCenter;
-		{
-			BRepBndLib::Add(solid, wallBox);
-			Standard_Real xMin,yMin,zMin,xMax,yMax,zMax;
-			wallBox.Get(xMin, yMin, zMin, xMax, yMax, zMax);
-			wallCenter.SetXYZ(gp_XYZ((xMin+xMax)/2, (yMin+yMax)/2, (zMin+zMax)/2));
-		}
-
-		transToCenter.SetTranslationPart(gp_Vec(gp::Origin(), wallCenter).Reversed());
-
-		solid.Move(transToCenter);
-
-		absoluteToRelation = transToCenter * rotToDZ;
-
-		auto relationToAbsolute = absoluteToRelation.Inverted();
-		auto translation = relationToAbsolute.TranslationPart();
-		auto rotation = relationToAbsolute.GetRotation();
-
-		SetBaseShape(solid);
-
-		SetTranslation(translation);
-		GetDataSceneNode()->setPosition(irr::core::vector3df(static_cast<float>(translation.X()), static_cast<float>(translation.Y()), static_cast<float>(translation.Z())));
-
-		SetRoration(rotation);
-		Standard_Real rX,rY,rZ;
-		rotation.GetEulerAngles(gp_Extrinsic_XYZ, rX, rY, rZ);
-		GetDataSceneNode()->setRotation(irr::core::vector3df(static_cast<float>(irr::core::radToDeg(rX)), static_cast<float>(irr::core::radToDeg(rY)), static_cast<float>(irr::core::radToDeg(rZ))));
-	}
-
-	{//2D模型
-		auto transformedFace = bottomFace.Moved(absoluteToRelation);
-		gp_Trsf tfs;
-		tfs.SetTranslationPart(gp_Vec(gp::Origin(), gp_Pnt(0, 200, 0)));
-		transformedFace.Move(tfs);
-		ImpUPtr_->Node2D_->UpdateMesh(transformedFace);
-
-		//标注
-		auto length = static_cast<int>(FirstCorner_.lock()->GetPosition().Distance(SecondCorner_.lock()->GetPosition()) + 0.5f);
-		auto lableTxt = std::to_wstring(length);
-		lableTxt += L"mm";
-
-		auto font = FreetypeFontMgr::GetInstance().GetTtFont(ImpUPtr_->Lable_->getSceneManager()->getVideoDriver(), "arial.ttf", 32);
-		assert(font);
-
-		auto txtTexture = font->GenerateTextTexture(lableTxt.c_str());
-		assert(txtTexture);
-
-		ImpUPtr_->Lable_->getMaterial(0).setTexture(0, txtTexture);
-
-		auto txtSize = txtTexture->getSize();
-		auto border = 10;
-		auto factor = (Thickness_ - border * 2) / txtSize.Height;
-		ImpUPtr_->Lable_->setScale(irr::core::vector3df(factor * txtSize.Width, 1, factor * txtSize.Height));
-		static_cast<irr::scene::SMesh*>(ImpUPtr_->Lable_->getMesh())->recalculateBoundingBox();
-
-		gp_Dir wallDir = gp_Vec(FirstCorner_.lock()->GetPosition(), SecondCorner_.lock()->GetPosition());
-		wallDir.Cross(gp::DY());
-		auto angle = wallDir.AngleWithRef(gp::DZ(), gp::DY());
-		angle = angle < 0 ? 2 * M_PI + angle : angle;
-
-		if ( angle > M_PI_2 && angle < M_PI_2 * 3 )
-		{
-			ImpUPtr_->Lable_->setRotation(irr::core::vector3df(0, 180, 0));
-		}
 	}
 }
 
@@ -614,4 +522,28 @@ gp_Dir WallODL::GetDirection(const CornerODLSPtr& fromCorner) const
 	auto tc = FirstCorner_.lock() == fc ? SecondCorner_.lock() : FirstCorner_.lock();
 
 	return gp_Vec(fc->GetPosition(), tc->GetPosition());
+}
+
+void WallODL::SeamHole( const HoleODLSPtr& hole )
+{
+	assert(Standard_False == CutShape_.IsNull());
+
+	hole->UpdateHole();
+
+	BRepAlgoAPI_Fuse bf(CutShape_, hole->GetBaseShape().Moved(hole->GetTransform()));
+	ShapeUpgrade_UnifySameDomain unif(bf.Shape(), Standard_False, Standard_True, Standard_False);
+	unif.Build();
+	CutShape_ = unif.Shape();
+
+	auto meshBuf = ODLTools::NEW_CreateMeshBuffer(CutShape_);
+	assert(meshBuf);
+	auto newMesh = new irr::scene::SMesh;
+	newMesh->addMeshBuffer(meshBuf);
+	newMesh->recalculateBoundingBox();
+
+	GetDataSceneNode()->setMesh(newMesh);
+	newMesh->drop();
+	meshBuf->drop();
+
+	SetDefaultTexture();
 }
