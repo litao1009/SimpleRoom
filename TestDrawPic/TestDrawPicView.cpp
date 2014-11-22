@@ -30,6 +30,8 @@
 #include "Dialog/DlgRoomLayoutPictureSize.h"
 #include "Dialog/DlgRoomLayoutDrawlinInfo.h"
 #include "Dialog/DlgRoomLayoutWallProperty.h"
+#include "Dialog/DlgRoomLayoutDoorProperty.h"
+#include "Dialog/DlgRoomLayoutWindowProperty.h"
 
 #include "resource.h"
 
@@ -255,7 +257,18 @@ LRESULT CTestDrawPicView::DefWindowProc(UINT message, WPARAM wParam, LPARAM lPar
 		if ( WM_USER_ROOMLAYOUT_WALL_PROPERTY == wParam )
 		{
 			DlgRoomLayoutWallProperty dlg(m_spRenderContext, lParam);
+			dlg.DoModal();
+		}
 
+		if ( WM_USER_ROOMLAYOUT_DOOR_PROPERTY == wParam )
+		{
+			DlgRoomLayoutDoorProperty dlg(m_spRenderContext, lParam);
+			dlg.DoModal();
+		}
+
+		if ( WM_USER_ROOMLAYOUT_WINDOW_PROPERTY == wParam )
+		{
+			DlgRoomLayoutWindowProperty dlg(m_spRenderContext, lParam);
 			dlg.DoModal();
 		}
 
@@ -592,7 +605,7 @@ void CTestDrawPicView::OnBtnRoomlayoutTestWindow()
 	windowInfo.XLength_ = 1800;
 	windowInfo.YLength_ = 1400;
 	windowInfo.ZLength_ = 200;
-	windowInfo.SetupHeight_ = 1000;
+	windowInfo.OffsetHeight_ = 1000;
 
 	irr::SEvent evt;
 	evt.EventType = irr::EET_USER_EVENT;

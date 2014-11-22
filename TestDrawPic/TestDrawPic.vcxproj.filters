@@ -247,6 +247,12 @@
     <ClCompile Include="RenderController\RoomLayoutWallCtrller.cpp">
       <Filter>RenderController\RoomLayout</Filter>
     </ClCompile>
+    <ClCompile Include="Dialog\DlgRoomLayoutDoorProperty.cpp">
+      <Filter>src\Dialog</Filter>
+    </ClCompile>
+    <ClCompile Include="Dialog\DlgRoomLayoutWindowProperty.cpp">
+      <Filter>src\Dialog</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BLL\BaseBLL.h">
@@ -572,6 +578,12 @@
     </ClInclude>
     <ClInclude Include="RenderController\IRoomLayoutODLBaseCtrller.h">
       <Filter>RenderController\RoomLayout</Filter>
+    </ClInclude>
+    <ClInclude Include="Dialog\DlgRoomLayoutDoorProperty.h">
+      <Filter>src\Dialog</Filter>
+    </ClInclude>
+    <ClInclude Include="Dialog\DlgRoomLayoutWindowProperty.h">
+      <Filter>src\Dialog</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -68,6 +68,8 @@
 #define IDD_DLG_ROOMLAYOUT_PICTURE_SIZE 327
 #define IDD_DLG_ROOMLAYOUT_DRAWLINEINFO 328
 #define IDD_DLG_ROOMLAYOUT_WALLPROPERTY 329
+#define IDD_DLG_ROOMLAYOUT_DOORPROPERTY 330
+#define IDD_DLG_ROOMLAYOUT_WINDOWPROPERTY 331
 #define IDC_PROP_OBJ                    1003
 #define IDC_SLIDER1                     1019
 #define IDC_SLIDER2                     1020
@@ -86,6 +88,7 @@
 #define IDC_TXT_MAX_2                   1032
 #define IDC_EDIT1                       1032
 #define IDC_TXT_NUM                     1032
+#define IDC_EDIT_WIDTH                  1032
 #define IDC_TXT_MIN_3                   1033
 #define IDC_TXT_MAX_3                   1034
 #define IDC_TXT_MIN_4                   1035
@@ -96,8 +99,13 @@
 #define IDC_TXT_MIN_5                   1037
 #define IDC_BTN_MOVE                    1037
 #define IDC_TXT_MAX_5                   1038
-#define IDC_BUTTON2                     1038
 #define IDC_BTN_DELETE                  1038
+#define IDC_BTN_MOVE2                   1038
+#define IDC_EDIT_HEIGHT                 1039
+#define IDC_EDIT_DEPTH                  1040
+#define IDC_EDIT_OFFSETHEIGHT           1041
+#define ID_BTN_OK                       1042
+#define ID_BTN_CANCEL                   1043
 #define ID_WRITE_PASTEASHYPERLINK       32770
 #define ID_BTN_VIEW_TOP                 32774
 #define ID_BTN_CREATE_ROOM_AUTO         32775
@@ -142,9 +150,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        330
+#define _APS_NEXT_RESOURCE_VALUE        332
 #define _APS_NEXT_COMMAND_VALUE         32838
-#define _APS_NEXT_CONTROL_VALUE         1039
+#define _APS_NEXT_CONTROL_VALUE         1045
 #define _APS_NEXT_SYMED_VALUE           321
 #endif
 #endif

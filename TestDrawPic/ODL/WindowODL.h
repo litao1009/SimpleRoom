@@ -25,6 +25,8 @@ protected:
 
 	virtual	void	UpdateSweeping();
 
+	virtual void	UpdatePicking();
+
 public://HoleODL
 
 	virtual	void	UpdateHole();

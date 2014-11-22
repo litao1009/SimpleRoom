@@ -43,8 +43,8 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)OCCTLib\inc;$(SolutionDir)externals/Irrlicht/source;$(SolutionDir)externals/Irrlicht/include;$(ProjectDir);$(SolutionDir)externals/freetype/include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)OCCTLib\libd;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)externals/OCCTLib/inc;$(SolutionDir)externals/Irrlicht/source;$(SolutionDir)externals/Irrlicht/include;$(ProjectDir);$(SolutionDir)externals/freetype/include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)externals/OCCTLib/libd;$(LibraryPath)</LibraryPath>
     <GenerateManifest>false</GenerateManifest>
     <IntDir>$(ObjDir)</IntDir>
     <OutDir>$(SolutionDir)build\bin\$(ProjectName)\$(Configuration)$(Platform)\</OutDir>
@@ -53,8 +53,8 @@
     <LinkIncremental>false</LinkIncremental>
     <IntDir>$(ObjDir)</IntDir>
     <OutDir>$(SolutionDir)build\bin\$(ProjectName)\$(Configuration)$(Platform)\</OutDir>
-    <IncludePath>$(SolutionDir)OCCTLib\inc;$(SolutionDir)externals/Irrlicht/source;$(SolutionDir)externals/Irrlicht/include;$(ProjectDir);$(SolutionDir)externals/freetype/include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)OCCTLib\libd;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)externals/OCCTLib/inc;$(SolutionDir)externals/Irrlicht/source;$(SolutionDir)externals/Irrlicht/include;$(ProjectDir);$(SolutionDir)externals/freetype/include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)externals/OCCTLib/lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -127,9 +127,11 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClInclude Include="DAL\FloorDAL.h" />
     <ClInclude Include="DAL\sqlite3.h" />
     <ClInclude Include="DAL\DataManager.h" />
+    <ClInclude Include="Dialog\DlgRoomLayoutDoorProperty.h" />
     <ClInclude Include="Dialog\DlgRoomLayoutPictureSize.h" />
     <ClInclude Include="Dialog\DlgRoomLayoutDrawlinInfo.h" />
     <ClInclude Include="Dialog\DlgRoomLayoutWallProperty.h" />
+    <ClInclude Include="Dialog\DlgRoomLayoutWindowProperty.h" />
     <ClInclude Include="DragDataListCtrl.h" />
     <ClInclude Include="irrEngine\IrrExtension\BaseSceneNode.h" />
     <ClInclude Include="irrEngine\IrrExtension\CameraFollowSplineAnimator.h" />
@@ -240,9 +242,11 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="DAL\DataManager.cpp" />
+    <ClCompile Include="Dialog\DlgRoomLayoutDoorProperty.cpp" />
     <ClCompile Include="Dialog\DlgRoomLayoutPictureSize.cpp" />
     <ClCompile Include="Dialog\DlgRoomLayoutDrawlinInfo.cpp" />
     <ClCompile Include="Dialog\DlgRoomLayoutWallProperty.cpp" />
+    <ClCompile Include="Dialog\DlgRoomLayoutWindowProperty.cpp" />
     <ClCompile Include="irrEngine\IrrExtension\BaseSceneNode.cpp" />
     <ClCompile Include="irrEngine\IrrExtension\CameraFollowSplineAnimator.cpp" />
     <ClCompile Include="irrEngine\IrrExtension\CameraInterpolationAnimator.cpp" />

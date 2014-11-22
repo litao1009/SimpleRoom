@@ -1,7 +1,9 @@
 #include "stdafx.h"
 
-#include "irrEngine/SRenderContext.h"
 #include "RoomLayoutWallCtrller.h"
+
+#include "irrEngine/irrEngine.h"
+#include "irrEngine/SRenderContext.h"
 #include "UserEvent.h"
 
 #include "ODL/GraphODL.h"
@@ -25,12 +27,12 @@ using namespace core;
 enum class EWallState
 {
 	EWS_SWEEPING,
+	EWS_MOUSEHOLDING,
 	//准备基线
 	EWS_MOVING_INIT,
 	//移动
 	EWS_MOVING,
 	EWS_PROPERTY,
-	EWS_PROPERTY_WAIT,
 	EWS_COUNT
 };
 
@@ -61,6 +63,7 @@ public:
 	{
 		LMouseLeftUp_ = false;
 		LMousePressDown_ = false;
+		Valid_ = false;
 		State_ = EWallState::EWS_SWEEPING;
 	}
 
@@ -203,8 +206,9 @@ public:
 	GraphODLWPtr	Graph_;
 
 	//for moving
-	BRepAdaptor_Curve	BaseLin_;
-	gp_Lin				OffsetLin_;
+	gp_Lin			BaseLin_;
+	gp_Lin			OffsetLin_;
+	bool			Valid_;
 };
 
 RoomLayoutWallCtrller::RoomLayoutWallCtrller( const GraphODLWPtr& graphODL, const SRenderContextWPtr& rc ):IRoomLayoutODLBaseCtrller(rc), ImpUPtr_(new Imp)
@@ -274,6 +278,22 @@ bool RoomLayoutWallCtrller::PreRender3D()
 
 			if ( imp_.LMousePressDown_ )
 			{
+				imp_.SavePos_ = imp_.CurrentPos_;
+				imp_.State_ = EWallState::EWS_MOUSEHOLDING;
+			}
+		}
+		break;
+	case EWallState::EWS_MOUSEHOLDING:
+		{
+			auto thickness = activeWall->GetThickness();
+
+			if ( imp_.SavePos_.getDistanceFromSQ(imp_.CurrentPos_) > thickness * thickness / 4 )
+			{
+				imp_.State_ = EWallState::EWS_MOVING_INIT;
+			}
+			else 
+			if ( imp_.LMouseLeftUp_ )
+			{
 				imp_.PropertyCallBack_ = boost::none;
 				imp_.State_ = EWallState::EWS_PROPERTY;
 
@@ -286,7 +306,7 @@ bool RoomLayoutWallCtrller::PreRender3D()
 		break;
 	case EWallState::EWS_MOVING_INIT:
 		{
-			imp_.BaseLin_ = BRepAdaptor_Curve(activeWall->GetEdge());
+			imp_.BaseLin_ = gp_Lin(activeWall->GetFirstCorner().lock()->GetPosition(), activeWall->GetDirection());
 			imp_.State_ = EWallState::EWS_MOVING;
 		}
 	case EWallState::EWS_MOVING:
@@ -322,12 +342,14 @@ bool RoomLayoutWallCtrller::PreRender3D()
 			auto firstInfo = imp_.MoveCorner(firstCorner, activeWall, wallBC, cursorBC, cursorBC2D, cursorPnt, cursorVec);
 			if ( !firstInfo.Valid_ )
 			{
+				imp_.Valid_ = false;
 				break;
 			}
 
 			auto secondInfo = imp_.MoveCorner(secondCorner, activeWall, wallBC, cursorBC, cursorBC2D, cursorPnt, cursorVec);
 			if ( !secondInfo.Valid_ )
 			{
+				imp_.Valid_ = false;
 				break;
 			}
 
@@ -428,6 +450,7 @@ bool RoomLayoutWallCtrller::PreRender3D()
 			}
 
 			imp_.Graph_.lock()->UpdateWallMeshIfNeeded();
+			imp_.Valid_ = true;
 
 			activeWall->SetPicking(true);
 		}
@@ -510,14 +533,29 @@ void RoomLayoutWallCtrller::PostRender3D()
 			activeWall->SetSweeping(false);
 		}
 		break;
-	case EWallState::EWS_MOVING_INIT:
+	case EWallState::EWS_MOVING:
 		{
+			auto driver = GetRenderContextSPtr()->Smgr_->getVideoDriver();
 
-		}
-		break;
-	case EWallState::EWS_PROPERTY:
-		{
+			{//BaseLine
+				auto dir = imp_.BaseLin_.Direction();
+				auto pos = imp_.BaseLin_.Location();
+				vector3df v1(static_cast<float>(dir.X()), static_cast<float>(dir.Y()), static_cast<float>(dir.Z()));
+				vector3df v2(static_cast<float>(dir.X()), static_cast<float>(dir.Y()), static_cast<float>(dir.Z()));
 
+				v1 = v1 * 100000 + vector3df(static_cast<float>(pos.X()), static_cast<float>(pos.Y()), static_cast<float>(pos.Z()));
+				v2 = v2 * -100000 + vector3df(static_cast<float>(pos.X()), static_cast<float>(pos.Y()), static_cast<float>(pos.Z()));
+
+				video::SMaterial mat;
+				mat.MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_LINE);
+				mat.DiffuseColor = imp_.Valid_ ? video::SColor(0xFF000000) : video::SColor(0xFFFF0000);
+				mat.Thickness = 2;
+				mat.ZBuffer = video::ECFN_ALWAYS;
+
+				driver->setMaterial(mat);
+				driver->setTransform(video::ETS_WORLD, matrix4());
+				driver->draw3DLine(v1, v2);
+			}
 		}
 		break;
 	default:

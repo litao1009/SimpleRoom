@@ -32,6 +32,8 @@ public:
 protected:
 
 	virtual	void	UpdateSweeping();
+
+	virtual void	UpdatePicking();
 };
 
 typedef	std::shared_ptr<DoorODL>	DoorODLSPtr;

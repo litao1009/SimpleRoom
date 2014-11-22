@@ -67,3 +67,15 @@ void DoorODL::UpdateSweeping()
 		Set2DLineColor(irr::video::SColor(0xFF8F8F8F));
 	}
 }
+
+void DoorODL::UpdatePicking()
+{
+	if ( IsPicking() )
+	{
+		Set2DLineColor(irr::video::SColor(0xFF0000FF));
+	}
+	else
+	{
+		Set2DLineColor(irr::video::SColor(0xFF8F8F8F));
+	}
+}
