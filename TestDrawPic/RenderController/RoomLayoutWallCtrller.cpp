@@ -9,7 +9,7 @@
 #include "ODL/GraphODL.h"
 #include "ODL/CornerODL.h"
 #include "ODL/WallODL.h"
-
+#include "ODL/HoleODL.h"
 
 #include "BRepAdaptor_Curve.hxx"
 #include "BRepBuilderAPI_MakeEdge.hxx"
@@ -313,6 +313,7 @@ bool RoomLayoutWallCtrller::PreRender3D()
 		{
 			if ( imp_.LMouseLeftUp_ )
 			{
+				imp_.Graph_.lock()->UpdateWallCutMeshIfNeeded();
 				imp_.Graph_.lock()->SearchRooms();
 				imp_.State_ = EWallState::EWS_SWEEPING;
 				break;
@@ -442,14 +443,16 @@ bool RoomLayoutWallCtrller::PreRender3D()
 			for ( auto& curWall : imp_.Graph_.lock()->GetWallsOnCorner(firstCorner) )
 			{
 				curWall->SetDirty(true);
+				curWall->SetCutMeshDirty(true);
 			}
 
 			for ( auto& curWall : imp_.Graph_.lock()->GetWallsOnCorner(secondCorner) )
 			{
 				curWall->SetDirty(true);
+				curWall->SetCutMeshDirty(true);
 			}
 
-			imp_.Graph_.lock()->UpdateWallMeshIfNeeded();
+			imp_.Graph_.lock()->UpdateWallBaseMeshIfNeeded();
 			imp_.Valid_ = true;
 
 			activeWall->SetPicking(true);
@@ -473,15 +476,28 @@ bool RoomLayoutWallCtrller::PreRender3D()
 				{
 					activeWall->SetHeight(imp_.EventInfo_.Height_);
 					activeWall->SetThickness(imp_.EventInfo_.Thickness_);
+
+					for (auto& curHole : activeWall->GetHoles() )
+					{
+						auto hole = std::static_pointer_cast<HoleODL>(curHole);
+						auto size = hole->GetHoleSize();
+						size.SetZ(activeWall->GetThickness());
+						hole->SetHoleSize(size.X(), size.Y(), size.Z());
+						hole->UpdateHole();
+					}
+
 					for ( auto& curWall : imp_.Graph_.lock()->GetWallsOnCorner(activeWall->GetFirstCorner().lock()))
 					{
 						curWall->SetDirty(true);
+						curWall->SetCutMeshDirty(true);
 					}
 					for ( auto& curWall : imp_.Graph_.lock()->GetWallsOnCorner(activeWall->GetSecondCorner().lock()))
 					{
 						curWall->SetDirty(true);
+						curWall->SetCutMeshDirty(true);
 					}
-					imp_.Graph_.lock()->UpdateWallMeshIfNeeded();
+
+					imp_.Graph_.lock()->UpdateWallCutMeshIfNeeded();
 					imp_.State_ = EWallState::EWS_SWEEPING;
 				}
 				break;

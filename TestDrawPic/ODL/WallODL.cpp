@@ -264,6 +264,7 @@ WallODL::WallODL( const GraphODLWPtr graphODL, const CornerODLSPtr& firstCorner,
 	FirstCorner_ = firstCorner;
 	SecondCorner_ = secondCorner;
 	ImpUPtr_->Node2D_ = nullptr;
+	CutMeshDirty_ = true;
 }
 
 WallODL::~WallODL( void )
@@ -305,6 +306,10 @@ TopoDS_Edge WallODL::GetEdge(const CornerODLSPtr& fromCorner) const
 	return BRepBuilderAPI_MakeEdge(beginCorner->GetPosition(), endCorner->GetPosition()).Edge();
 }
 
+float WallODL::GetLength() const
+{
+	return static_cast<float>(FirstCorner_.lock()->GetPosition().Distance(SecondCorner_.lock()->GetPosition()));
+}
 
 void WallODL::UpdateBaseShape()
 {
@@ -376,11 +381,80 @@ void WallODL::UpdateBaseShape()
 	}
 }
 
+void WallODL::UpdateCutShape()
+{
+	CutShape_ = GetBaseShape();
+	for ( auto& curHole : GetHoles() )
+	{
+		auto hole = std::static_pointer_cast<HoleODL>(curHole);
+		hole->UpdateHole();
+		BRepAlgoAPI_Cut bc(CutShape_, hole->GetBaseShape().Moved(hole->GetTransform()));
+		CutShape_ = bc.Shape();
+	}
+}
+
+void WallODL::UpdateCutMesh()
+{
+	assert(Standard_False == CutShape_.IsNull());
+
+	{//3D模型
+		auto meshBuf = ODLTools::NEW_CreateMeshBuffer(CutShape_);
+		assert(meshBuf);
+		auto newMesh = new irr::scene::SMesh;
+		newMesh->addMeshBuffer(meshBuf);
+		newMesh->recalculateBoundingBox();
+
+		GetDataSceneNode()->setMesh(newMesh);
+		newMesh->drop();
+		meshBuf->drop();
+	}
+
+	{//2D模型
+		gp_Trsf tfs;
+		tfs.SetTranslationPart(gp_Vec(gp::Origin(), gp_Pnt(0, 200, 0)));
+		auto transformedFace = BottomShape_.Moved(tfs);
+
+		ImpUPtr_->Node2D_->UpdateMesh(transformedFace);
+
+		//标注
+		auto length = static_cast<int>(FirstCorner_.lock()->GetPosition().Distance(SecondCorner_.lock()->GetPosition()) + 0.5f);
+		auto lableTxt = std::to_wstring(length);
+		lableTxt += L"mm";
+
+		auto font = FreetypeFontMgr::GetInstance().GetTtFont(ImpUPtr_->Lable_->getSceneManager()->getVideoDriver(), "arial.ttf", 32);
+		assert(font);
+
+		auto txtTexture = font->GenerateTextTexture(lableTxt.c_str());
+		assert(txtTexture);
+
+		ImpUPtr_->Lable_->getMaterial(0).setTexture(0, txtTexture);
+
+		auto txtSize = txtTexture->getSize();
+		auto border = 10;
+		auto factor = (Thickness_ - border * 2) / txtSize.Height;
+		ImpUPtr_->Lable_->setScale(irr::core::vector3df(factor * txtSize.Width, 1, factor * txtSize.Height));
+		static_cast<irr::scene::SMesh*>(ImpUPtr_->Lable_->getMesh())->recalculateBoundingBox();
+
+		gp_Dir wallDir = gp_Vec(FirstCorner_.lock()->GetPosition(), SecondCorner_.lock()->GetPosition());
+		wallDir.Cross(gp::DY());
+		auto angle = wallDir.AngleWithRef(gp::DZ(), gp::DY());
+		angle = angle < 0 ? 2 * M_PI + angle : angle;
+
+		if ( angle > M_PI_2 && angle < M_PI_2 * 3 )
+		{
+			ImpUPtr_->Lable_->setRotation(irr::core::vector3df(0, 180, 0));
+		}
+	}
+
+	{//设置效果
+		GetDataSceneNode()->AddToDepthPass();
+		SetDefaultTexture();
+	}
+}
+
 
 void WallODL::UpdateBaseMesh()
 {
-	UpdateBaseShape();
-
 	{//3D模型
 		auto meshBuf = ODLTools::NEW_CreateMeshBuffer(GetBaseShape());
 		assert(meshBuf);
@@ -478,7 +552,7 @@ WallODL::ChildrenList WallODL::GetHoles() const
 
 	for ( auto& child : this->GetChildrenList() )
 	{
-		if ( EODLT_WALL != child->GetType() || EODLT_WINDOW != child->GetType() )
+		if ( EODLT_DOOR != child->GetType() && EODLT_WINDOW != child->GetType() )
 		{
 			continue;
 		}
@@ -526,7 +600,10 @@ gp_Dir WallODL::GetDirection(const CornerODLSPtr& fromCorner) const
 
 void WallODL::SeamHole( const HoleODLSPtr& hole )
 {
-	assert(Standard_False == CutShape_.IsNull());
+	if ( CutShape_.IsNull() )
+	{
+		CutShape_ = GetBaseShape();
+	}
 
 	hole->UpdateHole();
 

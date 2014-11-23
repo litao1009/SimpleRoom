@@ -68,9 +68,15 @@ public:
 
 	float				GetHeight() const { return Height_; }
 
+	float				GetLength() const;
+
 	void				UpdateBaseShape();
 
 	void				UpdateBaseMesh();
+
+	void				UpdateCutShape();
+
+	void				UpdateCutMesh();
 
 	const MeshPoints&	GetMeshPoints() { return MeshPoints_; }
 
@@ -81,6 +87,10 @@ public:
 	void				CutHole(const HoleODLSPtr& hole);
 
 	void				SeamHole(const HoleODLSPtr& hole);
+
+	bool				IsCutMeshDirty() const { return CutMeshDirty_; }
+
+	void				SetCutMeshDirty(bool val) { CutMeshDirty_ = val; }
 
 private:
 
@@ -93,6 +103,7 @@ private:
 	float			Height_;
 	MeshPoints		MeshPoints_;
 
+	bool			CutMeshDirty_;
 	TopoDS_Shape	CutShape_;
 	TopoDS_Shape	BottomShape_;
 

@@ -347,11 +347,17 @@ public:
 		}
 	}
 
-	static WallODLSPtr AddWall( const GraphODLSPtr& graph, const CornerODLSPtr& corner1, const CornerODLSPtr& corner2, bool researchRomm, bool updateMesh )
+	static WallODLSPtr AddWall( const GraphODLSPtr& graph, const CornerODLSPtr& corner1, const CornerODLSPtr& corner2, const ChildrenList& holes, bool researchRomm, bool updateMesh )
 	{
 		auto newWall = std::make_shared<WallODL>(graph, corner1, corner2);
 		newWall->CreateEmptyDataSceneNode();
 		newWall->Init();
+		
+		for ( auto& curHole : holes )
+		{
+			newWall->AddChild(curHole);
+		}
+
 		graph->AddChild(newWall);
 
 		auto index = boost::add_edge(corner1->GetIndex(), corner2->GetIndex(), newWall, graph->Graph_);
@@ -364,7 +370,9 @@ public:
 
 		if ( updateMesh )
 		{
-			newWall->UpdateBaseMesh();
+			newWall->UpdateBaseShape();
+			newWall->UpdateCutShape();
+			newWall->UpdateCutMesh();
 		}
 		else
 		{
@@ -409,11 +417,14 @@ public:
 			{
 				if ( updateMesh )
 				{
-					curWall->UpdateBaseMesh();
+					curWall->UpdateBaseShape();
+					curWall->UpdateCutShape();
+					curWall->UpdateCutMesh();
 				}
 				else
 				{
 					curWall->SetDirty(true);
+					curWall->SetCutMeshDirty(true);
 				}
 			}
 		}
@@ -431,11 +442,14 @@ public:
 			{
 				if ( updateMesh )
 				{
-					curWall->UpdateBaseMesh();
+					curWall->UpdateBaseShape();
+					curWall->UpdateCutShape();
+					curWall->UpdateCutMesh();
 				}
 				else
 				{
 					curWall->SetDirty(true);
+					curWall->SetCutMeshDirty(true);
 				}
 			}
 		}
@@ -546,6 +560,31 @@ CornerODLSPtr GraphODL::CreateCornerBySplitWall( const WallODLSPtr& toSplit, con
 	auto src = boost::source(edgeIndex, Graph_);
 	auto target = boost::target(edgeIndex, Graph_);
 
+	ChildrenList firstHoles,secondHoles;
+	auto splitPar = toSplit->GetFirstCorner().lock()->GetPosition().Distance(position);
+	auto rawCenter = toSplit->GetLength()/2;
+
+	for ( auto& curHole : toSplit->GetHoles() )
+	{
+		auto trans = curHole->GetTranslation();
+		auto rawPos = trans.X() + rawCenter;
+		if ( rawPos < splitPar )
+		{
+			trans.SetX(rawPos - splitPar/2);
+			curHole->SetTranslation(trans);
+			curHole->GetDataSceneNode()->setPosition(irr::core::vector3df(static_cast<float>(trans.X()), static_cast<float>(trans.Y()), static_cast<float>(trans.Z())));
+			firstHoles.push_back(curHole);
+		}
+		else
+		{
+			rawPos -= splitPar;
+			trans.SetX(rawPos - (rawCenter*2 - splitPar) / 2);
+			curHole->SetTranslation(trans);
+			curHole->GetDataSceneNode()->setPosition(irr::core::vector3df(static_cast<float>(trans.X()), static_cast<float>(trans.Y()), static_cast<float>(trans.Z())));
+			secondHoles.push_back(curHole);
+		}
+	}
+
 	boost::remove_edge(edgeIndex, Graph_);
 	RemoveChild(toSplit);
 
@@ -556,8 +595,8 @@ CornerODLSPtr GraphODL::CreateCornerBySplitWall( const WallODLSPtr& toSplit, con
 
 	auto thisSPtr = std::static_pointer_cast<GraphODL>(shared_from_this());
 
-	Imp::AddWall(thisSPtr, srcProp, newCorner, false, updateMesh);
-	Imp::AddWall(thisSPtr, newCorner, targetPorp, researchRoom, updateMesh);
+	Imp::AddWall(thisSPtr, srcProp, newCorner, firstHoles, false, updateMesh);
+	Imp::AddWall(thisSPtr, newCorner, targetPorp, secondHoles, researchRoom, updateMesh);
 
 	return newCorner;
 }
@@ -577,7 +616,7 @@ bool GraphODL::RemoveCorner( const CornerODLSPtr& corner )
 WallODLSPtr GraphODL::AddWall( const CornerODLSPtr& corner1, const CornerODLSPtr& corner2, bool researchRoom, bool updateMesh )
 {
 	auto thisSPtr = std::static_pointer_cast<GraphODL>(shared_from_this());
-	return Imp::AddWall(thisSPtr, corner1, corner2, researchRoom, updateMesh);
+	return Imp::AddWall(thisSPtr, corner1, corner2, ChildrenList(), researchRoom, updateMesh);
 }
 
 bool GraphODL::RemoveWall( const WallODLSPtr& wall, bool needMerge, bool researchRoom, bool updateMesh )
@@ -627,9 +666,20 @@ void GraphODL::MergeWallIfNeeded( const CornerODLSPtr& corner, bool researchRoom
 	auto corner1 = wall1->GetOtherCorner(corner);
 	auto corner2 = wall2->GetOtherCorner(corner);
 
+	auto holes1 = wall1->GetHoles();
+	auto holes2 = wall2->GetHoles();
+	auto dis = wall1->GetLength();
+	for ( auto& curHole : holes2 )
+	{
+		auto trans = curHole->GetTranslation();
+		trans.SetX(trans.X() + dis);
+		curHole->SetTranslation(trans);
+	}
+	std::copy(holes2.begin(), holes2.end(), std::back_inserter(holes1));
+
 	auto thisSPtr = std::static_pointer_cast<GraphODL>(shared_from_this());
 
-	Imp::AddWall(thisSPtr, corner1.lock(),corner2.lock(), false, updateMesh);
+	Imp::AddWall(thisSPtr, corner1.lock(),corner2.lock(), holes1, false, updateMesh);
 
 	Imp::RemoveWall(thisSPtr, wall1, false, false, updateMesh);
 	Imp::RemoveWall(thisSPtr, wall2, false, researchRoom, updateMesh);
@@ -642,14 +692,34 @@ void GraphODL::SearchRooms()
 	Imp::SearchRoom(thisSPtr);
 }
 
-void GraphODL::UpdateWallMeshIfNeeded()
+void GraphODL::UpdateWallBaseMeshIfNeeded()
 {
 	for ( auto& curWall : GetAllWalls() )
 	{
 		if ( curWall->IsDirty() )
 		{
+			curWall->UpdateBaseShape();
 			curWall->UpdateBaseMesh();
 			curWall->SetDirty(false);
+		}
+	}
+}
+
+void GraphODL::UpdateWallCutMeshIfNeeded()
+{
+	for ( auto& curWall : GetAllWalls() )
+	{
+		if ( curWall->IsDirty() )
+		{
+			curWall->UpdateBaseShape();
+			curWall->SetDirty(false);
+		}
+
+		if ( curWall->IsCutMeshDirty() )
+		{
+			curWall->UpdateCutShape();
+			curWall->UpdateCutMesh();
+			curWall->SetCutMeshDirty(false);
 		}
 	}
 }

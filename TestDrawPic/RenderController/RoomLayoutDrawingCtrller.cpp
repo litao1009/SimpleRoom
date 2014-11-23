@@ -104,6 +104,7 @@ public:
 		for ( auto& curWall : Graph_.lock()->GetWallsOnCorner(corner) )
 		{
 			curWall->SetDirty(true);
+			curWall->SetCutMeshDirty(true);
 		}
 	}
 
@@ -786,14 +787,7 @@ bool RoomLayoutDrawingCtrller::PreRender3D()
 		break;
 	}
 
-	for ( auto& curWall : imp_.Graph_.lock()->GetAllWalls() )
-	{
-		if ( curWall->IsDirty() )
-		{
-			curWall->UpdateBaseMesh();
-			curWall->SetDirty(false);
-		}
-	}
+	imp_.Graph_.lock()->UpdateWallCutMeshIfNeeded();
 
 	imp_.AuxiliaryLine_->getPosition(0) = vector3df(static_cast<float>(cursorPnt.X()), static_cast<float>(cursorPnt.Y()), static_cast<float>(cursorPnt.Z()));
 	imp_.AuxiliaryLine_->getPosition(1) = vector3df(static_cast<float>(cursorPnt.X()), static_cast<float>(cursorPnt.Y()), static_cast<float>(cursorPnt.Z()));

@@ -50,7 +50,9 @@ public:
 
 	void			SearchRooms();
 
-	void			UpdateWallMeshIfNeeded();
+	void			UpdateWallBaseMeshIfNeeded();
+
+	void			UpdateWallCutMeshIfNeeded();
 
 private:
 
