@@ -4,16 +4,47 @@
 #include "CornerODL.h"
 #include "FloorODL.h"
 
+#include "SMesh.h"
+#include "SMeshBuffer.h"
+#include "irrEngine/IrrExtension/FreetypeFontManager.h"
+#include "irrEngine/SRenderContext.h"
+#include "irrEngine/irrEngine.h"
+
 #include "BRepBuilderAPI_MakePolygon.hxx"
 #include "BRepBuilderAPI_MakeFace.hxx"
 #include "GProp_GProps.hxx"
 #include "BRepGProp.hxx"
-#include "StlAPI.hxx"
+//#include "StlAPI.hxx"
+
+#include <boost/format.hpp>
 
 class	RoomODL::Imp
 {
 public:
 
+	Imp()
+	{
+		NameMesh_ =nullptr;
+		AreaMesh_ = nullptr;
+		FirstBuild_ = true;
+	}
+
+	static	std::wstring	NewRoomName()
+	{
+		static unsigned nameCount = 0;
+
+		std::wstring newName = L"·¿¼ä " + std::to_wstring(nameCount++);
+		return newName;
+	}
+
+public:
+
+	gp_Pnt			Center_;
+	bool			FirstBuild_;
+	FloorODLWPtr	Floor_;
+	std::wstring	RoomName_;
+	irr::scene::IMeshSceneNode*	NameMesh_;
+	irr::scene::IMeshSceneNode*	AreaMesh_;
 };
 
 RoomODL::RoomODL( const SRenderContextWPtr& rc ):BaseODL(rc),ImpUPtr_(new Imp)
@@ -104,9 +135,104 @@ bool RoomODL::Build()
 
 	SetBaseShape(face);
 
-	auto floor = FloorODL::CreateByFace(GetRenderContextWPtr(), face);
-	this->AddChild(floor);
+	{//floor
+		if ( !ImpUPtr_->Floor_.expired() )
+		{
+			ImpUPtr_->Floor_.lock()->RemoveFromParent();
+		}
 
+		auto floor = FloorODL::CreateByFace(GetRenderContextWPtr(), face);
+		AddChild(floor);
+
+		ImpUPtr_->Floor_ = floor;
+	}
+
+	if ( ImpUPtr_->FirstBuild_ )
+	{
+		ImpUPtr_->FirstBuild_ = false;
+
+		{
+			auto lableMeshBuf = ODLTools::NEW_CreateRectMeshBuffer(0.5f);
+			lableMeshBuf->getMaterial().DiffuseColor = 0xFF000000;
+			lableMeshBuf->getMaterial().MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_FONT);
+
+			auto lableMesh = new irr::scene::SMesh;
+			lableMesh->addMeshBuffer(lableMeshBuf);
+			lableMeshBuf->recalculateBoundingBox();
+
+			auto lableNode = GetDataSceneNode()->getSceneManager()->addMeshSceneNode(lableMesh, GetDataSceneNode()->GetSceneNode2D());
+			ImpUPtr_->NameMesh_ = lableNode;
+
+			lableMeshBuf->drop();
+			lableMesh->drop();
+		}
+
+		{
+			auto lableMeshBuf = ODLTools::NEW_CreateRectMeshBuffer(0.5f);
+			lableMeshBuf->getMaterial().DiffuseColor = 0xFF000000;
+			lableMeshBuf->getMaterial().MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_FONT);
+
+			auto lableMesh = new irr::scene::SMesh;
+			lableMesh->addMeshBuffer(lableMeshBuf);
+			lableMeshBuf->recalculateBoundingBox();
+
+			auto lableNode = GetDataSceneNode()->getSceneManager()->addMeshSceneNode(lableMesh, GetDataSceneNode()->GetSceneNode2D());
+			ImpUPtr_->AreaMesh_ = lableNode;
+
+			lableMeshBuf->drop();
+			lableMesh->drop();
+		}
+	}
+
+	GProp_GProps System;
+	BRepGProp::SurfaceProperties(face,System);
+	ImpUPtr_->Center_ = System.CentreOfMass();
+	auto& massCenter = ImpUPtr_->Center_;
+
+	{//name
+		if ( ImpUPtr_->RoomName_.empty() )
+		{
+			ImpUPtr_->RoomName_ = Imp::NewRoomName();
+			auto font = FreetypeFontMgr::GetInstance().GetTtFont(GetRenderContextWPtr().lock()->Smgr_->getVideoDriver(), "simsun.ttc", 64);
+			assert(font);
+
+			auto tex = font->GenerateTextTexture(ImpUPtr_->RoomName_.c_str());
+			auto txtSize = tex->getSize();
+			auto factor = 200.f / txtSize.Height;
+
+			ImpUPtr_->NameMesh_->setScale(irr::core::vector3df(factor * txtSize.Width, 1, factor * txtSize.Height));
+			ImpUPtr_->NameMesh_->setPosition(irr::core::vector3df(static_cast<float>(massCenter.X()), 0, static_cast<float>(massCenter.Z())-100));
+			ImpUPtr_->NameMesh_->getMaterial(0).setTexture(0, tex);
+
+			static_cast<irr::scene::SMesh*>(ImpUPtr_->NameMesh_->getMesh())->recalculateBoundingBox();
+		}
+		else
+		{
+			ImpUPtr_->NameMesh_->setPosition(irr::core::vector3df(static_cast<float>(massCenter.X()), 0, static_cast<float>(massCenter.Z())-100));
+		}
+	}
+
+	{//Area
+		auto area = System.Mass();
+		area /= 1000 * 1000;
+
+		boost::wformat fmt(L"%.2f");
+		fmt % area;
+
+		auto font = FreetypeFontMgr::GetInstance().GetTtFont(GetRenderContextWPtr().lock()->Smgr_->getVideoDriver(), "arial.ttf", 32);
+		assert(font);
+
+		auto tex = font->GenerateTextTexture((fmt.str()+L"m2").c_str());
+		auto txtSize = tex->getSize();
+		auto factor = 150.f / txtSize.Height;
+
+		ImpUPtr_->AreaMesh_->setScale(irr::core::vector3df(factor * txtSize.Width, 1, factor * txtSize.Height));
+		ImpUPtr_->AreaMesh_->setPosition(irr::core::vector3df(static_cast<float>(massCenter.X()), 0, static_cast<float>(massCenter.Z())+100));
+		ImpUPtr_->AreaMesh_->getMaterial(0).setTexture(0, tex);
+
+		static_cast<irr::scene::SMesh*>(ImpUPtr_->NameMesh_->getMesh())->recalculateBoundingBox();
+	}
+	
 	return true;
 }
 
@@ -119,4 +245,55 @@ double RoomODL::GetArea() const
 	BRepGProp::SurfaceProperties(shape,System);
 	
 	return System.Mass();
+}
+
+void RoomODL::SetName( const std::wstring& name )
+{
+	ImpUPtr_->RoomName_ = name;
+
+	auto font = FreetypeFontMgr::GetInstance().GetTtFont(GetRenderContextWPtr().lock()->Smgr_->getVideoDriver(), "simsun.ttc", 64);
+	assert(font);
+
+	auto tex = font->GenerateTextTexture(ImpUPtr_->RoomName_.c_str());
+	auto txtSize = tex->getSize();
+	auto factor = 200.f / txtSize.Height;
+	
+	ImpUPtr_->NameMesh_->setScale(irr::core::vector3df(factor * txtSize.Width, 1, factor * txtSize.Height));
+	ImpUPtr_->NameMesh_->getMaterial(0).setTexture(0, tex);
+
+	static_cast<irr::scene::SMesh*>(ImpUPtr_->NameMesh_->getMesh())->recalculateBoundingBox();
+}
+
+const std::wstring& RoomODL::GetName() const
+{
+	return ImpUPtr_->RoomName_;
+}
+
+const gp_Pnt& RoomODL::GetCenter() const
+{
+	return ImpUPtr_->Center_;
+}
+
+void RoomODL::UpdateSweeping()
+{
+	if ( IsSweeping() )
+	{
+		ImpUPtr_->NameMesh_->getMaterial(0).DiffuseColor = 0xFFFFFF00;
+	}
+	else
+	{
+		ImpUPtr_->NameMesh_->getMaterial(0).DiffuseColor = 0xFF000000;
+	}
+}
+
+void RoomODL::UpdatePicking()
+{
+	if ( IsPicking() )
+	{
+		ImpUPtr_->NameMesh_->getMaterial(0).DiffuseColor = 0xFF0000FF;
+	}
+	else
+	{
+		ImpUPtr_->NameMesh_->getMaterial(0).DiffuseColor = 0xFF000000;
+	}
 }

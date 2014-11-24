@@ -13,6 +13,8 @@
 #include "RenderController/RoomLayoutDoorController.h"
 #include "RenderController/RoomLayoutWindowCtrller.h"
 #include "RenderController/RoomLayoutWallCtrller.h"
+#include "RenderController/RoomLayoutRoomController.h"
+#include "RenderController/RoomLayoutPillarController.h"
 
 #include "gp_Lin.hxx"
 
@@ -57,6 +59,8 @@ void RoomLayoutBrowserCtrller::Init()
 	imp_.CtrllerMap_[EODLT_DOOR] = std::make_shared<RoomLayoutDoorController>(ImpUPtr_->Graph_, GetRenderContextSPtr());
 	imp_.CtrllerMap_[EODLT_WINDOW] = std::make_shared<RoomLayoutWindowCtrller>(ImpUPtr_->Graph_, GetRenderContextSPtr());
 	imp_.CtrllerMap_[EODLT_WALL] = std::make_shared<RoomLayoutWallCtrller>(ImpUPtr_->Graph_, GetRenderContextSPtr());
+	imp_.CtrllerMap_[EODLT_ROOM] = std::make_shared<RoomLayoutRoomController>(ImpUPtr_->Graph_, GetRenderContextSPtr());
+	imp_.CtrllerMap_[EODLT_PILLAR] = std::make_shared<RoomLayoutPillarController>(ImpUPtr_->Graph_.lock(), GetRenderContextSPtr());
 }
 
 bool RoomLayoutBrowserCtrller::OnPostEvent( const irr::SEvent& evt )
@@ -77,6 +81,11 @@ bool RoomLayoutBrowserCtrller::OnPostEvent( const irr::SEvent& evt )
 	if ( evt.EventType == irr::EET_USER_EVENT && evt.UserEvent.UserData1 == EUT_ROOMLAYOUT_TEST_WINDOW )
 	{
 		imp_.ActiveCtrller_ = imp_.CtrllerMap_[EODLT_WINDOW];
+	}
+
+	if ( evt.EventType == irr::EET_USER_EVENT && evt.UserEvent.UserData1 == EUT_ROOMLAYOUT_TEST_PILLAR )
+	{
+		imp_.ActiveCtrller_ = imp_.CtrllerMap_[EODLT_PILLAR];
 	}
 
 	if ( imp_.ActiveCtrller_ )

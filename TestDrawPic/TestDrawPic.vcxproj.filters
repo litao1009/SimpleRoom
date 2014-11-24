@@ -253,6 +253,21 @@
     <ClCompile Include="Dialog\DlgRoomLayoutWindowProperty.cpp">
       <Filter>src\Dialog</Filter>
     </ClCompile>
+    <ClCompile Include="RenderController\RoomLayoutRoomController.cpp">
+      <Filter>RenderController\RoomLayout</Filter>
+    </ClCompile>
+    <ClCompile Include="Dialog\DlgRoomLayoutRoomProperty.cpp">
+      <Filter>src\Dialog</Filter>
+    </ClCompile>
+    <ClCompile Include="ODL\PillarODL.cpp">
+      <Filter>ODL</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderController\RoomLayoutPillarController.cpp">
+      <Filter>RenderController\RoomLayout</Filter>
+    </ClCompile>
+    <ClCompile Include="ODL\MeshSceneNode\PillarMeshNode2D.cpp">
+      <Filter>ODL\MeshSceneNode</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BLL\BaseBLL.h">
@@ -584,6 +599,21 @@
     </ClInclude>
     <ClInclude Include="Dialog\DlgRoomLayoutWindowProperty.h">
       <Filter>src\Dialog</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderController\RoomLayoutRoomController.h">
+      <Filter>RenderController\RoomLayout</Filter>
+    </ClInclude>
+    <ClInclude Include="Dialog\DlgRoomLayoutRoomProperty.h">
+      <Filter>src\Dialog</Filter>
+    </ClInclude>
+    <ClInclude Include="ODL\PillarODL.h">
+      <Filter>ODL</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderController\RoomLayoutPillarController.h">
+      <Filter>RenderController\RoomLayout</Filter>
+    </ClInclude>
+    <ClInclude Include="ODL\MeshSceneNode\PillarMeshNode2D.h">
+      <Filter>ODL\MeshSceneNode</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

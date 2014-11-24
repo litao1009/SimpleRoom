@@ -8,6 +8,7 @@ class	CornerODL::Imp
 public:
 
 	CornerMeshNode2D*	MeshNode2D_;
+	RoomODLWList		Rooms_;
 };
 
 
@@ -44,4 +45,40 @@ void CornerODL::SetPosition( const gp_Pnt& pos )
 {
 	Position_ = pos;
 	GetDataSceneNode()->setPosition(irr::core::vector3df(static_cast<float>(pos.X()), static_cast<float>(pos.Y()), static_cast<float>(pos.Z())));
+}
+
+RoomODLList CornerODL::GetRooms() const
+{
+	RoomODLList rooms;
+
+	for ( auto& curRoom : ImpUPtr_->Rooms_ )
+	{
+		assert(!curRoom.expired());
+		rooms.push_back(curRoom.lock());
+	}
+
+	return rooms;
+}
+
+void CornerODL::AddRoom( const RoomODLSPtr& room )
+{
+	assert(std::find_if(ImpUPtr_->Rooms_.begin(), ImpUPtr_->Rooms_.end(), [&room](const RoomODLWPtr& curRoom)
+	{
+		return curRoom.lock() == room;
+	}) == ImpUPtr_->Rooms_.end());
+
+	ImpUPtr_->Rooms_.push_back(room);
+}
+
+void CornerODL::RemoveRoom( const RoomODLSPtr& room )
+{
+	assert(std::find_if(ImpUPtr_->Rooms_.begin(), ImpUPtr_->Rooms_.end(), [&room](const RoomODLWPtr& curRoom)
+	{
+		return curRoom.lock() == room;
+	}) != ImpUPtr_->Rooms_.end());
+
+	ImpUPtr_->Rooms_.erase(std::remove_if(ImpUPtr_->Rooms_.begin(), ImpUPtr_->Rooms_.end(), [&room](const RoomODLWPtr& curRoom)
+	{
+		return curRoom.lock() == room;
+	}), ImpUPtr_->Rooms_.end());
 }

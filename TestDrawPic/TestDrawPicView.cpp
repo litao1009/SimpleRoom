@@ -32,6 +32,7 @@
 #include "Dialog/DlgRoomLayoutWallProperty.h"
 #include "Dialog/DlgRoomLayoutDoorProperty.h"
 #include "Dialog/DlgRoomLayoutWindowProperty.h"
+#include "Dialog/DlgRoomLayoutRoomProperty.h"
 
 #include "resource.h"
 
@@ -62,6 +63,7 @@ BEGIN_MESSAGE_MAP(CTestDrawPicView, CCtrlFuncView)
 	ON_COMMAND(ID_BTN_ROOMLAYOUT_TEST_DOOR, &CTestDrawPicView::OnBtnRoomLayoutTestDoor)
 	ON_COMMAND(ID_BTN_ROOMLAYOUT_TEST_WINDOW, &CTestDrawPicView::OnBtnRoomlayoutTestWindow)
 	ON_WM_DESTROY()
+	ON_COMMAND(ID_BTN_ROOMLAYOUT_TEST_PLILLAR, &CTestDrawPicView::OnBtnRoomlayoutTestPlillar)
 END_MESSAGE_MAP()
 
 
@@ -113,6 +115,11 @@ void CTestDrawPicView::OnDraw(CDC* pDC)
 
 void CTestDrawPicView::OnTimer(UINT_PTR nIDEvent)
 {
+	if ( !IsWindow(GetSafeHwnd()) )
+	{
+		return;
+	}
+
 	static auto saveTime = ::GetTickCount();
 
 	auto elapsed = ::GetTickCount() - saveTime;
@@ -269,6 +276,12 @@ LRESULT CTestDrawPicView::DefWindowProc(UINT message, WPARAM wParam, LPARAM lPar
 		if ( WM_USER_ROOMLAYOUT_WINDOW_PROPERTY == wParam )
 		{
 			DlgRoomLayoutWindowProperty dlg(m_spRenderContext, lParam);
+			dlg.DoModal();
+		}
+
+		if ( WM_USER_ROOMLAYOUT_ROOM_PROPERTY == wParam )
+		{
+			DlgRoomLayoutRoomProperty dlg(m_spRenderContext, lParam);
 			dlg.DoModal();
 		}
 
@@ -614,9 +627,26 @@ void CTestDrawPicView::OnBtnRoomlayoutTestWindow()
 	m_spRenderContext->PostEvent(evt);
 }
 
+void CTestDrawPicView::OnBtnRoomlayoutTestPlillar()
+{
+	// TODO: 在此添加命令处理程序代码
+	static SEventPilarInfo pilarInfo;
+	pilarInfo.XLength_ = 500;
+	pilarInfo.YLength_ = 2400;
+	pilarInfo.ZLength_ = 500;
+	pilarInfo.OffsetHeight_ = 0;
+
+	irr::SEvent evt;
+	evt.EventType = irr::EET_USER_EVENT;
+	evt.UserEvent.UserData1 = EUT_ROOMLAYOUT_TEST_PILLAR;
+	evt.UserEvent.UserData2 = reinterpret_cast<int>(static_cast<void*>(&pilarInfo));
+	m_spRenderContext->PostEvent(evt);
+}
 
 void CTestDrawPicView::OnDestroy()
 {
+	TRACE("CTestDrawPicView::OnDestroy\n");
+
 	m_Render3D = false;
 	// TODO: 在此处添加消息处理程序代码
 	KillTimer(1000);

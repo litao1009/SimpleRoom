@@ -96,6 +96,7 @@ public:
 	afx_msg void OnBtnRoomLayoutTestDoor();
 	afx_msg void OnBtnRoomlayoutTestWindow();
 	afx_msg void OnDestroy();
+	afx_msg void OnBtnRoomlayoutTestPlillar();
 };
 
 #ifndef _DEBUG  // TestDrawPicView.cpp 中的调试版本

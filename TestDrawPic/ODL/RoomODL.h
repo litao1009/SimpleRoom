@@ -6,6 +6,7 @@
 
 #include "BaseODL.h"
 
+#include <string>
 
 class	RoomODL : public BaseODL
 {
@@ -22,6 +23,14 @@ public:
 
 	virtual	void	Init() {}
 
+protected:
+
+	virtual	void	UpdateSweeping();
+
+	virtual	void	UpdatePicking();
+
+public:
+
 	void	SetWallList(const WallODLList& list);
 
 	void	SetCornerList(const CornerODLList& list);
@@ -33,6 +42,12 @@ public:
 	bool			Build();
 
 	double			GetArea() const;
+
+	const gp_Pnt&	GetCenter() const;
+
+	void			SetName(const std::wstring& name);
+
+	const std::wstring&	GetName() const;
 
 private:
 

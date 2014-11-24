@@ -2,7 +2,7 @@
 
 #include "BaseODL.h"
 #include "CornerODLFwd.h"
-
+#include "RoomODLFwd.h"
 #include "GraphODL.h"
 
 class	CornerODL : public BaseODL
@@ -33,6 +33,12 @@ public:
 	const VertexIndex&	GetIndex() const { return GraphIndex_; }
 
 	void	SetIndex(const VertexIndex& val) { GraphIndex_ = val; }
+
+	RoomODLList	GetRooms() const;
+
+	void		AddRoom(const RoomODLSPtr& room);
+
+	void		RemoveRoom(const RoomODLSPtr& room);
 
 public:
 

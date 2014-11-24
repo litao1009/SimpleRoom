@@ -624,3 +624,39 @@ void WallODL::SeamHole( const HoleODLSPtr& hole )
 
 	SetDefaultTexture();
 }
+
+RoomODLList WallODL::GetRooms() const
+{
+	RoomODLList rooms;
+
+	for ( auto& curRoom : Rooms_ )
+	{
+		assert(!curRoom.expired());
+		rooms.push_back(curRoom.lock());
+	}
+
+	return rooms;
+}
+
+void WallODL::AddRoom( const RoomODLSPtr& room )
+{
+	assert(std::find_if(Rooms_.begin(), Rooms_.end(), [&room](const RoomODLWPtr& curRoom)
+	{
+		return curRoom.lock() == room;
+	}) == Rooms_.end());
+
+	Rooms_.push_back(room);
+}
+
+void WallODL::RemoveRoom( const RoomODLSPtr& room )
+{
+	assert(std::find_if(Rooms_.begin(), Rooms_.end(), [&room](const RoomODLWPtr& curRoom)
+	{
+		return curRoom.lock() == room;
+	}) != Rooms_.end());
+
+	Rooms_.erase(std::remove_if(Rooms_.begin(), Rooms_.end(), [&room](const RoomODLWPtr& curRoom)
+	{
+		return curRoom.lock() == room;
+	}), Rooms_.end());
+}

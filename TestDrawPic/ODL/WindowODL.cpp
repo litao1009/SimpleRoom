@@ -13,11 +13,12 @@ public:
 	}
 
 	WindowMeshNode2D*	MeshNode2D_;
+	float				OffsetHeight_;
 };
 
-WindowODL::WindowODL(const SRenderContextWPtr& rc):HoleODL(rc),ImpUPtr_(new Imp)
+WindowODL::WindowODL(const SRenderContextWPtr& rc, float offsetHeight):HoleODL(rc),ImpUPtr_(new Imp)
 {
-	
+	ImpUPtr_->OffsetHeight_ = offsetHeight;
 }
 
 WindowODL::~WindowODL()
@@ -74,4 +75,14 @@ void WindowODL::UpdatePicking()
 	{
 		Set2DLineColor(irr::video::SColor(0xFF8F8F8F));
 	}
+}
+
+void WindowODL::SetOffsetHeight( float val )
+{
+	ImpUPtr_->OffsetHeight_ = val;
+}
+
+float WindowODL::GetOffsetHeight() const
+{
+	return ImpUPtr_->OffsetHeight_;
 }

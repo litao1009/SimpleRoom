@@ -54,6 +54,8 @@ public:
 
 	void			UpdateWallCutMeshIfNeeded();
 
+	void			UpdateRoomMeshIfNeeded();
+
 private:
 
 	Graph	Graph_;

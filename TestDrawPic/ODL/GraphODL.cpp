@@ -32,7 +32,6 @@ public:
 		void begin_face()
 		{
 			auto newRoom = std::make_shared<RoomODL>(GraphODL_->GetRenderContextWPtr());
-			newRoom->CreateEmptyDataSceneNode();
 			FoundRooms_.push_back(newRoom);
 		}
 
@@ -305,6 +304,22 @@ public:
 
 		for ( auto& curRoom : toRemove )
 		{
+			for ( auto& corner : curRoom.Room_->GetCornerList() )
+			{
+				if ( corner && !corner->GetParent().expired() )
+				{
+					corner->RemoveRoom(curRoom.Room_);
+				}
+			}
+
+			for ( auto& wall : curRoom.Room_->GetWallList() )
+			{
+				if ( wall && !wall->GetParent().expired() )
+				{
+					wall->RemoveRoom(curRoom.Room_);
+				}
+			}
+
 			curRoom.Room_->RemoveFromParent();
 			auto itor = std::find(graphODL->ImpUPtr_->Rooms_.begin(), graphODL->ImpUPtr_->Rooms_.end(), curRoom.Room_);
 			graphODL->ImpUPtr_->Rooms_.erase(itor);
@@ -312,9 +327,22 @@ public:
 
 		for ( auto& curRoom : toAdd )
 		{
+			curRoom.Room_->CreateEmptyDataSceneNode();
 			if ( !curRoom.Room_->Build() )
 			{
 				continue;
+			}
+
+			for ( auto& corner : curRoom.Room_->GetCornerList() )
+			{
+				assert(corner && !corner->GetParent().expired());
+				corner->AddRoom(curRoom.Room_);
+			}
+
+			for ( auto& wall : curRoom.Room_->GetWallList() )
+			{
+				assert( wall && !wall->GetParent().expired() );
+				wall->AddRoom(curRoom.Room_);
 			}
 
 			graphODL->AddChild(curRoom.Room_);
@@ -720,6 +748,18 @@ void GraphODL::UpdateWallCutMeshIfNeeded()
 			curWall->UpdateCutShape();
 			curWall->UpdateCutMesh();
 			curWall->SetCutMeshDirty(false);
+		}
+	}
+}
+
+void GraphODL::UpdateRoomMeshIfNeeded()
+{
+	for ( auto& curRoom : ImpUPtr_->Rooms_ )
+	{
+		if ( curRoom->IsDirty() )
+		{
+			curRoom->Build();
+			curRoom->SetDirty(false);
 		}
 	}
 }

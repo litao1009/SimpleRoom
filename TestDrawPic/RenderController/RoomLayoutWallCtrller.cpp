@@ -10,6 +10,7 @@
 #include "ODL/CornerODL.h"
 #include "ODL/WallODL.h"
 #include "ODL/HoleODL.h"
+#include "ODL/RoomODL.h"
 
 #include "BRepAdaptor_Curve.hxx"
 #include "BRepBuilderAPI_MakeEdge.hxx"
@@ -315,6 +316,7 @@ bool RoomLayoutWallCtrller::PreRender3D()
 			{
 				imp_.Graph_.lock()->UpdateWallCutMeshIfNeeded();
 				imp_.Graph_.lock()->SearchRooms();
+				imp_.Graph_.lock()->UpdateRoomMeshIfNeeded();
 				imp_.State_ = EWallState::EWS_SWEEPING;
 				break;
 			}
@@ -446,10 +448,20 @@ bool RoomLayoutWallCtrller::PreRender3D()
 				curWall->SetCutMeshDirty(true);
 			}
 
+			for ( auto& curRoom : firstCorner->GetRooms() )
+			{
+				curRoom->SetDirty(true);
+			}
+
 			for ( auto& curWall : imp_.Graph_.lock()->GetWallsOnCorner(secondCorner) )
 			{
 				curWall->SetDirty(true);
 				curWall->SetCutMeshDirty(true);
+			}
+
+			for ( auto& curRoom : secondCorner->GetRooms() )
+			{
+				curRoom->SetDirty(true);
 			}
 
 			imp_.Graph_.lock()->UpdateWallBaseMeshIfNeeded();

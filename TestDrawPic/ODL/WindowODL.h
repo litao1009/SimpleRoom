@@ -12,7 +12,7 @@ class WindowODL : public HoleODL
 
 public:
 
-	WindowODL(const SRenderContextWPtr& rc);
+	WindowODL(const SRenderContextWPtr& rc, float offsetHeight);
 	~WindowODL();
 
 public:
@@ -34,6 +34,10 @@ public://HoleODL
 public:
 
 	void	Set2DLineColor(const irr::video::SColor& clr);
+
+	void	SetOffsetHeight(float val);
+
+	float	GetOffsetHeight() const;
 };
 
 typedef	std::shared_ptr<WindowODL>	WindowODLSPtr;

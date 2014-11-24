@@ -7,6 +7,7 @@
 #include "HoleODLFwd.h"
 
 #include "CornerODLFwd.h"
+#include "RoomODLFwd.h"
 #include "GraphODLFwd.h"
 
 #include "TopoDS_Shape.hxx"
@@ -92,6 +93,12 @@ public:
 
 	void				SetCutMeshDirty(bool val) { CutMeshDirty_ = val; }
 
+	RoomODLList			GetRooms() const;
+
+	void				AddRoom(const RoomODLSPtr& room);
+
+	void				RemoveRoom(const RoomODLSPtr& room);
+
 private:
 
 	EdgeIndex		GraphIndex_;
@@ -108,6 +115,7 @@ private:
 	TopoDS_Shape	BottomShape_;
 
 	GraphODLWPtr	GraphODL_;
+	RoomODLWList	Rooms_;
 };
 
 typedef	std::shared_ptr<WallODL>	CWallODLSPtr;

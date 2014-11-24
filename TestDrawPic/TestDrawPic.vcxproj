@@ -130,6 +130,7 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClInclude Include="Dialog\DlgRoomLayoutDoorProperty.h" />
     <ClInclude Include="Dialog\DlgRoomLayoutPictureSize.h" />
     <ClInclude Include="Dialog\DlgRoomLayoutDrawlinInfo.h" />
+    <ClInclude Include="Dialog\DlgRoomLayoutRoomProperty.h" />
     <ClInclude Include="Dialog\DlgRoomLayoutWallProperty.h" />
     <ClInclude Include="Dialog\DlgRoomLayoutWindowProperty.h" />
     <ClInclude Include="DragDataListCtrl.h" />
@@ -173,9 +174,11 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClInclude Include="ODL\HoleODLFwd.h" />
     <ClInclude Include="ODL\MeshSceneNode\CornerMeshNode2D.h" />
     <ClInclude Include="ODL\MeshSceneNode\DoorMeshNode2D.h" />
+    <ClInclude Include="ODL\MeshSceneNode\PillarMeshNode2D.h" />
     <ClInclude Include="ODL\MeshSceneNode\WallMeshNode2D.h" />
     <ClInclude Include="ODL\MeshSceneNode\WindowMeshNode2D.h" />
     <ClInclude Include="ODL\ODLTools.h" />
+    <ClInclude Include="ODL\PillarODL.h" />
     <ClInclude Include="ODL\RoomODL.h" />
     <ClInclude Include="ODL\RoomODLFwd.h" />
     <ClInclude Include="ODL\ShapeSceneNode.h" />
@@ -209,6 +212,8 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClInclude Include="RenderController\RoomLayoutBrowserCtrller.h" />
     <ClInclude Include="RenderController\RoomLayoutCtrller.h" />
     <ClInclude Include="RenderController\RoomLayoutPictureCtrller.h" />
+    <ClInclude Include="RenderController\RoomLayoutPillarController.h" />
+    <ClInclude Include="RenderController\RoomLayoutRoomController.h" />
     <ClInclude Include="RenderController\RoomLayoutWallCtrller.h" />
     <ClInclude Include="RenderController\StatesController.h" />
     <ClInclude Include="RenderController\TestDecorGUIBoard.h" />
@@ -245,6 +250,7 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClCompile Include="Dialog\DlgRoomLayoutDoorProperty.cpp" />
     <ClCompile Include="Dialog\DlgRoomLayoutPictureSize.cpp" />
     <ClCompile Include="Dialog\DlgRoomLayoutDrawlinInfo.cpp" />
+    <ClCompile Include="Dialog\DlgRoomLayoutRoomProperty.cpp" />
     <ClCompile Include="Dialog\DlgRoomLayoutWallProperty.cpp" />
     <ClCompile Include="Dialog\DlgRoomLayoutWindowProperty.cpp" />
     <ClCompile Include="irrEngine\IrrExtension\BaseSceneNode.cpp" />
@@ -277,6 +283,7 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClCompile Include="ODL\HoleODL.cpp" />
     <ClCompile Include="ODL\MeshSceneNode\CornerMeshNode2D.cpp" />
     <ClCompile Include="ODL\MeshSceneNode\DoorMeshNode2D.cpp" />
+    <ClCompile Include="ODL\MeshSceneNode\PillarMeshNode2D.cpp" />
     <ClCompile Include="ODL\MeshSceneNode\WallMeshNode2D.cpp" />
     <ClCompile Include="ODL\MeshSceneNode\WindowMeshNode2D.cpp" />
     <ClCompile Include="ODL\ODLTools.cpp" />
@@ -297,6 +304,7 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClCompile Include="DAL\WallFaceZoneDAL.cpp" />
     <ClCompile Include="DAL\SkinUnitDAL.cpp" />
     <ClCompile Include="DAL\SkinDAL.cpp" />
+    <ClCompile Include="ODL\PillarODL.cpp" />
     <ClCompile Include="ODL\RoomODL.cpp" />
     <ClCompile Include="ODL\ShapeSceneNode.cpp" />
     <ClCompile Include="ODL\WallODL.cpp" />
@@ -309,6 +317,8 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClCompile Include="RenderController\RoomLayoutBrowserCtrller.cpp" />
     <ClCompile Include="RenderController\RoomLayoutCtrller.cpp" />
     <ClCompile Include="RenderController\RoomLayoutPictureCtrller.cpp" />
+    <ClCompile Include="RenderController\RoomLayoutPillarController.cpp" />
+    <ClCompile Include="RenderController\RoomLayoutRoomController.cpp" />
     <ClCompile Include="RenderController\RoomLayoutWallCtrller.cpp" />
     <ClCompile Include="RenderController\TestDecorGUIBoard.cpp" />
     <ClCompile Include="RenderController\RoomLayoutDrawingCtrller.cpp" />
