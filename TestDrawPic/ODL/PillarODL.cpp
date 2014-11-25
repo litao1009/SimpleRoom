@@ -27,8 +27,9 @@ public:
 public:
 
 	PillarMeshNode2D*	MeshNode2D_;
-	float	OffsetHeight_;
-	gp_XYZ	Size_;
+	float				OffsetHeight_;
+	gp_XYZ				Size_;
+	BaseODLWList		AlignList_;
 };
 
 PillarODL::PillarODL( const SRenderContextWPtr& rc ):BaseODL(rc), ImpUPtr_(new Imp)
@@ -109,5 +110,28 @@ void PillarODL::SetDefaultTexture()
 
 	meshBufferPtr->getMaterial().setTextureMatrix(0, texMat);
 	GetDataSceneNode()->setMaterialTexture(0, tex);
+}
+
+BaseODLList PillarODL::GetAlignList() const
+{
+	BaseODLList ret;
+
+	for ( auto& curODL : ImpUPtr_->AlignList_ )
+	{
+		ret.push_back(curODL.lock());
+	}
+
+	return ret;
+}
+
+void PillarODL::SetAlignList( const BaseODLList& list )
+{
+	BaseODLWList toSave;
+	for ( auto& curODL : list )
+	{
+		toSave.push_back(curODL);
+	}
+
+	ImpUPtr_->AlignList_ = toSave;
 }
 

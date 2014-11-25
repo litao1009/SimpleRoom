@@ -11,6 +11,10 @@
 
 #include "gp_Lin.hxx"
 #include "BRepExtrema_DistShapeShape.hxx"
+#include "BRepPrimAPI_MakeBox.hxx"
+#include "BRepBuilderAPI_MakeVertex.hxx"
+#include "TopExp_Explorer.hxx"
+#include "BRepBuilderAPI_MakeEdge.hxx"
 
 #include <boost/optional.hpp>
 
@@ -227,54 +231,150 @@ bool RoomLayoutPillarController::PreRender3D()
 				imp_.State_ = EPilarState::EPS_SWEEPING;
 				break;
 			}
-
-			gp_Lin cursorLin(cursorPnt, gp::DY().Reversed());
-
+			
+			auto activeTransitionBox = activePilar->GetBaseBndBox();
+			{
+				gp_Trsf tfs;
+				tfs.SetTranslationPart(activePilar->GetTranslation());
+				activeTransitionBox = activeTransitionBox.Transformed(tfs);
+			}
+			
 			auto newPos = imp_.CurrentPos_;
 			newPos.Y = imp_.EventInfo_->YLength_/2;
+			gp_Pnt newPnt(newPos.X, newPos.Y, newPos.Z);
 
-			activePilar->SetTranslation(gp_XYZ(newPos.X, newPos.Y, newPos.Z));
+			static auto alignDis = 200.0;
+
+			BaseODLList alginODLs;
+			for ( auto& curODL : RootODL_.lock()->GetChildrenList() )
+			{
+				if ( EODLT_PILLAR != curODL->GetType() && EODLT_WALL != curODL->GetType() )
+				{
+					continue;
+				}
+
+				if ( EODLT_PILLAR == curODL->GetType() && curODL == activePilar )
+				{
+					continue;
+				}
+
+				if ( curODL->GetBaseBndBox().Distance(activeTransitionBox.Transformed(curODL->GetAbsoluteTransform().Inverted())) > alignDis )
+				{
+					continue;
+				}
+
+				alginODLs.push_back(curODL);
+			}
+
+			auto lockRotation = false;
+			TopoDS_Edge movingEdge;
+			for ( auto& curODL : alginODLs )
+			{
+				auto alignTransformation = curODL->GetAbsoluteTransform();
+
+				auto activeRotationPillarBox = activePilar->GetBaseBndBox();
+				if ( lockRotation )
+				{
+					gp_Trsf tfs;
+					tfs.SetRotation(alignTransformation.GetRotation());
+					activeRotationPillarBox = activeRotationPillarBox.Transformed(tfs);
+				}
+				
+				Bnd_Box alignODLBox;
+				{
+					auto curBox = curODL->GetBaseBndBox();
+
+					Standard_Real xAlignMin,yAlignMin,zAlignMin,xAlignMax,yAlignMax,zAlignMax;
+					curBox.Get(xAlignMin, yAlignMin, zAlignMin, xAlignMax, yAlignMax, zAlignMax);
+
+					Standard_Real xPillarMin,yPillarMin,zPillarMin,xPillarMax,yPillarMax,zPillarMax;
+					activeRotationPillarBox.Get(xPillarMin, yPillarMin, zPillarMin, xPillarMax, yPillarMax, zPillarMax);
+
+					alignODLBox.Update(xAlignMin+xPillarMin-alignDis, yAlignMin+yPillarMin-alignDis, zAlignMin+zPillarMin-alignDis,
+						xAlignMax+xPillarMax+alignDis, yAlignMax+yPillarMax+alignDis, zAlignMax+zPillarMax+alignDis);
+				}
+				
+				auto inODLPnt = newPnt.Transformed(curODL->GetAbsoluteTransform().Inverted());
+
+				if ( Standard_True == alignODLBox.IsOut(inODLPnt) )
+				{
+					continue;
+				}
+
+				Standard_Real xMin,yMin,zMin,xMax,yMax,zMax;
+				alignODLBox.Get(xMin, yMin, zMin, xMax, yMax, zMax);
+
+				auto alignBoxShape = BRepPrimAPI_MakeBox(gp_Pnt(xMin+alignDis, yMin+alignDis, zMin+alignDis), gp_Pnt(xMax-alignDis, yMax-alignDis, zMax-alignDis)).Shape();
+				TopExp_Explorer exp(alignBoxShape, TopAbs_SHELL);
+
+				if ( lockRotation )
+				{
+					BRepExtrema_DistShapeShape dss(movingEdge.Moved(curODL->GetAbsoluteTransform().Inverted()), exp.Current());
+					assert(0 != dss.NbSolution());
+					for ( auto index=1; index<=dss.NbSolution(); ++index )
+					{
+						auto onBoxPnt = dss.PointOnShape2(index);
+
+						if ( inODLPnt.Distance(onBoxPnt) > alignDis )
+						{
+							continue;
+						}
+
+						inODLPnt = onBoxPnt;
+						break;
+					}
+
+					inODLPnt.Transform(curODL->GetAbsoluteTransform());
+					newPnt = inODLPnt.XYZ();
+
+					newPos.X = static_cast<float>(newPnt.X());
+					newPos.Y = static_cast<float>(newPnt.Y());
+					newPos.Z = static_cast<float>(newPnt.Z());
+
+					imp_.Valid_ = true;
+
+					break;
+				}
+				else
+				{
+					lockRotation = true;
+
+					
+					BRepExtrema_DistShapeShape dss(BRepBuilderAPI_MakeVertex(inODLPnt).Shape(), exp.Current());
+					assert(0 != dss.NbSolution());
+					inODLPnt = dss.PointOnShape2(1);
+
+					inODLPnt.Transform(curODL->GetAbsoluteTransform());
+					newPnt = inODLPnt.XYZ();
+
+					newPos.X = static_cast<float>(newPnt.X());
+					newPos.Y = static_cast<float>(newPnt.Y());
+					newPos.Z = static_cast<float>(newPnt.Z());
+
+					auto rot = curODL->GetAbsoluteTransform().GetRotation();
+
+					activePilar->SetRoration(curODL->GetAbsoluteTransform().GetRotation());
+
+					Standard_Real rX,rY,rZ;
+					rot.GetEulerAngles(gp_Extrinsic_XYZ, rX, rY, rZ);
+					vector3df rotation(static_cast<float>(irr::core::radToDeg(rX)), static_cast<float>(irr::core::radToDeg(rY)), static_cast<float>(irr::core::radToDeg(rZ)));
+					activePilar->GetDataSceneNode()->setRotation(rotation);
+
+					auto movingDir = gp::DX().Rotated(gp::OY(), rY);
+					movingEdge = BRepBuilderAPI_MakeEdge(gp_Lin(newPnt, movingDir)).Edge();
+
+					imp_.Valid_ = true;
+				}
+
+				if ( !imp_.Valid_ )
+				{
+					break;
+				}
+			}
+
+			activePilar->SetTranslation(newPnt.XYZ());
 			activePilar->GetDataSceneNode()->setPosition(newPos);
-
-			auto& curSize = activePilar->GetSize();
-
-			std::vector<WallODLSPtr>	alignWalls;
-			auto alignDis = 100.0;
-
-			for ( auto& curWall : RootODL_.lock()->GetChildrenList() )
-			{
-				if ( EODLT_WALL != curWall->GetType() )
-				{
-					continue;
-				}
-
-				auto wall = std::static_pointer_cast<WallODL>(curWall);
-
-				Bnd_Box curLinBox;
-				curLinBox.Add(cursorPnt, gp::DY());
-
-				if ( wall->GetBaseBndBox().Distance(activePilar->GetBaseBndBox().Transformed(wall->GetAbsoluteTransform().Inverted())) > alignDis )
-				{
-					continue;
-				}
-
-				BRepExtrema_DistShapeShape dss(wall->GetBaseShape().Moved(wall->GetAbsoluteTransform()), activePilar->GetBaseShape().Moved(activePilar->GetAbsoluteTransform()));
-				if ( 0 != dss.NbSolution() && dss.Value() < alignDis )
-				{
-					alignWalls.push_back(wall);
-				}
-			}
-
-			if ( alignWalls.empty() )
-			{
-				imp_.Valid_ = true;
-				break;
-			}
-
-			for ( auto& curWall : alignWalls )
-			{
-
-			}
+			imp_.Valid_ = true;
 		}
 		break;
 	default:

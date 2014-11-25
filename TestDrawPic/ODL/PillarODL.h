@@ -33,4 +33,8 @@ public:
 	void	UpdateMesh();
 
 	void	SetDefaultTexture();
+
+	BaseODLList	GetAlignList() const;
+
+	void	SetAlignList(const BaseODLList& list);
 };
