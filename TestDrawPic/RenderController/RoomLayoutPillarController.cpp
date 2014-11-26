@@ -295,7 +295,7 @@ bool RoomLayoutPillarController::PreRender3D()
 			auto alignODLs = activePilar->GetAlignList();
 			alignODLs.erase(std::remove_if(alignODLs.begin(), alignODLs.end(), [&activePilar, &activeTransitionBox](const BaseODLSPtr& alignODL)
 			{
-				return alignODL->GetBaseBndBox().Distance(activeTransitionBox.Transformed(alignODL->GetAbsoluteTransform().Inverted())) <= alignDis;
+				return alignODL->GetBaseBndBox().Distance(activeTransitionBox.Transformed(alignODL->GetAbsoluteTransform().Inverted())) > alignDis;
 			}), alignODLs.end());
 			activePilar->SetAlignList(BaseODLList());
 
@@ -345,9 +345,12 @@ bool RoomLayoutPillarController::PreRender3D()
 				auto activeRotationPillarBox = activePilar->GetBaseBndBox();
 				if ( lockRotation )
 				{
-					gp_Trsf tfs;
-					tfs.SetRotation(alignTransformation.GetRotation());
-					activeRotationPillarBox = activeRotationPillarBox.Transformed(tfs);
+					gp_Trsf tfsODL, tfsPillar;
+
+					tfsODL.SetRotation(alignTransformation.GetRotation());
+					tfsPillar.SetRotation(activePilar->GetRotation());
+
+					activeRotationPillarBox = activeRotationPillarBox.Transformed(tfsODL.Inverted() * tfsPillar);
 				}
 				
 				Bnd_Box movingBox;
@@ -419,13 +422,18 @@ bool RoomLayoutPillarController::PreRender3D()
 					activePilar->GetDataSceneNode()->setRotation(rotation);
 					activePilar->SetRoration(rot);
 
-					//移动方向
-					auto curRotation = activePilar->GetAbsoluteTransform().GetRotation();
-					Standard_Real curRX,curRY,curRZ;
-					curRotation.GetEulerAngles(gp_Extrinsic_XYZ, curRX, curRY, curRZ);
-					auto curMovingEdge = BRepBuilderAPI_MakeEdge(gp_Lin(inODLPnt.Transformed(curODL->GetAbsoluteTransform()), gp::DX().Rotated(gp::OY(), curRY))).Edge();
+					gp_Dir movingDir;
+					if ( std::abs(std::abs(inODLPnt.X()) - xMax) < Precision::Confusion() )
+					{
+						movingDir = gp::DZ();
+					}
+					else
+					{
+						movingDir = gp::DX();
+					}
+					auto curMovingEdge = BRepBuilderAPI_MakeEdge(gp_Lin(inODLPnt, movingDir)).Edge();
 
-					movingEdge = curMovingEdge;
+					movingEdge = TopoDS::Edge(curMovingEdge.Moved(curODL->GetAbsoluteTransform()));
 
 					activePilar->AddAlign(curODL);
 					imp_.Valid_ = true;
@@ -433,26 +441,22 @@ bool RoomLayoutPillarController::PreRender3D()
 				}
 				else
 				{//第二个被停靠物体
-
 					BRepExtrema_DistShapeShape dss(movingEdge.Moved(curODL->GetAbsoluteTransform().Inverted()), exp.Current());
 					
 					auto foundSecond = false;
-					for ( auto index=1; index<dss.NbSolution(); ++index )
+					std::map<double, gp_Pnt> tmp;
+					for ( auto index=1; index<=dss.NbSolution(); ++index )
 					{
 						auto pntOnEdge = dss.PointOnShape1(index);
-						if ( Standard_True == movingBox.IsOut(pntOnEdge) )
+						auto pntOnBox = dss.PointOnShape2(index);
+
+						if ( pntOnEdge.Distance(pntOnBox) > Precision::Confusion() )
 						{
 							continue;
 						}
 
-						if ( pntOnEdge.Distance(inODLPnt) > alignDis )
-						{
-							continue;
-						}
-
-						newPnt = pntOnEdge.Transformed(curODL->GetAbsoluteTransform());
-						activePilar->AddAlign(curODL);
-						break;
+						tmp.emplace(pntOnEdge.Distance(inODLPnt), pntOnEdge);
+						foundSecond = true;
 					}
 
 					if ( !foundSecond )
@@ -460,6 +464,10 @@ bool RoomLayoutPillarController::PreRender3D()
 						imp_.Valid_ = false;
 						break;
 					}
+
+					newPnt = tmp.begin()->second.Transformed(curODL->GetAbsoluteTransform());
+					activePilar->AddAlign(curODL);
+					lockPosition = true;
 				}
 			}
 
