@@ -130,6 +130,7 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClInclude Include="Dialog\DlgRoomLayoutDoorProperty.h" />
     <ClInclude Include="Dialog\DlgRoomLayoutPictureSize.h" />
     <ClInclude Include="Dialog\DlgRoomLayoutDrawlinInfo.h" />
+    <ClInclude Include="Dialog\DlgRoomLayoutPillarProperty.h" />
     <ClInclude Include="Dialog\DlgRoomLayoutRoomProperty.h" />
     <ClInclude Include="Dialog\DlgRoomLayoutWallProperty.h" />
     <ClInclude Include="Dialog\DlgRoomLayoutWindowProperty.h" />
@@ -250,6 +251,7 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClCompile Include="Dialog\DlgRoomLayoutDoorProperty.cpp" />
     <ClCompile Include="Dialog\DlgRoomLayoutPictureSize.cpp" />
     <ClCompile Include="Dialog\DlgRoomLayoutDrawlinInfo.cpp" />
+    <ClCompile Include="Dialog\DlgRoomLayoutPillarProperty.cpp" />
     <ClCompile Include="Dialog\DlgRoomLayoutRoomProperty.cpp" />
     <ClCompile Include="Dialog\DlgRoomLayoutWallProperty.cpp" />
     <ClCompile Include="Dialog\DlgRoomLayoutWindowProperty.cpp" />

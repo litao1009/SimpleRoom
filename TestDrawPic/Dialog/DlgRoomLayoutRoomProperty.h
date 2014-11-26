@@ -31,4 +31,5 @@ public:
 	afx_msg void OnEnChangeEditName();
 	afx_msg void OnBnClickedBtnOk();
 	afx_msg void OnBnClickedBtnCancel();
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
 };

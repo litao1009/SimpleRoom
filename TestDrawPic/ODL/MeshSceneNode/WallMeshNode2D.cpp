@@ -12,6 +12,7 @@
 #include "BRep_Tool.hxx"
 
 #include "ODL/ODLTools.h"
+#include "irrEngine/irrEngine.h"
 
 using namespace irr;
 using namespace core;
@@ -155,11 +156,12 @@ void WallMeshNode2D::SetSweeping( bool val )
 {
 	if ( val )
 	{
-		FaceBuffer_->getMaterial().setTexture(0, SceneManager->getVideoDriver()->getTexture("../Data/Resource/3D/wallLine_sweeping.png"));
+		FaceBuffer_->getMaterial().MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_PICKING);
+		FaceBuffer_->getMaterial().DiffuseColor = 0xFFFFFF00;
 	}
 	else
 	{
-		FaceBuffer_->getMaterial().setTexture(0, SceneManager->getVideoDriver()->getTexture("../Data/Resource/3D/wallLine.png"));
+		FaceBuffer_->getMaterial().MaterialType = EMT_SOLID;
 	}
 }
 
@@ -167,10 +169,11 @@ void WallMeshNode2D::SetPicking( bool val )
 {
 	if ( val )
 	{
-		FaceBuffer_->getMaterial().setTexture(0, SceneManager->getVideoDriver()->getTexture("../Data/Resource/3D/wallLine_picking.png"));
+		FaceBuffer_->getMaterial().MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_PICKING);
+		FaceBuffer_->getMaterial().DiffuseColor = 0xFF00FFFF;
 	}
 	else
 	{
-		FaceBuffer_->getMaterial().setTexture(0, SceneManager->getVideoDriver()->getTexture("../Data/Resource/3D/wallLine.png"));
+		FaceBuffer_->getMaterial().MaterialType = EMT_SOLID;
 	}
 }

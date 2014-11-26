@@ -71,6 +71,7 @@
 #define IDD_DLG_ROOMLAYOUT_DOORPROPERTY 330
 #define IDD_DLG_ROOMLAYOUT_WINDOWPROPERTY 331
 #define IDD_DLG_ROOMLAYOUT_ROOMPROPERTY 332
+#define IDD_DLG_ROOMLAYOUT_PILLAR_PROPERTY 333
 #define IDC_PROP_OBJ                    1003
 #define IDC_SLIDER1                     1019
 #define IDC_SLIDER2                     1020
@@ -107,6 +108,7 @@
 #define IDC_EDIT_OFFSETHEIGHT           1041
 #define ID_BTN_OK                       1042
 #define ID_BTN_CANCEL                   1043
+#define IDC_BUTTON2                     1049
 #define ID_WRITE_PASTEASHYPERLINK       32770
 #define ID_BTN_VIEW_TOP                 32774
 #define ID_BTN_CREATE_ROOM_AUTO         32775
@@ -146,15 +148,14 @@
 #define ID_BUTTON3                      32835
 #define ID_BTN_ROOMLAYOUT_PICTURE_SETPOSITION 32836
 #define ID_BTN_ROOMLAYOUT_TEST_WINDOW   32837
-#define ID_BTN_ROOMLAYOUT_TEST_PILLAR   32837
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        333
+#define _APS_NEXT_RESOURCE_VALUE        334
 #define _APS_NEXT_COMMAND_VALUE         32838
-#define _APS_NEXT_CONTROL_VALUE         1045
+#define _APS_NEXT_CONTROL_VALUE         1050
 #define _APS_NEXT_SYMED_VALUE           321
 #endif
 #endif

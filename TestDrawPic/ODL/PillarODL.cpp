@@ -135,3 +135,23 @@ void PillarODL::SetAlignList( const BaseODLList& list )
 	ImpUPtr_->AlignList_ = toSave;
 }
 
+void PillarODL::UpdatePicking()
+{
+	ImpUPtr_->MeshNode2D_->SetPicking(IsPicking());
+}
+
+void PillarODL::UpdateSweeping()
+{
+	ImpUPtr_->MeshNode2D_->SetSweeping(IsSweeping());
+}
+
+void PillarODL::AddAlign( const BaseODLSPtr& align )
+{
+	ImpUPtr_->AlignList_.push_back(align);
+}
+
+void PillarODL::SetVaildPosition( bool val )
+{
+	ImpUPtr_->MeshNode2D_->SetLineColor(val ? 0xFF8F8F8F : 0xFFFF0000);
+}
+

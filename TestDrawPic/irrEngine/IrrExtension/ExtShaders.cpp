@@ -314,3 +314,66 @@ const char* ADSLightCB::GetPixelShader()
 {
 	return ADSLight[1];
 }
+
+
+
+const char*	PickingColorShader[2] = 
+{
+	//"varying	vec4		vertexColor;"
+
+	"void main(void)"
+	"{"
+	"	gl_Position = ftransform();"
+	//"	vertexColor = gl_Color;"
+	"	gl_TexCoord[0] = gl_TextureMatrix[0]*gl_MultiTexCoord0;"
+	"}"
+	,
+	"uniform	vec4		pickingColor;"
+	"uniform	sampler2D	colorMap;"
+
+	//"varying	vec4 vertexColor;"
+
+	"void main(void)"
+	"{"
+	"	vec4 color;"
+	""
+	"	color = texture2D(colorMap, vec2(gl_TexCoord[0]));"
+	"	float lum = color.r*0.3 + color.g*0.59 + color.b*0.11;"
+	"	if ( lum > 0.8 )"
+	"	{"
+	"		gl_FragColor = pickingColor;"
+	"	}"
+	"	else"
+	"	{"
+	"		gl_FragColor = color;"
+	"	}"
+	"}"
+};
+
+
+void PickingColorCB::OnSetConstants( irr::video::IMaterialRendererServices* services, irr::s32 userData )
+{
+	irr::s32 tex = 0;
+	services->setPixelShaderConstant("colorMap", &tex, 1);
+
+	irr::video::SColorf color;
+	auto& curColor = CurrentMaterial_.DiffuseColor;
+	color.set(1, static_cast<float>(curColor.getRed())/255.f, static_cast<float>(curColor.getGreen())/255.f, static_cast<float>(curColor.getBlue())/255.f);
+
+	services->setPixelShaderConstant("pickingColor", &color.r, 4);
+}
+
+void PickingColorCB::OnSetMaterial( const irr::video::SMaterial& material )
+{
+	CurrentMaterial_ = material;
+}
+
+const char* PickingColorCB::GetVertexShader()
+{
+	return PickingColorShader[0];
+}
+
+const char* PickingColorCB::GetPixelShader()
+{
+	return PickingColorShader[1];
+}

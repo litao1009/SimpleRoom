@@ -268,6 +268,9 @@
     <ClCompile Include="ODL\MeshSceneNode\PillarMeshNode2D.cpp">
       <Filter>ODL\MeshSceneNode</Filter>
     </ClCompile>
+    <ClCompile Include="Dialog\DlgRoomLayoutPillarProperty.cpp">
+      <Filter>src\Dialog</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BLL\BaseBLL.h">
@@ -614,6 +617,9 @@
     </ClInclude>
     <ClInclude Include="ODL\MeshSceneNode\PillarMeshNode2D.h">
       <Filter>ODL\MeshSceneNode</Filter>
+    </ClInclude>
+    <ClInclude Include="Dialog\DlgRoomLayoutPillarProperty.h">
+      <Filter>src\Dialog</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

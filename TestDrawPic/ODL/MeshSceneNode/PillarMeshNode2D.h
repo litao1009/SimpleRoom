@@ -40,6 +40,10 @@ public:
 
 	void	SetLineColor(const irr::video::SColor& lineColor);
 
+	void	SetSweeping(bool val);
+
+	void	SetPicking(bool val);
+
 private:
 
 	irr::scene::SMeshBuffer*	MeshBuffer_;

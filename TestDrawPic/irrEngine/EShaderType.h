@@ -13,6 +13,8 @@ enum EShaderType
 	EST_FONT,
 
 	EST_ADS_LIGHT,
+
+	EST_PICKING,
 	
 	EST_COUNT
 };

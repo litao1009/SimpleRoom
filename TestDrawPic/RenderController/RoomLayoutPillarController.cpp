@@ -9,12 +9,17 @@
 #include "ODL/RoomODL.h"
 #include "ODL/WallODL.h"
 
+#include "TopoDS.hxx"
+#include "gp_Pln.hxx"
 #include "gp_Lin.hxx"
 #include "BRepExtrema_DistShapeShape.hxx"
 #include "BRepPrimAPI_MakeBox.hxx"
 #include "BRepBuilderAPI_MakeVertex.hxx"
 #include "TopExp_Explorer.hxx"
 #include "BRepBuilderAPI_MakeEdge.hxx"
+#include "BRepAdaptor_Curve.hxx"
+#include "GeomAPI.hxx"
+#include "Geom2dAPI_InterCurveCurve.hxx"
 
 #include <boost/optional.hpp>
 
@@ -54,10 +59,9 @@ public:
 	vector2di		CursorIPos_;
 	vector3df		CurrentPos_;
 	vector3df		SavePos_;
-	RoomODLWPtr		PickingRoom_;
 
 	boost::optional<EUserType>			PropertyCallBack_;
-	boost::optional<SEventPilarInfo>	EventInfo_;			
+	boost::optional<SEventPillarInfo>	EventInfo_;			
 };
 
 RoomLayoutPillarController::RoomLayoutPillarController(const BaseODLSPtr& baseODL, const SRenderContextWPtr& rc):IRoomLayoutODLBaseCtrller(rc),ImpUPtr_(new Imp)
@@ -86,7 +90,7 @@ bool RoomLayoutPillarController::OnPostEvent( const irr::SEvent& evt )
 
 	if ( evt.EventType == irr::EET_USER_EVENT && evt.UserEvent.UserData1 == EUT_ROOMLAYOUT_TEST_PILLAR )
 	{
-		auto pilarInfo = static_cast<SEventPilarInfo*>(reinterpret_cast<void*>(evt.UserEvent.UserData2));
+		auto pilarInfo = static_cast<SEventPillarInfo*>(reinterpret_cast<void*>(evt.UserEvent.UserData2));
 		imp_.EventInfo_ = *pilarInfo;
 		imp_.State_ = EPilarState::EPS_CREATING_INIT;
 	}
@@ -130,6 +134,11 @@ bool RoomLayoutPillarController::PreRender3D()
 	{
 	case EPilarState::EPS_SWEEPING:
 		{
+			if ( GetPickingODL().expired() )
+			{
+				break;
+			}
+
 			auto activePilar = std::static_pointer_cast<PillarODL>(GetPickingODL().lock());
 
 			activePilar->SetSweeping(true);
@@ -142,18 +151,36 @@ bool RoomLayoutPillarController::PreRender3D()
 				Standard_Real xMin,xMax,yMin,yMax,zMin,zMax;
 				box.Get(xMin, yMin, zMin, xMax, yMax, zMax);
 
-				imp_.EventInfo_ = SEventPilarInfo();
+				imp_.EventInfo_ = SEventPillarInfo();
 				imp_.EventInfo_->XLength_ = static_cast<float>(xMax-xMin);
 				imp_.EventInfo_->YLength_ = static_cast<float>(yMax-yMin);
 				imp_.EventInfo_->ZLength_ = static_cast<float>(zMax-zMin);
 				imp_.EventInfo_->OffsetHeight_ = activePilar->GetOffsetHeight();
 
 				imp_.SavePos_ = imp_.CurrentPos_;
-				imp_.State_ = EPilarState::EPS_PROPERTY;
-
-				auto pointer = reinterpret_cast<int>(static_cast<void*>(&(*imp_.EventInfo_)));
-				::PostMessage((HWND)GetRenderContextSPtr()->GetHandle(), WM_IRR_DLG_MSG, WM_USER_ROOMLAYOUT_PILLAR_PROPERTY, pointer);
+				imp_.State_ = EPilarState::EPS_MOUSEHOLDING;
 			}
+		}
+		break;
+	case EPilarState::EPS_MOUSEHOLDING:
+		{
+			auto activePillar = std::static_pointer_cast<PillarODL>(GetPickingODL().lock());
+			activePillar->SetPicking(true);
+
+			if ( imp_.SavePos_.getDistanceFromSQ(imp_.CurrentPos_) > 100 * 100 )
+			{
+				imp_.State_ = EPilarState::EPS_MOVING;
+				imp_.Valid_ = true;
+			}
+			else 
+				if ( imp_.LMouseLeftUp_ )
+				{
+					imp_.PropertyCallBack_ = boost::none;
+					imp_.State_ = EPilarState::EPS_PROPERTY;
+
+					auto pointer = reinterpret_cast<int>(static_cast<void*>(&(*imp_.EventInfo_)));
+					::PostMessage((HWND)GetRenderContextSPtr()->GetHandle(), WM_IRR_DLG_MSG, WM_USER_ROOMLAYOUT_PILLAR_PROPERTY, pointer);
+				}
 		}
 		break;
 	case EPilarState::EPS_PROPERTY:
@@ -163,17 +190,33 @@ bool RoomLayoutPillarController::PreRender3D()
 				break;
 			}
 
-			auto activeRoom = std::static_pointer_cast<PillarODL>(GetPickingODL().lock());
+			auto activePillar = std::static_pointer_cast<PillarODL>(GetPickingODL().lock());
 
 			switch (*(imp_.PropertyCallBack_))
 			{
-			case EUT_ROOMLAYOUT_ROOM_NONE:
+			case EUT_ROOMLAYOUT_PILLAR_NONE:
 				{
 					imp_.State_ = EPilarState::EPS_SWEEPING;
 				}
 				break;
-			case EUT_ROOMLAYOUT_ROOM_UPDATE:
+			case EUT_ROOMLAYOUT_PILLAR_UPDATE:
 				{
+					activePillar->SetSize(imp_.EventInfo_->XLength_, imp_.EventInfo_->YLength_, imp_.EventInfo_->ZLength_);
+					auto curTrans = activePillar->GetTranslation();
+					curTrans.SetY(imp_.EventInfo_->YLength_/2 + imp_.EventInfo_->OffsetHeight_);
+					activePillar->SetTranslation(curTrans);
+					activePillar->UpdateMesh();
+					imp_.State_ = EPilarState::EPS_SWEEPING;
+				}
+				break;
+			case EUT_ROOMLAYOUT_PILLAR_MOVE:
+				{
+					imp_.State_ = EPilarState::EPS_MOVING;
+				}
+				break;
+			case EUT_ROOMLAYOUT_PILLAR_DELETE:
+				{
+					activePillar->RemoveFromParent();
 					imp_.State_ = EPilarState::EPS_SWEEPING;
 				}
 				break;
@@ -200,10 +243,7 @@ bool RoomLayoutPillarController::PreRender3D()
 			newPilar->SetTranslation(gp_XYZ(newPos.X, newPos.Y, newPos.Z));
 			newPilar->GetDataSceneNode()->setPosition(newPos);
 			SetPickingODL(newPilar);
-			if ( !imp_.PickingRoom_.expired() )
-			{
-				imp_.PickingRoom_.reset();
-			}
+
 			imp_.State_ = EPilarState::EPS_MOVING;
 		}
 		break;
@@ -211,6 +251,7 @@ bool RoomLayoutPillarController::PreRender3D()
 		{
 			auto activePilar = std::static_pointer_cast<PillarODL>(GetPickingODL().lock());
 			activePilar->SetPicking(true);
+			activePilar->SetVaildPosition(imp_.Valid_);
 
 			if ( imp_.LMouseLeftUp_ )
 			{
@@ -232,23 +273,41 @@ bool RoomLayoutPillarController::PreRender3D()
 				break;
 			}
 			
+			//当前柱的Box
 			auto activeTransitionBox = activePilar->GetBaseBndBox();
 			{
 				gp_Trsf tfs;
 				tfs.SetTranslationPart(activePilar->GetTranslation());
 				activeTransitionBox = activeTransitionBox.Transformed(tfs);
 			}
+
+			activePilar->SetRoration(gp_Quaternion(gp::DZ(), gp::DZ()));
 			
+			//新的位置
 			auto newPos = imp_.CurrentPos_;
 			newPos.Y = imp_.EventInfo_->YLength_/2;
 			gp_Pnt newPnt(newPos.X, newPos.Y, newPos.Z);
 
+			//吸附距离
 			static auto alignDis = 200.0;
 
-			BaseODLList alginODLs;
+			//当前的吸附物体
+			auto alignODLs = activePilar->GetAlignList();
+			alignODLs.erase(std::remove_if(alignODLs.begin(), alignODLs.end(), [&activePilar, &activeTransitionBox](const BaseODLSPtr& alignODL)
+			{
+				return alignODL->GetBaseBndBox().Distance(activeTransitionBox.Transformed(alignODL->GetAbsoluteTransform().Inverted())) <= alignDis;
+			}), alignODLs.end());
+			activePilar->SetAlignList(BaseODLList());
+
+			std::multimap<double,BaseODLSPtr> disMap;
 			for ( auto& curODL : RootODL_.lock()->GetChildrenList() )
 			{
 				if ( EODLT_PILLAR != curODL->GetType() && EODLT_WALL != curODL->GetType() )
+				{
+					continue;
+				}
+
+				if ( std::find(alignODLs.begin(), alignODLs.end(), curODL) != alignODLs.end() )
 				{
 					continue;
 				}
@@ -258,20 +317,31 @@ bool RoomLayoutPillarController::PreRender3D()
 					continue;
 				}
 
-				if ( curODL->GetBaseBndBox().Distance(activeTransitionBox.Transformed(curODL->GetAbsoluteTransform().Inverted())) > alignDis )
+				auto dis = curODL->GetBaseBndBox().Distance(activeTransitionBox.Transformed(curODL->GetAbsoluteTransform().Inverted()));
+				if ( dis > alignDis )
 				{
 					continue;
 				}
 
-				alginODLs.push_back(curODL);
+				disMap.emplace(dis, curODL);
 			}
 
+			for ( auto& curODL : disMap )
+			{
+				alignODLs.push_back(curODL.second);
+			}
+
+			//锁定旋转
 			auto lockRotation = false;
+			//锁定位置
+			auto lockPosition = false;
+			//移动方向
 			TopoDS_Edge movingEdge;
-			for ( auto& curODL : alginODLs )
+			for ( auto& curODL : alignODLs )
 			{
 				auto alignTransformation = curODL->GetAbsoluteTransform();
 
+				//如果锁定了旋转，则调整柱的box
 				auto activeRotationPillarBox = activePilar->GetBaseBndBox();
 				if ( lockRotation )
 				{
@@ -280,6 +350,34 @@ bool RoomLayoutPillarController::PreRender3D()
 					activeRotationPillarBox = activeRotationPillarBox.Transformed(tfs);
 				}
 				
+				Bnd_Box movingBox;
+				{
+					auto curBox = curODL->GetBaseBndBox();
+
+					Standard_Real xAlignMin,yAlignMin,zAlignMin,xAlignMax,yAlignMax,zAlignMax;
+					curBox.Get(xAlignMin, yAlignMin, zAlignMin, xAlignMax, yAlignMax, zAlignMax);
+
+					Standard_Real xPillarMin,yPillarMin,zPillarMin,xPillarMax,yPillarMax,zPillarMax;
+					activeRotationPillarBox.Get(xPillarMin, yPillarMin, zPillarMin, xPillarMax, yPillarMax, zPillarMax);
+
+					movingBox.Update(xAlignMin+xPillarMin, yAlignMin+yPillarMin, zAlignMin+zPillarMin,
+						xAlignMax+xPillarMax, yAlignMax+yPillarMax, zAlignMax+zPillarMax);
+				}
+				
+				auto inODLPnt = newPnt.Transformed(curODL->GetAbsoluteTransform().Inverted());
+
+				//当位置锁定了以后，只需要判断是不是相交
+				if ( lockPosition )
+				{
+					if ( Standard_False == movingBox.IsOut(inODLPnt) )
+					{
+						imp_.Valid_ = false;
+						break;
+					}
+
+					continue;
+				}
+
 				Bnd_Box alignODLBox;
 				{
 					auto curBox = curODL->GetBaseBndBox();
@@ -293,88 +391,88 @@ bool RoomLayoutPillarController::PreRender3D()
 					alignODLBox.Update(xAlignMin+xPillarMin-alignDis, yAlignMin+yPillarMin-alignDis, zAlignMin+zPillarMin-alignDis,
 						xAlignMax+xPillarMax+alignDis, yAlignMax+yPillarMax+alignDis, zAlignMax+zPillarMax+alignDis);
 				}
-				
-				auto inODLPnt = newPnt.Transformed(curODL->GetAbsoluteTransform().Inverted());
 
 				if ( Standard_True == alignODLBox.IsOut(inODLPnt) )
 				{
 					continue;
 				}
 
+				//当前被停靠物体的box shape
 				Standard_Real xMin,yMin,zMin,xMax,yMax,zMax;
-				alignODLBox.Get(xMin, yMin, zMin, xMax, yMax, zMax);
-
-				auto alignBoxShape = BRepPrimAPI_MakeBox(gp_Pnt(xMin+alignDis, yMin+alignDis, zMin+alignDis), gp_Pnt(xMax-alignDis, yMax-alignDis, zMax-alignDis)).Shape();
+				movingBox.Get(xMin, yMin, zMin, xMax, yMax, zMax);
+				auto alignBoxShape = BRepPrimAPI_MakeBox(gp_Pnt(xMin, yMin, zMin), gp_Pnt(xMax, yMax, zMax)).Shape();
 				TopExp_Explorer exp(alignBoxShape, TopAbs_SHELL);
 
-				if ( lockRotation )
-				{
-					BRepExtrema_DistShapeShape dss(movingEdge.Moved(curODL->GetAbsoluteTransform().Inverted()), exp.Current());
-					assert(0 != dss.NbSolution());
-					for ( auto index=1; index<=dss.NbSolution(); ++index )
-					{
-						auto onBoxPnt = dss.PointOnShape2(index);
-
-						if ( inODLPnt.Distance(onBoxPnt) > alignDis )
-						{
-							continue;
-						}
-
-						inODLPnt = onBoxPnt;
-						break;
-					}
-
-					inODLPnt.Transform(curODL->GetAbsoluteTransform());
-					newPnt = inODLPnt.XYZ();
-
-					newPos.X = static_cast<float>(newPnt.X());
-					newPos.Y = static_cast<float>(newPnt.Y());
-					newPos.Z = static_cast<float>(newPnt.Z());
-
-					imp_.Valid_ = true;
-
-					break;
-				}
-				else
-				{
-					lockRotation = true;
-
-					
+				if ( !lockRotation )
+				{//找到第一个被停靠物体
 					BRepExtrema_DistShapeShape dss(BRepBuilderAPI_MakeVertex(inODLPnt).Shape(), exp.Current());
 					assert(0 != dss.NbSolution());
 					inODLPnt = dss.PointOnShape2(1);
 
-					inODLPnt.Transform(curODL->GetAbsoluteTransform());
-					newPnt = inODLPnt.XYZ();
-
-					newPos.X = static_cast<float>(newPnt.X());
-					newPos.Y = static_cast<float>(newPnt.Y());
-					newPos.Z = static_cast<float>(newPnt.Z());
+					newPnt = inODLPnt.Transformed(curODL->GetAbsoluteTransform()).XYZ();
 
 					auto rot = curODL->GetAbsoluteTransform().GetRotation();
-
-					activePilar->SetRoration(curODL->GetAbsoluteTransform().GetRotation());
-
 					Standard_Real rX,rY,rZ;
 					rot.GetEulerAngles(gp_Extrinsic_XYZ, rX, rY, rZ);
 					vector3df rotation(static_cast<float>(irr::core::radToDeg(rX)), static_cast<float>(irr::core::radToDeg(rY)), static_cast<float>(irr::core::radToDeg(rZ)));
+
 					activePilar->GetDataSceneNode()->setRotation(rotation);
+					activePilar->SetRoration(rot);
 
-					auto movingDir = gp::DX().Rotated(gp::OY(), rY);
-					movingEdge = BRepBuilderAPI_MakeEdge(gp_Lin(newPnt, movingDir)).Edge();
+					//移动方向
+					auto curRotation = activePilar->GetAbsoluteTransform().GetRotation();
+					Standard_Real curRX,curRY,curRZ;
+					curRotation.GetEulerAngles(gp_Extrinsic_XYZ, curRX, curRY, curRZ);
+					auto curMovingEdge = BRepBuilderAPI_MakeEdge(gp_Lin(inODLPnt.Transformed(curODL->GetAbsoluteTransform()), gp::DX().Rotated(gp::OY(), curRY))).Edge();
 
+					movingEdge = curMovingEdge;
+
+					activePilar->AddAlign(curODL);
 					imp_.Valid_ = true;
+					lockRotation = true;
 				}
+				else
+				{//第二个被停靠物体
 
-				if ( !imp_.Valid_ )
-				{
-					break;
+					BRepExtrema_DistShapeShape dss(movingEdge.Moved(curODL->GetAbsoluteTransform().Inverted()), exp.Current());
+					
+					auto foundSecond = false;
+					for ( auto index=1; index<dss.NbSolution(); ++index )
+					{
+						auto pntOnEdge = dss.PointOnShape1(index);
+						if ( Standard_True == movingBox.IsOut(pntOnEdge) )
+						{
+							continue;
+						}
+
+						if ( pntOnEdge.Distance(inODLPnt) > alignDis )
+						{
+							continue;
+						}
+
+						newPnt = pntOnEdge.Transformed(curODL->GetAbsoluteTransform());
+						activePilar->AddAlign(curODL);
+						break;
+					}
+
+					if ( !foundSecond )
+					{
+						imp_.Valid_ = false;
+						break;
+					}
 				}
 			}
 
-			activePilar->SetTranslation(newPnt.XYZ());
+			if ( activePilar->GetAlignList().empty() )
+			{
+				imp_.Valid_ = true;
+			}
+
+			newPos.X = static_cast<float>(newPnt.X());
+			newPos.Y = static_cast<float>(newPnt.Y());
+			newPos.Z = static_cast<float>(newPnt.Z());
 			activePilar->GetDataSceneNode()->setPosition(newPos);
-			imp_.Valid_ = true;
+			activePilar->SetTranslation(newPnt.XYZ());
 		}
 		break;
 	default:
@@ -383,7 +481,7 @@ bool RoomLayoutPillarController::PreRender3D()
 
 	imp_.LMousePressDown_ = false;
 	imp_.LMouseLeftUp_ = false;
-	imp_.LMousePressDown_ = false;
+	imp_.EscapePressDown_ = false;
 
 	return false;
 }

@@ -33,6 +33,7 @@
 #include "Dialog/DlgRoomLayoutDoorProperty.h"
 #include "Dialog/DlgRoomLayoutWindowProperty.h"
 #include "Dialog/DlgRoomLayoutRoomProperty.h"
+#include "Dialog/DlgRoomLayoutPillarProperty.h"
 
 #include "resource.h"
 
@@ -282,6 +283,12 @@ LRESULT CTestDrawPicView::DefWindowProc(UINT message, WPARAM wParam, LPARAM lPar
 		if ( WM_USER_ROOMLAYOUT_ROOM_PROPERTY == wParam )
 		{
 			DlgRoomLayoutRoomProperty dlg(m_spRenderContext, lParam);
+			dlg.DoModal();
+		}
+
+		if ( WM_USER_ROOMLAYOUT_PILLAR_PROPERTY == wParam )
+		{
+			DlgRoomLayoutPillarProperty dlg(m_spRenderContext, lParam);
 			dlg.DoModal();
 		}
 
@@ -630,7 +637,7 @@ void CTestDrawPicView::OnBtnRoomlayoutTestWindow()
 void CTestDrawPicView::OnBtnRoomlayoutTestPlillar()
 {
 	// TODO: 在此添加命令处理程序代码
-	static SEventPilarInfo pilarInfo;
+	static SEventPillarInfo pilarInfo;
 	pilarInfo.XLength_ = 500;
 	pilarInfo.YLength_ = 2400;
 	pilarInfo.ZLength_ = 500;

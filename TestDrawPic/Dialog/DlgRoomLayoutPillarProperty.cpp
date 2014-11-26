@@ -1,56 +1,54 @@
-// G:\rem\branches\RoomDecor3D\TestDrawPic\Dialog\DlgRoomLayoutWindowProperty.cpp : 实现文件
+// G:\rem\branches\RoomDecor3D\TestDrawPic\Dialog\DlgRoomLayoutPillarProperty.cpp : 实现文件
 //
 
 #include "stdafx.h"
 #include "TestDrawPic.h"
-#include "DlgRoomLayoutWindowProperty.h"
+#include "DlgRoomLayoutPillarProperty.h"
 #include "afxdialogex.h"
 
-#include "irrEngine/irrEngine.h"
 #include "irrEngine/SRenderContext.h"
 #include "RenderController/UserEvent.h"
 
-class	DlgRoomLayoutWindowProperty::Imp
+// DlgRoomLayoutPillarProperty 对话框
+
+class	DlgRoomLayoutPillarProperty::Imp
 {
 public:
 
 	Imp()
 	{
-		pWindowInfo_ = nullptr;
+		pPillarInfo_ = nullptr;
 		XValid_ = true;
 		YValid_ = true;
 		ZValid_ = true;
-		OffsetHeightValid_ = true;
+		OffsetValid_ = true;
 	}
 
 public:
 
-	SEventWindowInfo*	pWindowInfo_;
-	SEventWindowInfo	TmpWindowInfo_;
+	SEventPillarInfo*	pPillarInfo_;
+	SEventPillarInfo	TmpPillarInfo_;
 	SRenderContextSPtr	RC_;
 	POINT				InitPoint_;
-	bool				XValid_,YValid_,ZValid_, OffsetHeightValid_;
+	bool				XValid_,YValid_,ZValid_,OffsetValid_;
 };
 
+IMPLEMENT_DYNAMIC(DlgRoomLayoutPillarProperty, CDialogEx)
 
-// DlgRoomLayoutWindowProperty 对话框
-
-IMPLEMENT_DYNAMIC(DlgRoomLayoutWindowProperty, CDialogEx)
-
-DlgRoomLayoutWindowProperty::DlgRoomLayoutWindowProperty(const SRenderContextSPtr& rc, int data, CWnd* pParent /*=NULL*/)
-	: CDialogEx(DlgRoomLayoutWindowProperty::IDD, pParent), ImpUPtr_(new Imp)
+DlgRoomLayoutPillarProperty::DlgRoomLayoutPillarProperty(const SRenderContextSPtr& rc, int data, CWnd* pParent /*=NULL*/)
+	: CDialogEx(DlgRoomLayoutPillarProperty::IDD, pParent), ImpUPtr_(new Imp)
 {
-	auto info = static_cast<SEventWindowInfo*>(reinterpret_cast<void*>(data));
-	ImpUPtr_->pWindowInfo_ = info;
-	ImpUPtr_->TmpWindowInfo_ = *info;
+	auto info = static_cast<SEventPillarInfo*>(reinterpret_cast<void*>(data));
+	ImpUPtr_->pPillarInfo_ = info;
+	ImpUPtr_->TmpPillarInfo_ = *info;
 	ImpUPtr_->RC_ = rc;
 }
 
-DlgRoomLayoutWindowProperty::~DlgRoomLayoutWindowProperty()
+DlgRoomLayoutPillarProperty::~DlgRoomLayoutPillarProperty()
 {
 }
 
-void DlgRoomLayoutWindowProperty::DoDataExchange(CDataExchange* pDX)
+void DlgRoomLayoutPillarProperty::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, ID_BTN_CANCEL, BtnCancel_);
@@ -64,30 +62,30 @@ void DlgRoomLayoutWindowProperty::DoDataExchange(CDataExchange* pDX)
 }
 
 
-BEGIN_MESSAGE_MAP(DlgRoomLayoutWindowProperty, CDialogEx)
-	ON_EN_CHANGE(IDC_EDIT_WIDTH, &DlgRoomLayoutWindowProperty::OnEnChangeEditWidth)
-	ON_EN_CHANGE(IDC_EDIT_HEIGHT, &DlgRoomLayoutWindowProperty::OnEnChangeEditHeight)
-	ON_EN_CHANGE(IDC_EDIT_DEPTH, &DlgRoomLayoutWindowProperty::OnEnChangeEditDepth)
-	ON_EN_CHANGE(IDC_EDIT_OFFSETHEIGHT, &DlgRoomLayoutWindowProperty::OnEnChangeEditOffsetheight)
-	ON_BN_CLICKED(IDC_BTN_MOVE, &DlgRoomLayoutWindowProperty::OnBnClickedBtnMove)
-	ON_BN_CLICKED(IDC_BTN_DELETE, &DlgRoomLayoutWindowProperty::OnBnClickedBtnDelete)
-	ON_BN_CLICKED(ID_BTN_OK, &DlgRoomLayoutWindowProperty::OnBnClickedBtnOk)
-	ON_BN_CLICKED(ID_BTN_CANCEL, &DlgRoomLayoutWindowProperty::OnBnClickedBtnCancel)
+BEGIN_MESSAGE_MAP(DlgRoomLayoutPillarProperty, CDialogEx)
+	ON_EN_CHANGE(IDC_EDIT_WIDTH, &DlgRoomLayoutPillarProperty::OnEnChangeEditWidth)
+	ON_EN_CHANGE(IDC_EDIT_HEIGHT, &DlgRoomLayoutPillarProperty::OnEnChangeEditHeight)
+	ON_EN_CHANGE(IDC_EDIT_DEPTH, &DlgRoomLayoutPillarProperty::OnEnChangeEditDepth)
+	ON_EN_CHANGE(IDC_EDIT_OFFSETHEIGHT, &DlgRoomLayoutPillarProperty::OnEnChangeEditOffsetheight)
+	ON_BN_CLICKED(IDC_BTN_MOVE, &DlgRoomLayoutPillarProperty::OnBnClickedBtnMove)
+	ON_BN_CLICKED(IDC_BTN_DELETE, &DlgRoomLayoutPillarProperty::OnBnClickedBtnDelete)
+	ON_BN_CLICKED(ID_BTN_OK, &DlgRoomLayoutPillarProperty::OnBnClickedBtnOk)
+	ON_BN_CLICKED(ID_BTN_CANCEL, &DlgRoomLayoutPillarProperty::OnBnClickedBtnCancel)
 END_MESSAGE_MAP()
 
 
-// DlgRoomLayoutWindowProperty 消息处理程序
+// DlgRoomLayoutPillarProperty 消息处理程序
 
 
-BOOL DlgRoomLayoutWindowProperty::OnInitDialog()
+BOOL DlgRoomLayoutPillarProperty::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
 
 	// TODO:  在此添加额外的初始化
-	EditWidth_.SetWindowText(std::to_wstring(static_cast<int>(ImpUPtr_->pWindowInfo_->XLength_)).c_str());
-	EditHeight_.SetWindowText(std::to_wstring(static_cast<int>(ImpUPtr_->pWindowInfo_->YLength_)).c_str());
-	EditDepth_.SetWindowText(std::to_wstring(static_cast<int>(ImpUPtr_->pWindowInfo_->ZLength_)).c_str());
-	EditOffsetHeight_.SetWindowText(std::to_wstring(static_cast<int>(ImpUPtr_->pWindowInfo_->OffsetHeight_)).c_str());
+	EditWidth_.SetWindowText(std::to_wstring(static_cast<int>(ImpUPtr_->pPillarInfo_->XLength_)).c_str());
+	EditHeight_.SetWindowText(std::to_wstring(static_cast<int>(ImpUPtr_->pPillarInfo_->YLength_)).c_str());
+	EditDepth_.SetWindowText(std::to_wstring(static_cast<int>(ImpUPtr_->pPillarInfo_->ZLength_)).c_str());
+	EditOffsetHeight_.SetWindowText(std::to_wstring(static_cast<int>(ImpUPtr_->pPillarInfo_->OffsetHeight_)).c_str());
 
 	RECT r;
 	GetClientRect(&r);
@@ -104,7 +102,7 @@ BOOL DlgRoomLayoutWindowProperty::OnInitDialog()
 }
 
 
-void DlgRoomLayoutWindowProperty::OnEnChangeEditWidth()
+void DlgRoomLayoutPillarProperty::OnEnChangeEditWidth()
 {
 	// TODO:  如果该控件是 RICHEDIT 控件，它将不
 	// 发送此通知，除非重写 CDialogEx::OnInitDialog()
@@ -131,16 +129,16 @@ void DlgRoomLayoutWindowProperty::OnEnChangeEditWidth()
 
 		std::wstring str = num.GetBuffer();
 		num.ReleaseBuffer();
-		imp_.TmpWindowInfo_.XLength_ = static_cast<float>(std::stoi(str));
+		imp_.TmpPillarInfo_.XLength_ = static_cast<float>(std::stoi(str));
 
 		imp_.XValid_ = true;
 	}
 
-	BtnOK_.EnableWindow( imp_.XValid_ && imp_.YValid_ && imp_.ZValid_ && imp_.OffsetHeightValid_ );
+	BtnOK_.EnableWindow( imp_.XValid_ && imp_.YValid_ && imp_.ZValid_ && imp_.OffsetValid_);
 }
 
 
-void DlgRoomLayoutWindowProperty::OnEnChangeEditHeight()
+void DlgRoomLayoutPillarProperty::OnEnChangeEditHeight()
 {
 	// TODO:  如果该控件是 RICHEDIT 控件，它将不
 	// 发送此通知，除非重写 CDialogEx::OnInitDialog()
@@ -167,16 +165,16 @@ void DlgRoomLayoutWindowProperty::OnEnChangeEditHeight()
 
 		std::wstring str = num.GetBuffer();
 		num.ReleaseBuffer();
-		imp_.TmpWindowInfo_.YLength_ = static_cast<float>(std::stoi(str));
+		imp_.TmpPillarInfo_.YLength_ = static_cast<float>(std::stoi(str));
 
 		imp_.YValid_ = true;
 	}
 
-	BtnOK_.EnableWindow( imp_.XValid_ && imp_.YValid_ && imp_.ZValid_ && imp_.OffsetHeightValid_ );
+	BtnOK_.EnableWindow( imp_.XValid_ && imp_.YValid_ && imp_.ZValid_ && imp_.OffsetValid_);
 }
 
 
-void DlgRoomLayoutWindowProperty::OnEnChangeEditDepth()
+void DlgRoomLayoutPillarProperty::OnEnChangeEditDepth()
 {
 	// TODO:  如果该控件是 RICHEDIT 控件，它将不
 	// 发送此通知，除非重写 CDialogEx::OnInitDialog()
@@ -184,7 +182,6 @@ void DlgRoomLayoutWindowProperty::OnEnChangeEditDepth()
 	// 同时将 ENM_CHANGE 标志“或”运算到掩码中。
 
 	// TODO:  在此添加控件通知处理程序代码
-
 	auto& imp_ = *ImpUPtr_;
 
 	CString num;
@@ -204,16 +201,16 @@ void DlgRoomLayoutWindowProperty::OnEnChangeEditDepth()
 
 		std::wstring str = num.GetBuffer();
 		num.ReleaseBuffer();
-		imp_.TmpWindowInfo_.ZLength_ = static_cast<float>(std::stoi(str));
+		imp_.TmpPillarInfo_.ZLength_ = static_cast<float>(std::stoi(str));
 
 		imp_.ZValid_ = true;
 	}
 
-	BtnOK_.EnableWindow( imp_.XValid_ && imp_.YValid_ && imp_.ZValid_ && imp_.OffsetHeightValid_ );
+	BtnOK_.EnableWindow( imp_.XValid_ && imp_.YValid_ && imp_.ZValid_ && imp_.OffsetValid_);
 }
 
 
-void DlgRoomLayoutWindowProperty::OnEnChangeEditOffsetheight()
+void DlgRoomLayoutPillarProperty::OnEnChangeEditOffsetheight()
 {
 	// TODO:  如果该控件是 RICHEDIT 控件，它将不
 	// 发送此通知，除非重写 CDialogEx::OnInitDialog()
@@ -228,7 +225,7 @@ void DlgRoomLayoutWindowProperty::OnEnChangeEditOffsetheight()
 
 	if ( num.IsEmpty() )
 	{
-		imp_.OffsetHeightValid_ = false;
+		imp_.OffsetValid_ = false;
 	}
 	else
 	{
@@ -240,24 +237,24 @@ void DlgRoomLayoutWindowProperty::OnEnChangeEditOffsetheight()
 
 		std::wstring str = num.GetBuffer();
 		num.ReleaseBuffer();
-		imp_.TmpWindowInfo_.OffsetHeight_ = static_cast<float>(std::stoi(str));
+		imp_.TmpPillarInfo_.OffsetHeight_ = static_cast<float>(std::stoi(str));
 
-		imp_.OffsetHeightValid_ = true;
+		imp_.OffsetValid_ = true;
 	}
 
-	BtnOK_.EnableWindow( imp_.XValid_ && imp_.YValid_ && imp_.ZValid_ && imp_.OffsetHeightValid_ );
+	BtnOK_.EnableWindow( imp_.XValid_ && imp_.YValid_ && imp_.ZValid_ && imp_.OffsetValid_);
 }
 
 
-void DlgRoomLayoutWindowProperty::OnBnClickedBtnMove()
+void DlgRoomLayoutPillarProperty::OnBnClickedBtnMove()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	SetCursorPos(ImpUPtr_->InitPoint_.x, ImpUPtr_->InitPoint_.y);
 
 	irr::SEvent evt;
 	evt.EventType = irr::EET_USER_EVENT;
-	evt.UserEvent.UserData1 = EUT_ROOMLAYOUT_WINDOW_PROPERTY;
-	evt.UserEvent.UserData2 = EUT_ROOMLAYOUT_WINDOW_MOVE;
+	evt.UserEvent.UserData1 = EUT_ROOMLAYOUT_PILLAR_PROPERTY;
+	evt.UserEvent.UserData2 = EUT_ROOMLAYOUT_PILLAR_MOVE;
 
 	ImpUPtr_->RC_->PostEvent(evt);
 
@@ -265,13 +262,13 @@ void DlgRoomLayoutWindowProperty::OnBnClickedBtnMove()
 }
 
 
-void DlgRoomLayoutWindowProperty::OnBnClickedBtnDelete()
+void DlgRoomLayoutPillarProperty::OnBnClickedBtnDelete()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	irr::SEvent evt;
 	evt.EventType = irr::EET_USER_EVENT;
-	evt.UserEvent.UserData1 = EUT_ROOMLAYOUT_WINDOW_PROPERTY;
-	evt.UserEvent.UserData2 = EUT_ROOMLAYOUT_WINDOW_DELETE;
+	evt.UserEvent.UserData1 = EUT_ROOMLAYOUT_PILLAR_PROPERTY;
+	evt.UserEvent.UserData2 = EUT_ROOMLAYOUT_PILLAR_DELETE;
 
 	ImpUPtr_->RC_->PostEvent(evt);
 
@@ -279,15 +276,15 @@ void DlgRoomLayoutWindowProperty::OnBnClickedBtnDelete()
 }
 
 
-void DlgRoomLayoutWindowProperty::OnBnClickedBtnOk()
+void DlgRoomLayoutPillarProperty::OnBnClickedBtnOk()
 {
 	// TODO: 在此添加控件通知处理程序代码
-	*(ImpUPtr_->pWindowInfo_) = ImpUPtr_->TmpWindowInfo_;
+	*(ImpUPtr_->pPillarInfo_) = ImpUPtr_->TmpPillarInfo_;
 
 	irr::SEvent evt;
 	evt.EventType = irr::EET_USER_EVENT;
-	evt.UserEvent.UserData1 = EUT_ROOMLAYOUT_WINDOW_PROPERTY;
-	evt.UserEvent.UserData2 = EUT_ROOMLAYOUT_WINDOW_UPDATE;
+	evt.UserEvent.UserData1 = EUT_ROOMLAYOUT_PILLAR_PROPERTY;
+	evt.UserEvent.UserData2 = EUT_ROOMLAYOUT_PILLAR_UPDATE;
 
 	ImpUPtr_->RC_->PostEvent(evt);
 
@@ -295,13 +292,13 @@ void DlgRoomLayoutWindowProperty::OnBnClickedBtnOk()
 }
 
 
-void DlgRoomLayoutWindowProperty::OnBnClickedBtnCancel()
+void DlgRoomLayoutPillarProperty::OnBnClickedBtnCancel()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	irr::SEvent evt;
 	evt.EventType = irr::EET_USER_EVENT;
-	evt.UserEvent.UserData1 = EUT_ROOMLAYOUT_WINDOW_PROPERTY;
-	evt.UserEvent.UserData2 = EUT_ROOMLAYOUT_WINDOW_NONE;
+	evt.UserEvent.UserData1 = EUT_ROOMLAYOUT_PILLAR_PROPERTY;
+	evt.UserEvent.UserData2 = EUT_ROOMLAYOUT_PILLAR_NONE;
 
 	ImpUPtr_->RC_->PostEvent(evt);
 
@@ -309,7 +306,7 @@ void DlgRoomLayoutWindowProperty::OnBnClickedBtnCancel()
 }
 
 
-BOOL DlgRoomLayoutWindowProperty::PreTranslateMessage(MSG* pMsg)
+BOOL DlgRoomLayoutPillarProperty::PreTranslateMessage(MSG* pMsg)
 {
 	// TODO: 在此添加专用代码和/或调用基类
 	if ( pMsg->message == WM_KEYDOWN )
@@ -326,5 +323,6 @@ BOOL DlgRoomLayoutWindowProperty::PreTranslateMessage(MSG* pMsg)
 			return TRUE;
 		}
 	}
+
 	return CDialogEx::PreTranslateMessage(pMsg);
 }

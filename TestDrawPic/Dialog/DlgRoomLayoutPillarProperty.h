@@ -5,25 +5,26 @@
 
 #include <memory>
 
-// DlgRoomLayoutWindowProperty 对话框
+// DlgRoomLayoutPillarProperty 对话框
 
-class DlgRoomLayoutWindowProperty : public CDialogEx
+class DlgRoomLayoutPillarProperty : public CDialogEx
 {
 	class	Imp;
 	std::unique_ptr<Imp>	ImpUPtr_;
 
-	DECLARE_DYNAMIC(DlgRoomLayoutWindowProperty)
+	DECLARE_DYNAMIC(DlgRoomLayoutPillarProperty)
 
 public:
-	DlgRoomLayoutWindowProperty(const SRenderContextSPtr& rc, int data, CWnd* pParent = NULL);   // 标准构造函数
-	virtual ~DlgRoomLayoutWindowProperty();
+	DlgRoomLayoutPillarProperty(const SRenderContextSPtr& rc, int data, CWnd* pParent = NULL);   // 标准构造函数
+	virtual ~DlgRoomLayoutPillarProperty();
 
 // 对话框数据
-	enum { IDD = IDD_DLG_ROOMLAYOUT_WINDOWPROPERTY };
+	enum { IDD = IDD_DLG_ROOMLAYOUT_PILLAR_PROPERTY };
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 支持
 	virtual BOOL OnInitDialog();
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
 
 	DECLARE_MESSAGE_MAP()
 public:
@@ -44,5 +45,4 @@ public:
 	afx_msg void OnBnClickedBtnDelete();
 	afx_msg void OnBnClickedBtnOk();
 	afx_msg void OnBnClickedBtnCancel();
-	virtual BOOL PreTranslateMessage(MSG* pMsg);
 };

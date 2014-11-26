@@ -127,6 +127,13 @@ IrrEngine::IrrEngine(const irr::SIrrlichtCreationParameters& params):ImpUPtr_(ne
 
 		Register(ftr);
 	}
+
+	{
+		auto picking = new PickingColorCB;
+		auto material = rawDevice->getVideoDriver()->getGPUProgrammingServices()->addHighLevelShaderMaterial(PickingColorCB::GetVertexShader(), PickingColorCB::GetPixelShader(), picking);
+		picking->drop();
+		imp_.ShaderMap_[EST_PICKING] = material;
+	}
 }
 
 IrrEngine::~IrrEngine()

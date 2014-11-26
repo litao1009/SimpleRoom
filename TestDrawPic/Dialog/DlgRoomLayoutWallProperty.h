@@ -42,4 +42,5 @@ public:
 	afx_msg void OnBnClickedBtnMove();
 	afx_msg void OnBnClickedBtnDelete();
 	afx_msg void OnBnClickedCancel();
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
 };

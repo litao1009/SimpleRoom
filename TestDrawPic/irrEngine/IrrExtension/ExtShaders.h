@@ -95,4 +95,26 @@ private:
 	irr::scene::ISceneManager*	Smgr_;
 };
 
+class	PickingColorCB : public irr::video::IShaderConstantSetCallBack
+{
+public:
+
+	PickingColorCB()
+	{
+		
+	}
+
+	virtual void OnSetConstants(irr::video::IMaterialRendererServices* services, irr::s32 userData);
+
+	virtual void OnSetMaterial(const irr::video::SMaterial& material);
+
+	static	const char*	GetVertexShader();
+	static	const char*	GetPixelShader();
+
+private:
+
+	irr::video::SMaterial	CurrentMaterial_;
+};
+
+
 #endif // ExtShaders_h__

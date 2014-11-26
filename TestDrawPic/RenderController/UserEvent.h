@@ -107,7 +107,7 @@ public:
 	std::wstring	Name_;
 };
 
-class	SEventPilarInfo
+class	SEventPillarInfo
 {
 public:
 	float	XLength_,YLength_,ZLength_;

@@ -12,11 +12,17 @@ public:
 	PillarODL(const SRenderContextWPtr& rc);
 	~PillarODL();
 
-public:
+public://BaseODL
 
 	virtual	EObjectDisplayLayerType	GetType() const { return EODLT_PILLAR; }
 
 	virtual	void	Init();
+
+protected:
+
+	virtual	void	UpdatePicking();
+
+	virtual	void	UpdateSweeping();
 
 public:
 
@@ -37,4 +43,8 @@ public:
 	BaseODLList	GetAlignList() const;
 
 	void	SetAlignList(const BaseODLList& list);
+
+	void		AddAlign(const BaseODLSPtr& align);
+
+	void	SetVaildPosition(bool val);
 };

@@ -131,3 +131,24 @@ void DlgRoomLayoutRoomProperty::OnBnClickedBtnCancel()
 
 	CDialogEx::OnCancel();
 }
+
+
+BOOL DlgRoomLayoutRoomProperty::PreTranslateMessage(MSG* pMsg)
+{
+	// TODO: 在此添加专用代码和/或调用基类
+	if ( pMsg->message == WM_KEYDOWN )
+	{
+		if ( pMsg->wParam == VK_RETURN )
+		{
+			OnBnClickedBtnOk();
+			return TRUE;
+		}
+
+		if ( pMsg->wParam == VK_ESCAPE )
+		{
+			OnBnClickedBtnCancel();
+			return TRUE;
+		}
+	}
+	return CDialogEx::PreTranslateMessage(pMsg);
+}

@@ -131,3 +131,29 @@ void PillarMeshNode2D::SetLineColor( const irr::video::SColor& lineColor )
 {
 	LineMaterial_.DiffuseColor = lineColor;
 }
+
+void PillarMeshNode2D::SetSweeping( bool val )
+{
+	if ( val )
+	{
+		MeshBuffer_->getMaterial().MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_PICKING);
+		MeshBuffer_->getMaterial().DiffuseColor = 0xFFFFFF00;
+	}
+	else
+	{
+		MeshBuffer_->getMaterial().MaterialType = EMT_SOLID;
+	}
+}
+
+void PillarMeshNode2D::SetPicking( bool val )
+{
+	if ( val )
+	{
+		MeshBuffer_->getMaterial().MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_PICKING);
+		MeshBuffer_->getMaterial().DiffuseColor = 0xFF00FFFF;
+	}
+	else
+	{
+		MeshBuffer_->getMaterial().MaterialType = EMT_SOLID;
+	}
+}
