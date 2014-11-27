@@ -163,6 +163,7 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClInclude Include="irrEngine\XEffect\XEffects.h" />
     <ClInclude Include="NumberTextCtrl.h" />
     <ClInclude Include="ODL\BaseODLFwd.h" />
+    <ClInclude Include="ODL\BeamODL.h" />
     <ClInclude Include="ODL\CornerODL.h" />
     <ClInclude Include="ODL\CornerODLFwd.h" />
     <ClInclude Include="ODL\DesignODL.h" />
@@ -277,6 +278,7 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClCompile Include="irrEngine\XEffect\SSAORenderCallback.cpp" />
     <ClCompile Include="NumberTextCtrl.cpp" />
     <ClCompile Include="DragDataListCtrl.cpp" />
+    <ClCompile Include="ODL\BeamODL.cpp" />
     <ClCompile Include="ODL\CornerODL.cpp" />
     <ClCompile Include="ODL\DesignODL.cpp" />
     <ClCompile Include="ODL\DoorODL.cpp" />

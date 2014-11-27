@@ -125,6 +125,7 @@ bool RoomLayoutRoomController::PreRender3D()
 				imp_.EventInfo_->Name_ = activeRoom->GetName();
 
 				imp_.SavePos_ = imp_.CurrentPos_;
+				imp_.PropertyCallBack_ = boost::none;
 				imp_.State_ = ERoomState::ERS_PROPERTY;
 
 				auto pointer = reinterpret_cast<int>(static_cast<void*>(&(*imp_.EventInfo_)));

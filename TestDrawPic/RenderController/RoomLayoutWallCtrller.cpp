@@ -330,9 +330,9 @@ bool RoomLayoutWallCtrller::PreRender3D()
 
 			//墙面到鼠标的垂直向量
 			gp_Vec cursorVec;
+			GeomAPI_ProjectPointOnCurve cursorProj(cursorPnt, wallBC.Curve().Curve());
 			{
-				GeomAPI_ProjectPointOnCurve cursorProj(cursorPnt, wallBC.Curve().Curve());
-				if ( cursorProj.LowerDistance() < activeWall->GetThickness() )
+				if ( cursorProj.LowerDistance() < Precision::Confusion()/*activeWall->GetThickness()/2*/ )
 				{//不变
 					break;
 				}
@@ -354,6 +354,15 @@ bool RoomLayoutWallCtrller::PreRender3D()
 			{
 				imp_.Valid_ = false;
 				break;
+			}
+
+			if ( firstInfo.NeedCreate_ || firstInfo.NeedSplit_ || firstInfo.CombineCorner_ ||
+				secondInfo.NeedCreate_ || secondInfo.NeedSplit_ || secondInfo.CombineCorner_ )
+			{
+				if ( cursorProj.LowerDistance() < activeWall->GetThickness()/2 )
+				{//不变
+					break;
+				}
 			}
 
 			auto oldFirstPnt = firstCorner->GetPosition();

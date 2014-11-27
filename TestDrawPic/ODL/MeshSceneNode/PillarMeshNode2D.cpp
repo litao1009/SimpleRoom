@@ -55,6 +55,9 @@ PillarMeshNode2D::PillarMeshNode2D(irr::scene::ISceneNode* parent, irr::s32 id):
 	MeshBuffer_->getMaterial().PolygonOffsetDirection = irr::video::EPO_FRONT;
 	MeshBuffer_->getMaterial().PolygonOffsetFactor = 7;
 	MeshBuffer_->getMaterial().setTexture(0, SceneManager->getVideoDriver()->getTexture("../Data/Resource/3D/wallLine.png"));
+	MeshBuffer_->getMaterial().MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_PICKING);
+	MeshBuffer_->getMaterial().DiffuseColor = 0xFFD0D0D0;
+
 	matrix4 scale,rotate;
 	scale.setTextureScale(1/300.f, 1/300.f);
 	rotate.setTextureRotationCenter(static_cast<float>(M_PI_4));
@@ -136,12 +139,13 @@ void PillarMeshNode2D::SetSweeping( bool val )
 {
 	if ( val )
 	{
-		MeshBuffer_->getMaterial().MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_PICKING);
+		//MeshBuffer_->getMaterial().MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_PICKING);
 		MeshBuffer_->getMaterial().DiffuseColor = 0xFFFFFF00;
 	}
 	else
 	{
-		MeshBuffer_->getMaterial().MaterialType = EMT_SOLID;
+		MeshBuffer_->getMaterial().DiffuseColor = 0xFFD0D0D0;
+		//MeshBuffer_->getMaterial().MaterialType = EMT_SOLID;
 	}
 }
 
@@ -149,11 +153,12 @@ void PillarMeshNode2D::SetPicking( bool val )
 {
 	if ( val )
 	{
-		MeshBuffer_->getMaterial().MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_PICKING);
+		//MeshBuffer_->getMaterial().MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_PICKING);
 		MeshBuffer_->getMaterial().DiffuseColor = 0xFF00FFFF;
 	}
 	else
 	{
-		MeshBuffer_->getMaterial().MaterialType = EMT_SOLID;
+		MeshBuffer_->getMaterial().DiffuseColor = 0xFFD0D0D0;
+		//MeshBuffer_->getMaterial().MaterialType = EMT_SOLID;
 	}
 }

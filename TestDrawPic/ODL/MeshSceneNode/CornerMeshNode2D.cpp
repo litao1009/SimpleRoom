@@ -17,7 +17,7 @@ public:
 	static	float	Radius_;
 };
 
-float	CornerMeshNode2D::Imp::Radius_ = 50.f;
+float	CornerMeshNode2D::Imp::Radius_ = 100.f;
 
 CornerMeshNode2D::CornerMeshNode2D(irr::scene::ISceneNode* parent, irr::s32 id):IMeshSceneNode(parent, parent->getSceneManager(), id)
 {

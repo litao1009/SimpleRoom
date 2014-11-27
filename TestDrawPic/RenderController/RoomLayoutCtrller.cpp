@@ -38,7 +38,8 @@ bool RoomLayoutCtrller::OnPostEvent( const irr::SEvent& evt )
 			evt.UserEvent.UserData1 == EUT_ROOMLAYOUT_PICTURE_VISIBLE ||
 			evt.UserEvent.UserData1 == EUT_ROOMLAYOUT_PICTURE_SETTING ||
 			evt.UserEvent.UserData1 == EUT_ROOMLAYOUT_PICTUREREFLINE_SIZE ||
-			evt.UserEvent.UserData1 == EUT_ROOMLAYOUT_PICTUREREFLINE_DRAW)
+			evt.UserEvent.UserData1 == EUT_ROOMLAYOUT_PICTUREREFLINE_DRAW ||
+			evt.UserEvent.UserData1 == EUT_ROOMLAYOUT_PICTURE_POSITION)
 		{
 			SetCurrentState(ERoomLayoutSatate::ERS_PICTURE);
 		}

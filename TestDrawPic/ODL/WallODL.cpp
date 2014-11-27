@@ -177,7 +177,7 @@ public:
 			auto otherEndPos = otherEndCorner->GetPosition();
 			gp_Dir otherDir = gp_Vec(otherBeginPos, otherEndPos);
 			auto otherThickDir = otherDir.Crossed(gp::DY().Reversed());
-			gp_Vec otherThickVec = gp_Vec(otherThickDir) * otherTopWall->GetThickness()/2;
+			gp_Vec otherThickVec = gp_Vec(otherThickDir) * otherBottomWall->GetThickness()/2;
 
 			auto curEdge = BRepBuilderAPI_MakeEdge(curBeginPos.XYZ()+curThickVec.Reversed().XYZ(), curEndPos.XYZ()+curThickVec.Reversed().XYZ()).Edge();
 			auto otherEdge = BRepBuilderAPI_MakeEdge(otherBeginPos.XYZ()+otherThickVec.XYZ(), otherEndPos.XYZ()+otherThickVec.XYZ()).Edge();

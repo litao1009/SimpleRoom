@@ -214,6 +214,13 @@ bool RoomLayoutDrawingCtrller::PreRender3D()
 		{
 			lonelyCorners.push_back(curCorner);
 		}
+		else if ( 2 == walls.size() )
+		{
+			if ( Standard_True == walls[0]->GetDirection().IsParallel(walls[1]->GetDirection(), Precision::Angular()) )
+			{
+				lonelyCorners.push_back(curCorner);
+			}
+		}
 	}
 
 	//Ñ°ÕÒÏß
@@ -241,7 +248,7 @@ bool RoomLayoutDrawingCtrller::PreRender3D()
 			GeomAPI_ProjectPointOnCurve projCursorToWall(cursorPnt, curBC.Curve().Curve());
 
 			//ÅÅ³ýÎ´·¢ÉúÎü¸½µÄ
-			if ( projCursorToWall.LowerDistance() > alignDistance )
+			if ( projCursorToWall.LowerDistance() > alignDistance && projCursorToWall.LowerDistance() > curWall->GetThickness() /2 )
 			{
 				continue;
 			}
@@ -282,7 +289,7 @@ bool RoomLayoutDrawingCtrller::PreRender3D()
 			for ( auto& curCorner : lonelyCorners )
 			{
 				auto curWalls = imp_.Graph_.lock()->GetWallsOnCorner(curCorner);
-				assert(curWalls.size() == 1);
+				//assert(curWalls.size() == 1);
 
 				auto& curWall = curWalls.front();
 				gp_Dir curDir = gp_Vec(curWall->GetFirstCorner().lock()->GetPosition(), curWall->GetSecondCorner().lock()->GetPosition());
@@ -594,8 +601,31 @@ bool RoomLayoutDrawingCtrller::PreRender3D()
 				cursorPnt = imp_.LastCorner_->GetPosition().XYZ() + (gp_Vec(dir) * (*imp_.CustomLength_)).XYZ();
 				imp_.CustomPnt_ = cursorPnt;
 				vector3df newPos3D(static_cast<float>(cursorPnt.X()), static_cast<float>(cursorPnt.Y()), static_cast<float>(cursorPnt.Z()));
+
 				auto newPos2D = GetRenderContextSPtr()->Smgr_->getSceneCollisionManager()->getScreenCoordinatesFrom3DPosition(newPos3D);
-				GetRenderContextSPtr()->CursorControl_->setPosition(newPos2D);
+				auto screenSize = GetRenderContextSPtr()->Smgr_->getVideoDriver()->getScreenSize();
+				
+				irr::core::aabbox3di screenBox;
+				screenBox.reset(vector3di(0,0,0));
+				screenBox.addInternalPoint(screenSize.Width, 0, screenSize.Height);
+
+				if ( screenBox.isPointInside(vector3di(newPos2D.X, 0, newPos2D.Y)))
+				{
+					GetRenderContextSPtr()->CursorControl_->setPosition(newPos2D);
+				}
+				else
+				{
+					auto curCameraTarget = GetRenderContextSPtr()->Smgr_->getActiveCamera()->getTarget();
+					auto curCameraPos = GetRenderContextSPtr()->Smgr_->getActiveCamera()->getPosition();
+
+					auto transVec = newPos3D - curCameraTarget;
+					curCameraTarget += transVec;
+					curCameraPos += transVec;
+
+					GetRenderContextSPtr()->Smgr_->getActiveCamera()->setTarget(curCameraTarget);
+					GetRenderContextSPtr()->Smgr_->getActiveCamera()->setPosition(curCameraPos);
+					GetRenderContextSPtr()->CursorControl_->setPosition(0.5f, 0.5f);
+				}
 			}
 			else if ( imp_.CustomPnt_ )
 			{

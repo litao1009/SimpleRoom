@@ -17,6 +17,7 @@
 #include "RenderController/RoomLayoutPillarController.h"
 
 #include "gp_Lin.hxx"
+#include "BRepBuilderAPI_MakeEdge.hxx"
 
 #include <map>
 
@@ -132,6 +133,8 @@ bool RoomLayoutBrowserCtrller::PreRender3D()
 
 	if ( imp_.SweepingODL_.expired() )
 	{
+		BaseODLSPtr saveODL;
+
 		for ( auto& curODL : imp_.Graph_.lock()->GetChildrenList() )
 		{
 			auto curType = curODL->GetType();
@@ -164,8 +167,34 @@ bool RoomLayoutBrowserCtrller::PreRender3D()
 
 			if ( Standard_False == curODL->GetBaseBndBox().IsOut(cursorLin.Transformed(curODL->GetAbsoluteTransform().Inverted())) )
 			{
-				imp_.SweepingODL_ = curODL;
-				break;
+				if ( EODLT_ROOM == curODL->GetType() )
+				{
+					if ( saveODL )
+					{
+						continue;
+					}
+
+					BRepExtrema_DistShapeShape dss(curODL->GetBaseShape(), BRepBuilderAPI_MakeEdge(cursorLin).Edge());
+					if ( dss.Value() < Precision::Confusion() )
+					{
+						saveODL = curODL;
+					}
+						
+					continue;
+				}
+				else
+				{
+					imp_.SweepingODL_ = curODL;
+					break;
+				}
+			}
+		}
+
+		if ( imp_.SweepingODL_.expired() && saveODL )
+		{
+			if ( Standard_False == saveODL->GetBaseBndBox().IsOut(cursorLin.Transformed(saveODL->GetAbsoluteTransform().Inverted())) )
+			{
+				imp_.SweepingODL_ = saveODL;
 			}
 		}
 	}

@@ -271,6 +271,9 @@
     <ClCompile Include="Dialog\DlgRoomLayoutPillarProperty.cpp">
       <Filter>src\Dialog</Filter>
     </ClCompile>
+    <ClCompile Include="ODL\BeamODL.cpp">
+      <Filter>ODL</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BLL\BaseBLL.h">
@@ -620,6 +623,9 @@
     </ClInclude>
     <ClInclude Include="Dialog\DlgRoomLayoutPillarProperty.h">
       <Filter>src\Dialog</Filter>
+    </ClInclude>
+    <ClInclude Include="ODL\BeamODL.h">
+      <Filter>ODL</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

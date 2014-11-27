@@ -33,7 +33,8 @@ public:
 	{
 		static unsigned nameCount = 0;
 
-		std::wstring newName = L"房间 " + std::to_wstring(nameCount++);
+		//std::wstring newName = L"房间 " + std::to_wstring(nameCount++);
+		std::wstring newName = L"未命名房间";
 		return newName;
 	}
 

@@ -295,6 +295,11 @@ bool RoomLayoutPillarController::PreRender3D()
 			auto alignODLs = activePilar->GetAlignList();
 			alignODLs.erase(std::remove_if(alignODLs.begin(), alignODLs.end(), [&activePilar, &activeTransitionBox](const BaseODLSPtr& alignODL)
 			{
+				if ( !alignODL )
+				{
+					return true;
+				}
+
 				return alignODL->GetBaseBndBox().Distance(activeTransitionBox.Transformed(alignODL->GetAbsoluteTransform().Inverted())) > alignDis;
 			}), alignODLs.end());
 			activePilar->SetAlignList(BaseODLList());
@@ -372,13 +377,21 @@ bool RoomLayoutPillarController::PreRender3D()
 				//当位置锁定了以后，只需要判断是不是相交
 				if ( lockPosition )
 				{
-					if ( Standard_False == movingBox.IsOut(inODLPnt) )
+					if ( Standard_True == movingBox.IsOut(inODLPnt) )
 					{
-						imp_.Valid_ = false;
-						break;
+						continue;
 					}
 
-					continue;
+					Bnd_Box pntBox;
+					pntBox.Add(inODLPnt);
+
+					if ( pntBox.Distance(movingBox) < Precision::Confusion() )
+					{
+						continue;
+					}
+
+					imp_.Valid_ = false;
+					break;
 				}
 
 				Bnd_Box alignODLBox;
@@ -481,6 +494,11 @@ bool RoomLayoutPillarController::PreRender3D()
 			newPos.Z = static_cast<float>(newPnt.Z());
 			activePilar->GetDataSceneNode()->setPosition(newPos);
 			activePilar->SetTranslation(newPnt.XYZ());
+
+			for ( auto& curAlign : activePilar->GetAlignList() )
+			{
+				curAlign->SetSweeping(true);
+			}
 		}
 		break;
 	default:
@@ -506,6 +524,17 @@ void RoomLayoutPillarController::PostRender3D()
 			{
 				auto activePilar = std::static_pointer_cast<PillarODL>(GetPickingODL().lock());
 				activePilar->SetSweeping(false);
+			}
+		}
+		break;
+	case EPilarState::EPS_MOVING:
+		{
+			auto activePilar = std::static_pointer_cast<PillarODL>(GetPickingODL().lock());
+			activePilar->SetPicking(false);
+
+			for ( auto& curAlign : activePilar->GetAlignList() )
+			{
+				curAlign->SetSweeping(false);
 			}
 		}
 		break;
