@@ -147,8 +147,8 @@ public:
 	bool						LMousePressDown_;
 	bool						EscPressDown_;
 	bool						Reset_;
-	boost::optional<int>		CustomLength_;
-	boost::optional<gp_Pnt>		CustomPnt_;
+	boost::optional<int>		SpecifyLength_;
+	boost::optional<gp_Pnt>		SpecifyPnt_;
 
 	GraphODLWPtr				Graph_;
 };
@@ -185,6 +185,18 @@ bool RoomLayoutDrawingCtrller::PreRender3D()
 	
 	//Îü¸½°ë¾¶
 	auto alignDistance = 100.f;
+
+	if ( imp_.SpecifyPnt_ )
+	{
+		if ( cursorPnt.SquareDistance(*imp_.SpecifyPnt_) < alignDistance * alignDistance * 4 )
+		{
+			cursorPnt = *imp_.SpecifyPnt_;
+		}
+		else
+		{
+			imp_.SpecifyPnt_ = boost::none;
+		}
+	}
 
 	//×î½üµÄÇ½½Ç
 	CornerODLSPtr nearestCorner;
@@ -539,7 +551,7 @@ bool RoomLayoutDrawingCtrller::PreRender3D()
 			}
 		}
 
-		if ( GeomAbs_OtherCurve == firstAuxiliaryLine.GetType() && StatusMgr::GetInstance().GridAlign_ )
+		if ( GeomAbs_OtherCurve == firstAuxiliaryLine.GetType() && StatusMgr::GetInstance().GridAlign_ && !imp_.SpecifyPnt_ )
 		{
 			auto pos = *StatusMgr::GetInstance().GridAlign_;
 			cursorPnt = gp_Pnt(pos.X, 0, pos.Z);
@@ -549,6 +561,11 @@ bool RoomLayoutDrawingCtrller::PreRender3D()
 			GeomAPI_ProjectPointOnCurve ppc(cursorPnt, firstAuxiliaryLine.Curve().Curve());
 			cursorPnt = ppc.NearestPoint();
 		}
+	}
+
+	if ( imp_.SpecifyPnt_ )
+	{
+		imp_.SpecifyPnt_ = cursorPnt;
 	}
 
 	switch (imp_.State_)
@@ -593,18 +610,18 @@ bool RoomLayoutDrawingCtrller::PreRender3D()
 		break;
 	case EState::ES_DRAWING:
 		{
-			if ( imp_.CustomLength_ )
+			if ( imp_.SpecifyLength_ )
 			{
 				assert(imp_.LastCorner_);
 
 				gp_Dir dir = gp_Vec(imp_.LastCorner_->GetPosition(), cursorPnt);
-				cursorPnt = imp_.LastCorner_->GetPosition().XYZ() + (gp_Vec(dir) * (*imp_.CustomLength_)).XYZ();
-				imp_.CustomPnt_ = cursorPnt;
-				vector3df newPos3D(static_cast<float>(cursorPnt.X()), static_cast<float>(cursorPnt.Y()), static_cast<float>(cursorPnt.Z()));
+				imp_.SpecifyPnt_ = imp_.LastCorner_->GetPosition().XYZ() + (gp_Vec(dir) * (*imp_.SpecifyLength_)).XYZ();
+
+				vector3df newPos3D(static_cast<float>((*imp_.SpecifyPnt_).X()), static_cast<float>((*imp_.SpecifyPnt_).Y()), static_cast<float>((*imp_.SpecifyPnt_).Z()));
 
 				auto newPos2D = GetRenderContextSPtr()->Smgr_->getSceneCollisionManager()->getScreenCoordinatesFrom3DPosition(newPos3D);
 				auto screenSize = GetRenderContextSPtr()->Smgr_->getVideoDriver()->getScreenSize();
-				
+
 				irr::core::aabbox3di screenBox;
 				screenBox.reset(vector3di(0,0,0));
 				screenBox.addInternalPoint(screenSize.Width, 0, screenSize.Height);
@@ -626,17 +643,8 @@ bool RoomLayoutDrawingCtrller::PreRender3D()
 					GetRenderContextSPtr()->Smgr_->getActiveCamera()->setPosition(curCameraPos);
 					GetRenderContextSPtr()->CursorControl_->setPosition(0.5f, 0.5f);
 				}
-			}
-			else if ( imp_.CustomPnt_ )
-			{
-				if ( cursorPnt.SquareDistance(*imp_.CustomPnt_) < alignDistance * alignDistance * 4 )
-				{
-					cursorPnt = *imp_.CustomPnt_;
-				}
-				else
-				{
-					imp_.CustomPnt_ = boost::none;
-				}
+
+				imp_.SpecifyLength_ = boost::none;
 			}
 
 			bool valid = true;
@@ -880,8 +888,6 @@ bool RoomLayoutDrawingCtrller::PreRender3D()
 		::PostMessage((HWND)(GetRenderContextSPtr()->GetHandle()), WM_IRR_DLG_MSG, WM_USER_ROOMLAYOUT_DLG_LINELENGTH_HIDE, 0);
 	}
 
-	imp_.CustomLength_ = boost::none;
-
 	return false;
 }
 
@@ -964,7 +970,7 @@ bool RoomLayoutDrawingCtrller::OnPostEvent( const irr::SEvent& evt )
 	{
 		if ( evt.UserEvent.UserData1 == EUT_ROOMLAYOUT_LINELENGTH_SET )
 		{
-			imp_.CustomLength_ = evt.UserEvent.UserData2;
+			imp_.SpecifyLength_ = evt.UserEvent.UserData2;
 			return true;
 		}
 	}
@@ -1031,8 +1037,8 @@ void RoomLayoutDrawingCtrller::Reset()
 	auto& imp_ = *ImpUPtr_;
 
 	imp_.EscPressDown_ = false;
-	imp_.CustomLength_ = boost::none;
-	imp_.CustomPnt_ = boost::none;
+	imp_.SpecifyLength_ = boost::none;
+	imp_.SpecifyPnt_ = boost::none;
 	imp_.LastWall_ = nullptr;
 
 	for ( auto& curCorner : imp_.DrawingPathList_ )
