@@ -45,4 +45,8 @@ public:
 	afx_msg void OnBnClickedBtnOk();
 	afx_msg void OnBnClickedBtnCancel();	
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
+	CButton BtnRotate_;
+	afx_msg void OnBnClickedBtnRotation();
+	afx_msg void OnBnClickedRadioLeftopen();
+	afx_msg void OnBnClickedRadioRightopen();
 };

@@ -371,7 +371,7 @@ void WallODL::UpdateBaseShape()
 		SetTranslation(translation);
 		GetDataSceneNode()->setPosition(irr::core::vector3df(static_cast<float>(translation.X()), static_cast<float>(translation.Y()), static_cast<float>(translation.Z())));
 
-		SetRoration(rotation);
+		SetRotation(rotation);
 		Standard_Real rX,rY,rZ;
 		rotation.GetEulerAngles(gp_Extrinsic_XYZ, rX, rY, rZ);
 		GetDataSceneNode()->setRotation(irr::core::vector3df(static_cast<float>(irr::core::radToDeg(rX)), static_cast<float>(irr::core::radToDeg(rY)), static_cast<float>(irr::core::radToDeg(rZ))));

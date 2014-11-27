@@ -46,7 +46,7 @@ const gp_Quaternion& ShapeSceneNode::GetRotation() const
 	return Rotation_;
 }
 
-void ShapeSceneNode::SetRoration( const gp_Quaternion& val )
+void ShapeSceneNode::SetRotation( const gp_Quaternion& val )
 {
 	if ( !Rotation_.IsEqual(val) )
 	{

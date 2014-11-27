@@ -35,7 +35,7 @@ public:
 	void					SetTranslation(const gp_XYZ& val);
 
 	const gp_Quaternion&	GetRotation() const;
-	void					SetRoration(const gp_Quaternion& val);
+	void					SetRotation(const gp_Quaternion& val);
 
 	const gp_XYZ&			GetScale() const;
 	void					SetScale(const gp_XYZ& val);

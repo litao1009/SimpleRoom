@@ -109,6 +109,10 @@
 #define ID_BTN_OK                       1042
 #define ID_BTN_CANCEL                   1043
 #define IDC_BUTTON2                     1049
+#define IDC_RADIO_LEFTOPEN              1050
+#define IDC_RADIO_RIGHTOPEN             1051
+#define IDC_BUTTON1                     1052
+#define IDC_BTN_ROTATION                1052
 #define ID_WRITE_PASTEASHYPERLINK       32770
 #define ID_BTN_VIEW_TOP                 32774
 #define ID_BTN_CREATE_ROOM_AUTO         32775
@@ -155,7 +159,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        334
 #define _APS_NEXT_COMMAND_VALUE         32838
-#define _APS_NEXT_CONTROL_VALUE         1050
+#define _APS_NEXT_CONTROL_VALUE         1053
 #define _APS_NEXT_SYMED_VALUE           321
 #endif
 #endif

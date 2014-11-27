@@ -430,6 +430,14 @@ bool RoomLayoutDoorController::PreRender3D()
 					imp_.State_ = EDoorState::EDS_SWEEPING;
 				}
 				break;
+			case EUT_ROOMLAYOUT_DOOR_ROTATE:
+				{
+					activeDoor->SetRotation(gp_Quaternion(gp::DY(), M_PI));
+					activeDoor->GetDataSceneNode()->setRotation(vector3df(0, 180, 0));
+					
+					imp_.State_ = EDoorState::EDS_SWEEPING;
+				}
+				break;
 			default:
 				assert(0);
 				break;

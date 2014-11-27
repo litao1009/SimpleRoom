@@ -281,7 +281,7 @@ bool RoomLayoutPillarController::PreRender3D()
 				activeTransitionBox = activeTransitionBox.Transformed(tfs);
 			}
 
-			activePilar->SetRoration(gp_Quaternion(gp::DZ(), gp::DZ()));
+			activePilar->SetRotation(gp_Quaternion(gp::DZ(), gp::DZ()));
 			
 			//ÐÂµÄÎ»ÖÃ
 			auto newPos = imp_.CurrentPos_;
@@ -433,7 +433,7 @@ bool RoomLayoutPillarController::PreRender3D()
 					vector3df rotation(static_cast<float>(irr::core::radToDeg(rX)), static_cast<float>(irr::core::radToDeg(rY)), static_cast<float>(irr::core::radToDeg(rZ)));
 
 					activePilar->GetDataSceneNode()->setRotation(rotation);
-					activePilar->SetRoration(rot);
+					activePilar->SetRotation(rot);
 
 					gp_Dir movingDir;
 					if ( std::abs(std::abs(inODLPnt.X()) - xMax) < Precision::Confusion() )

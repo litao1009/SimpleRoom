@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <boost/optional.hpp>
 
 #define WM_IRR_DLG_MSG						WM_USER+1
 #define DEFINE_USER_MESSAGE(msg)			(WM_USER + msg)
@@ -54,6 +55,7 @@ enum EUserType
 	//√≈ Ù–‘
 	EUT_ROOMLAYOUT_DOOR_PROPERTY,
 	EUT_ROOMLAYOUT_DOOR_NONE,
+	EUT_ROOMLAYOUT_DOOR_ROTATE,
 	EUT_ROOMLAYOUT_DOOR_UPDATE,
 	EUT_ROOMLAYOUT_DOOR_MOVE,
 	EUT_ROOMLAYOUT_DOOR_DELETE,
@@ -84,7 +86,15 @@ enum EUserType
 class	SEventDoorInfo
 {
 public:
+
+	enum EOpenSide
+	{
+		EOS_LEFT,
+		EOS_RIGHT
+	};
+
 	float	XLength_,YLength_,ZLength_;
+	boost::optional<EOpenSide>	OpenSide_;
 };
 
 class	SEventWindowInfo

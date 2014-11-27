@@ -57,6 +57,7 @@ void DlgRoomLayoutDoorProperty::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_EDIT_HEIGHT, EditHeight_);
 	DDX_Control(pDX, IDC_EDIT_WIDTH, EditWidth_);
 	DDX_Control(pDX, IDC_EDIT_DEPTH, EditDepth_);
+	DDX_Control(pDX, IDC_BTN_ROTATION, BtnRotate_);
 }
 
 
@@ -68,6 +69,9 @@ BEGIN_MESSAGE_MAP(DlgRoomLayoutDoorProperty, CDialogEx)
 	ON_BN_CLICKED(ID_BTN_OK, &DlgRoomLayoutDoorProperty::OnBnClickedBtnOk)
 	ON_BN_CLICKED(ID_BTN_CANCEL, &DlgRoomLayoutDoorProperty::OnBnClickedBtnCancel)
 	ON_EN_CHANGE(IDC_EDIT_DEPTH, &DlgRoomLayoutDoorProperty::OnEnChangeEditDepth)
+	ON_BN_CLICKED(IDC_BTN_ROTATION, &DlgRoomLayoutDoorProperty::OnBnClickedBtnRotation)
+	ON_BN_CLICKED(IDC_RADIO_LEFTOPEN, &DlgRoomLayoutDoorProperty::OnBnClickedRadioLeftopen)
+	ON_BN_CLICKED(IDC_RADIO_RIGHTOPEN, &DlgRoomLayoutDoorProperty::OnBnClickedRadioRightopen)
 END_MESSAGE_MAP()
 
 
@@ -246,6 +250,20 @@ void DlgRoomLayoutDoorProperty::OnBnClickedBtnCancel()
 }
 
 
+void DlgRoomLayoutDoorProperty::OnBnClickedBtnRotation()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	irr::SEvent evt;
+	evt.EventType = irr::EET_USER_EVENT;
+	evt.UserEvent.UserData1 = EUT_ROOMLAYOUT_DOOR_PROPERTY;
+	evt.UserEvent.UserData2 = EUT_ROOMLAYOUT_DOOR_ROTATE;
+
+	ImpUPtr_->RC_->PostEvent(evt);
+
+	CDialogEx::OnOK();
+}
+
+
 BOOL DlgRoomLayoutDoorProperty::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
@@ -255,6 +273,12 @@ BOOL DlgRoomLayoutDoorProperty::OnInitDialog()
 	EditWidth_.SetWindowText(std::to_wstring(static_cast<int>(ImpUPtr_->pDoorInfo_->XLength_)).c_str());
 	EditHeight_.SetWindowText(std::to_wstring(static_cast<int>(ImpUPtr_->pDoorInfo_->YLength_)).c_str());
 	EditDepth_.SetWindowText(std::to_wstring(static_cast<int>(ImpUPtr_->pDoorInfo_->ZLength_)).c_str());
+
+	if ( !ImpUPtr_->pDoorInfo_->OpenSide_ )
+	{
+		GetDlgItem(IDC_RADIO_LEFTOPEN)->EnableWindow(FALSE);
+		GetDlgItem(IDC_RADIO_RIGHTOPEN)->EnableWindow(FALSE);
+	}
 
 	RECT r;
 	GetClientRect(&r);
@@ -288,4 +312,17 @@ BOOL DlgRoomLayoutDoorProperty::PreTranslateMessage(MSG* pMsg)
 		}
 	}
 	return CDialogEx::PreTranslateMessage(pMsg);
+}
+
+void DlgRoomLayoutDoorProperty::OnBnClickedRadioLeftopen()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	ImpUPtr_->TmpDoorInfo_.OpenSide_ = SEventDoorInfo::EOS_LEFT;
+}
+
+
+void DlgRoomLayoutDoorProperty::OnBnClickedRadioRightopen()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	ImpUPtr_->TmpDoorInfo_.OpenSide_ = SEventDoorInfo::EOS_RIGHT;
 }
