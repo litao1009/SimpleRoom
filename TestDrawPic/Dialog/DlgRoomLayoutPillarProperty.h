@@ -45,4 +45,6 @@ public:
 	afx_msg void OnBnClickedBtnDelete();
 	afx_msg void OnBnClickedBtnOk();
 	afx_msg void OnBnClickedBtnCancel();
+	afx_msg void OnBnClickedRadioAlignCeiling();
+	afx_msg void OnBnClickedRadioAlignFloor();
 };

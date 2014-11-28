@@ -79,6 +79,7 @@ public:
 		AllowPolar_ = true;
 		AllowPerpendicular_ = true;
 		Reset_ = false;
+		SpecifyCreate_ = false;
 	}
 
 	~Imp()
@@ -147,9 +148,9 @@ public:
 	bool						LMousePressDown_;
 	bool						EscPressDown_;
 	bool						Reset_;
+	bool						SpecifyCreate_;
 	boost::optional<int>		SpecifyLength_;
 	boost::optional<gp_Pnt>		SpecifyPnt_;
-
 	GraphODLWPtr				Graph_;
 };
 
@@ -188,14 +189,7 @@ bool RoomLayoutDrawingCtrller::PreRender3D()
 
 	if ( imp_.SpecifyPnt_ )
 	{
-		if ( cursorPnt.SquareDistance(*imp_.SpecifyPnt_) < alignDistance * alignDistance * 4 )
-		{
-			cursorPnt = *imp_.SpecifyPnt_;
-		}
-		else
-		{
-			imp_.SpecifyPnt_ = boost::none;
-		}
+		cursorPnt = *imp_.SpecifyPnt_;
 	}
 
 	//×î½üµÄÇ½½Ç
@@ -566,6 +560,7 @@ bool RoomLayoutDrawingCtrller::PreRender3D()
 	if ( imp_.SpecifyPnt_ )
 	{
 		imp_.SpecifyPnt_ = cursorPnt;
+		imp_.SpecifyCreate_ = true;
 	}
 
 	switch (imp_.State_)
@@ -761,9 +756,11 @@ bool RoomLayoutDrawingCtrller::PreRender3D()
 				imp_.FloatingLine_->getMaterial().DiffuseColor = 0xFFFF0000;//Read
 			}
 
-			if ( imp_.LMousePressDown_ )
+			if ( imp_.LMousePressDown_ || imp_.SpecifyCreate_ )
 			{
 				imp_.LMousePressDown_ = false;
+				imp_.SpecifyPnt_ = boost::none;
+				imp_.SpecifyCreate_ = false;
 
 				if ( valid )
 				{
@@ -875,12 +872,11 @@ bool RoomLayoutDrawingCtrller::PreRender3D()
 
 	if ( imp_.State_ == ES_DRAWING )
 	{
-		::PostMessage((HWND)(GetRenderContextSPtr()->GetHandle()), WM_IRR_DLG_MSG, WM_USER_ROOMLAYOUT_DLG_LINELENGTH_SHOW, 0);
-
 		auto length = 0;
 		auto fl = imp_.LastCorner_->GetPosition().Distance(cursorPnt) + .5f;
 		length = static_cast<int>(fl);
-		
+
+		::PostMessage((HWND)(GetRenderContextSPtr()->GetHandle()), WM_IRR_DLG_MSG, 0 != length ? WM_USER_ROOMLAYOUT_DLG_LINELENGTH_SHOW : WM_USER_ROOMLAYOUT_DLG_LINELENGTH_HIDE, 0);
 		::PostMessage((HWND)(GetRenderContextSPtr()->GetHandle()), WM_IRR_DLG_MSG, WM_USER_ROOMLAYOUT_LINELENGTH_SET, length);
 	}
 	else

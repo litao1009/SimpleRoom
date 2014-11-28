@@ -71,6 +71,8 @@ BEGIN_MESSAGE_MAP(DlgRoomLayoutPillarProperty, CDialogEx)
 	ON_BN_CLICKED(IDC_BTN_DELETE, &DlgRoomLayoutPillarProperty::OnBnClickedBtnDelete)
 	ON_BN_CLICKED(ID_BTN_OK, &DlgRoomLayoutPillarProperty::OnBnClickedBtnOk)
 	ON_BN_CLICKED(ID_BTN_CANCEL, &DlgRoomLayoutPillarProperty::OnBnClickedBtnCancel)
+	ON_BN_CLICKED(IDC_RADIO_ALIGN_CEILING, &DlgRoomLayoutPillarProperty::OnBnClickedRadioAlignCeiling)
+	ON_BN_CLICKED(IDC_RADIO_ALIGN_FLOOR, &DlgRoomLayoutPillarProperty::OnBnClickedRadioAlignFloor)
 END_MESSAGE_MAP()
 
 
@@ -86,6 +88,16 @@ BOOL DlgRoomLayoutPillarProperty::OnInitDialog()
 	EditHeight_.SetWindowText(std::to_wstring(static_cast<int>(ImpUPtr_->pPillarInfo_->YLength_)).c_str());
 	EditDepth_.SetWindowText(std::to_wstring(static_cast<int>(ImpUPtr_->pPillarInfo_->ZLength_)).c_str());
 	EditOffsetHeight_.SetWindowText(std::to_wstring(static_cast<int>(ImpUPtr_->pPillarInfo_->OffsetHeight_)).c_str());
+
+	if ( ImpUPtr_->pPillarInfo_->AlignCeiling_ )
+	{
+		EditOffsetHeight_.EnableWindow(FALSE);
+		((CButton*)GetDlgItem(IDC_RADIO_ALIGN_CEILING))->SetCheck(TRUE);
+	}
+	else
+	{
+		((CButton*)GetDlgItem(IDC_RADIO_ALIGN_FLOOR))->SetCheck(TRUE);
+	}
 
 	RECT r;
 	GetClientRect(&r);
@@ -168,6 +180,11 @@ void DlgRoomLayoutPillarProperty::OnEnChangeEditHeight()
 		imp_.TmpPillarInfo_.YLength_ = static_cast<float>(std::stoi(str));
 
 		imp_.YValid_ = true;
+
+		if ( imp_.TmpPillarInfo_.AlignCeiling_ )
+		{
+			OnBnClickedRadioAlignCeiling();
+		}
 	}
 
 	BtnOK_.EnableWindow( imp_.XValid_ && imp_.YValid_ && imp_.ZValid_ && imp_.OffsetValid_);
@@ -325,4 +342,32 @@ BOOL DlgRoomLayoutPillarProperty::PreTranslateMessage(MSG* pMsg)
 	}
 
 	return CDialogEx::PreTranslateMessage(pMsg);
+}
+
+
+void DlgRoomLayoutPillarProperty::OnBnClickedRadioAlignCeiling()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	auto ceilingHeight = 2400;
+
+	ImpUPtr_->TmpPillarInfo_.AlignCeiling_ = true;
+	ImpUPtr_->TmpPillarInfo_.OffsetHeight_ = ceilingHeight - ImpUPtr_->TmpPillarInfo_.YLength_;
+	
+	CString str;
+	str.Format(_T("%d"), static_cast<int>(ImpUPtr_->TmpPillarInfo_.OffsetHeight_));
+	EditOffsetHeight_.SetWindowText(str);
+	EditOffsetHeight_.EnableWindow(FALSE);
+}
+
+
+void DlgRoomLayoutPillarProperty::OnBnClickedRadioAlignFloor()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	ImpUPtr_->TmpPillarInfo_.AlignCeiling_ = false;
+	ImpUPtr_->TmpPillarInfo_.OffsetHeight_ = 0;
+
+	CString str;
+	str.Format(_T("%d"), ImpUPtr_->TmpPillarInfo_.OffsetHeight_);
+	EditOffsetHeight_.SetWindowText(str);
+	EditOffsetHeight_.EnableWindow(TRUE);
 }

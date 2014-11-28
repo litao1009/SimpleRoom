@@ -122,6 +122,7 @@ class	SEventPillarInfo
 public:
 	float	XLength_,YLength_,ZLength_;
 	float	OffsetHeight_;
+	bool	AlignCeiling_;
 };
 
 

@@ -98,11 +98,11 @@ void GUIController::Init()
 
 bool GUIController::OnPreEvent( const irr::SEvent& event )
 {
-	auto sprc = GetRenderContextSPtr();
-	if ( sprc )
-	{
-		sprc->CursorControl_->setActiveIcon(Icon_);
-	}
+// 	auto sprc = GetRenderContextSPtr();
+// 	if ( sprc )
+// 	{
+// 		sprc->CursorControl_->setActiveIcon(Icon_);
+// 	}
 
 	return false;
 }

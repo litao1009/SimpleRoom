@@ -97,6 +97,7 @@ public:
 	afx_msg void OnBtnRoomlayoutTestWindow();
 	afx_msg void OnDestroy();
 	afx_msg void OnBtnRoomlayoutTestPlillar();
+	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
 };
 
 #ifndef _DEBUG  // TestDrawPicView.cpp 中的调试版本

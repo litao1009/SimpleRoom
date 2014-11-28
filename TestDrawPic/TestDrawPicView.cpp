@@ -65,6 +65,7 @@ BEGIN_MESSAGE_MAP(CTestDrawPicView, CCtrlFuncView)
 	ON_COMMAND(ID_BTN_ROOMLAYOUT_TEST_WINDOW, &CTestDrawPicView::OnBtnRoomlayoutTestWindow)
 	ON_WM_DESTROY()
 	ON_COMMAND(ID_BTN_ROOMLAYOUT_TEST_PLILLAR, &CTestDrawPicView::OnBtnRoomlayoutTestPlillar)
+	ON_WM_SETCURSOR()
 END_MESSAGE_MAP()
 
 
@@ -659,4 +660,10 @@ void CTestDrawPicView::OnDestroy()
 	KillTimer(1000);
 
 	CCtrlFuncView::OnDestroy();
+}
+
+BOOL CTestDrawPicView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
+{
+	// TODO: 在此添加消息处理程序代码和/或调用默认值
+	return FALSE;
 }

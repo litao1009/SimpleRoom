@@ -29,6 +29,7 @@ using namespace core;
 enum class EPilarState
 {
 	EPS_SWEEPING,
+	EPS_MODIFYING,
 	EPS_CREATING_INIT,
 	EPS_MOUSEHOLDING,
 	EPS_MOVING,
@@ -47,6 +48,7 @@ public:
 		LMouseLeftUp_ = false;
 		LMousePressDown_ = false;
 		Valid_ = false;
+		CtrllHolding_ = false;
 	}
 
 public:
@@ -54,6 +56,7 @@ public:
 	bool			EscapePressDown_;
 	bool			LMouseLeftUp_;
 	bool			LMousePressDown_;
+	bool			CtrllHolding_;
 	bool			Valid_;
 	EPilarState		State_;
 	vector2di		CursorIPos_;
@@ -116,6 +119,11 @@ bool RoomLayoutPillarController::OnPostEvent( const irr::SEvent& evt )
 		imp_.LMousePressDown_ = true;;
 	}
 
+	if ( evt.EventType == EET_KEY_INPUT_EVENT && evt.KeyInput.Key == KEY_LCONTROL )
+	{
+		imp_.CtrllHolding_ = evt.KeyInput.PressedDown;
+	}
+
 	return false;
 }
 
@@ -143,6 +151,12 @@ bool RoomLayoutPillarController::PreRender3D()
 
 			activePilar->SetSweeping(true);
 
+			if ( imp_.CtrllHolding_ )
+			{
+				imp_.State_ = EPilarState::EPS_MODIFYING;
+				break;
+			}
+
 			if ( imp_.LMousePressDown_ )
 			{
 				auto box = activePilar->GetBaseBndBox();
@@ -160,6 +174,69 @@ bool RoomLayoutPillarController::PreRender3D()
 				imp_.SavePos_ = imp_.CurrentPos_;
 				imp_.State_ = EPilarState::EPS_MOUSEHOLDING;
 			}
+		}
+		break;
+	case EPilarState::EPS_MODIFYING:
+		{
+			auto activePilar = std::static_pointer_cast<PillarODL>(GetPickingODL().lock());
+			activePilar->SetSweeping(true);
+
+			if ( !imp_.CtrllHolding_ )
+			{
+				GetRenderContextSPtr()->CursorControl_->setActiveIcon(gui::ECI_NORMAL);
+				imp_.State_ = EPilarState::EPS_SWEEPING;
+				imp_.CtrllHolding_ = false;
+				break;
+			}
+
+			auto box = activePilar->GetBaseBndBox();
+			auto pos = activePilar->GetAbsoluteTransform();
+
+			Standard_Real xMin,xMax,yMin,yMax,zMin,zMax;
+			box.Get(xMin, yMin, zMin, xMax, yMax, zMax);
+
+			auto modifyAlign = 100;
+
+			Bnd_Box smallBox,bigBox;
+			smallBox.Update(xMin+modifyAlign < 0 ? xMin+modifyAlign : 0, yMin+modifyAlign < 0 ? yMin+modifyAlign : 0, zMin+modifyAlign < 0 ? zMin+modifyAlign : 0,
+				xMax-modifyAlign > 0 ? xMax-modifyAlign : 0, yMax-modifyAlign > 0 ? yMax-modifyAlign : 0, zMax-modifyAlign > 0 ? zMax-modifyAlign : 0);
+			bigBox.Update(xMin-modifyAlign, yMin-modifyAlign, zMin-modifyAlign, xMax+modifyAlign, yMax+modifyAlign, zMax+modifyAlign);
+
+			auto relationCursorPnt = cursorPnt.Transformed(activePilar->GetAbsoluteTransform().Inverted());
+			relationCursorPnt.SetY(0);
+
+			if ( Standard_True == bigBox.IsOut(relationCursorPnt) )
+			{
+				GetRenderContextSPtr()->CursorControl_->setActiveIcon(gui::ECI_NORMAL);
+				imp_.State_ = EPilarState::EPS_SWEEPING;
+				imp_.CtrllHolding_ = false;
+				break;
+			}
+
+			if ( Standard_False == smallBox.IsOut(relationCursorPnt) )
+			{
+				GetRenderContextSPtr()->CursorControl_->setActiveIcon(gui::ECI_NORMAL);
+				break;
+			}
+
+			gp_Dir cursorDir = gp_Vec(gp::Origin(), relationCursorPnt);
+			{
+				auto rad = cursorDir.Angle(gp::DX());
+				rad = rad > M_PI_2 ? M_PI - rad : rad;
+
+				if ( rad < M_PI_4 )
+				{
+					cursorDir.Rotate(gp::OY(), rad);
+					GetRenderContextSPtr()->CursorControl_->setActiveIcon(gui::ECI_SIZEWE);
+				}
+				else
+				{
+					cursorDir.Rotate(gp::OY(), M_PI_2 - rad);
+					GetRenderContextSPtr()->CursorControl_->setActiveIcon(gui::ECI_SIZENS);
+				}
+			}
+
+
 		}
 		break;
 	case EPilarState::EPS_MOUSEHOLDING:
@@ -202,9 +279,18 @@ bool RoomLayoutPillarController::PreRender3D()
 			case EUT_ROOMLAYOUT_PILLAR_UPDATE:
 				{
 					activePillar->SetSize(imp_.EventInfo_->XLength_, imp_.EventInfo_->YLength_, imp_.EventInfo_->ZLength_);
-					auto curTrans = activePillar->GetTranslation();
-					curTrans.SetY(imp_.EventInfo_->YLength_/2 + imp_.EventInfo_->OffsetHeight_);
-					activePillar->SetTranslation(curTrans);
+					activePillar->SetOffsetHeight(imp_.EventInfo_->OffsetHeight_);
+
+					{
+						auto curTrans = activePillar->GetTranslation();
+						curTrans.SetY(imp_.EventInfo_->YLength_/2 + imp_.EventInfo_->OffsetHeight_);
+						activePillar->SetTranslation(curTrans);
+
+						auto curPos = activePillar->GetDataSceneNode()->getPosition();
+						curPos.Y = static_cast<float>(imp_.EventInfo_->YLength_/2 + imp_.EventInfo_->OffsetHeight_);
+						activePillar->GetDataSceneNode()->setPosition(curPos);
+					}
+
 					activePillar->UpdateMesh();
 					imp_.State_ = EPilarState::EPS_SWEEPING;
 				}
@@ -282,10 +368,13 @@ bool RoomLayoutPillarController::PreRender3D()
 			}
 
 			activePilar->SetRotation(gp_Quaternion(gp::DZ(), gp::DZ()));
-			
+
+			auto size = activePilar->GetSize();
+			auto offset = activePilar->GetOffsetHeight();
+
 			//–¬µƒŒª÷√
 			auto newPos = imp_.CurrentPos_;
-			newPos.Y = imp_.EventInfo_->YLength_/2;
+			newPos.Y = static_cast<float>(size.Y()/2) + offset;
 			gp_Pnt newPnt(newPos.X, newPos.Y, newPos.Z);
 
 			//Œ¸∏Ωæ‡¿Î
