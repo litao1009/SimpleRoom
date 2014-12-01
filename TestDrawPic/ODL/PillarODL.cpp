@@ -155,3 +155,8 @@ void PillarODL::SetVaildPosition( bool val )
 	ImpUPtr_->MeshNode2D_->SetLineColor(val ? 0xFF8F8F8F : 0xFFFF0000);
 }
 
+void PillarODL::Update2DMesh()
+{
+	ImpUPtr_->MeshNode2D_->UpdateMesh(static_cast<float>(ImpUPtr_->Size_.X()), static_cast<float>(ImpUPtr_->Size_.Z()));
+}
+

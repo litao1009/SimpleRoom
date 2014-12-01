@@ -38,6 +38,8 @@ public:
 
 	void	UpdateMesh();
 
+	void	Update2DMesh();
+
 	void	SetDefaultTexture();
 
 	BaseODLList	GetAlignList() const;

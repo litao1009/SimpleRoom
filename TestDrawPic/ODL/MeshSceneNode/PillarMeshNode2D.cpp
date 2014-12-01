@@ -1,17 +1,12 @@
 #include "stdafx.h"
 
 #include "PillarMeshNode2D.h"
+#include "IrrEngine/IrrEngine.h"
 
 #include "irrlicht.h"
 
-#include "TopExp.hxx"
-#include "TopExp_Explorer.hxx"
-#include "TopoDS.hxx"
-#include "TopoDS_Vertex.hxx"
-#include "TopoDS_Edge.hxx"
-#include "BRep_Tool.hxx"
-
-#include "IrrEngine/IrrEngine.h"
+#define _USE_MATH_DEFINES
+#include <math.h>
 
 using namespace irr;
 using namespace core;
@@ -139,13 +134,11 @@ void PillarMeshNode2D::SetSweeping( bool val )
 {
 	if ( val )
 	{
-		//MeshBuffer_->getMaterial().MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_PICKING);
 		MeshBuffer_->getMaterial().DiffuseColor = 0xFFFFFF00;
 	}
 	else
 	{
 		MeshBuffer_->getMaterial().DiffuseColor = 0xFFD0D0D0;
-		//MeshBuffer_->getMaterial().MaterialType = EMT_SOLID;
 	}
 }
 
@@ -153,12 +146,10 @@ void PillarMeshNode2D::SetPicking( bool val )
 {
 	if ( val )
 	{
-		//MeshBuffer_->getMaterial().MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_PICKING);
 		MeshBuffer_->getMaterial().DiffuseColor = 0xFF00FFFF;
 	}
 	else
 	{
 		MeshBuffer_->getMaterial().DiffuseColor = 0xFFD0D0D0;
-		//MeshBuffer_->getMaterial().MaterialType = EMT_SOLID;
 	}
 }

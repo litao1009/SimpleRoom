@@ -29,7 +29,8 @@ using namespace core;
 enum class EPilarState
 {
 	EPS_SWEEPING,
-	EPS_MODIFYING,
+	EPS_MODIFY_INIT,
+	EPS_MODIFY,
 	EPS_CREATING_INIT,
 	EPS_MOUSEHOLDING,
 	EPS_MOVING,
@@ -62,6 +63,7 @@ public:
 	vector2di		CursorIPos_;
 	vector3df		CurrentPos_;
 	vector3df		SavePos_;
+	gp_Dir			ModifyDir_;
 
 	boost::optional<EUserType>			PropertyCallBack_;
 	boost::optional<SEventPillarInfo>	EventInfo_;			
@@ -153,7 +155,7 @@ bool RoomLayoutPillarController::PreRender3D()
 
 			if ( imp_.CtrllHolding_ )
 			{
-				imp_.State_ = EPilarState::EPS_MODIFYING;
+				imp_.State_ = EPilarState::EPS_MODIFY_INIT;
 				break;
 			}
 
@@ -176,7 +178,7 @@ bool RoomLayoutPillarController::PreRender3D()
 			}
 		}
 		break;
-	case EPilarState::EPS_MODIFYING:
+	case EPilarState::EPS_MODIFY_INIT:
 		{
 			auto activePilar = std::static_pointer_cast<PillarODL>(GetPickingODL().lock());
 			activePilar->SetSweeping(true);
@@ -235,6 +237,20 @@ bool RoomLayoutPillarController::PreRender3D()
 					GetRenderContextSPtr()->CursorControl_->setActiveIcon(gui::ECI_SIZENS);
 				}
 			}
+
+			imp_.ModifyDir_ = cursorDir;
+
+			if ( imp_.LMousePressDown_ )
+			{
+				imp_.State_ = EPilarState::EPS_MODIFY;
+				break;
+			}
+		}
+		break;
+	case EPilarState::EPS_MODIFY:
+		{
+			auto activePilar = std::static_pointer_cast<PillarODL>(GetPickingODL().lock());
+			activePilar->SetPicking(true);
 
 
 		}
@@ -625,6 +641,12 @@ void RoomLayoutPillarController::PostRender3D()
 			{
 				curAlign->SetSweeping(false);
 			}
+		}
+		break;
+	case EPilarState::EPS_MODIFY:
+		{
+			auto activePilar = std::static_pointer_cast<PillarODL>(GetPickingODL().lock());
+			activePilar->SetPicking(false);
 		}
 		break;
 	default:

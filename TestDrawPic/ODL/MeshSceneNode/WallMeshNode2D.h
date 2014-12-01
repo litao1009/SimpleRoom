@@ -6,7 +6,7 @@
 #include "IMeshSceneNode.h"
 #include "SMeshBuffer.h"
 
-#include "TopoDS_Shape.hxx"
+#include "ODL/WallODLFwd.h"
 
 class	WallMeshNode2D : public irr::scene::IMeshSceneNode
 {
@@ -41,7 +41,7 @@ public://IMeshSceneNode
 
 public:
 
-	void	UpdateMesh(const TopoDS_Shape& wallBottomFace);
+	void	UpdateMesh(const WallODLSPtr& wall);
 
 	void	SetSweeping(bool val);
 
@@ -49,8 +49,8 @@ public:
 
 private:
 
-	irr::scene::IMeshBuffer*	FaceBuffer_;
-	irr::scene::SMeshBuffer*	LineBuffer_;
+	irr::scene::SMeshBuffer*	FaceBuffer_;
+	irr::video::SMaterial		LineMaterial_;
 };
 
 #endif // WallMeshNode2D_h__

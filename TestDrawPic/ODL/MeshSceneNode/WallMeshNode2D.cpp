@@ -12,6 +12,7 @@
 #include "BRep_Tool.hxx"
 
 #include "ODL/ODLTools.h"
+#include "ODL/WallODL.h"
 #include "irrEngine/irrEngine.h"
 
 using namespace irr;
@@ -21,119 +22,23 @@ using namespace video;
 
 WallMeshNode2D::WallMeshNode2D(irr::scene::ISceneNode* parent, irr::s32 id):IMeshSceneNode(parent, parent->getSceneManager(), id)
 {
-	FaceBuffer_ = nullptr;
-	LineBuffer_ = nullptr;
-}
+	FaceBuffer_ = new SMeshBuffer;
 
-WallMeshNode2D::~WallMeshNode2D()
-{
-	if ( FaceBuffer_ )
-	{
-		FaceBuffer_->drop();
+	FaceBuffer_->Vertices.reallocate(6);
+	FaceBuffer_->Vertices.push_back(S3DVertex(vector3df(0), vector3df(0,1,0), SColor(~0), vector2df(0,0)));
+	FaceBuffer_->Vertices.push_back(S3DVertex(vector3df(0), vector3df(0,1,0), SColor(~0), vector2df(0,0)));
+	FaceBuffer_->Vertices.push_back(S3DVertex(vector3df(0), vector3df(0,1,0), SColor(~0), vector2df(0,0)));
+	FaceBuffer_->Vertices.push_back(S3DVertex(vector3df(0), vector3df(0,1,0), SColor(~0), vector2df(0,0)));
+	FaceBuffer_->Vertices.push_back(S3DVertex(vector3df(0), vector3df(0,1,0), SColor(~0), vector2df(0,0)));
+	FaceBuffer_->Vertices.push_back(S3DVertex(vector3df(0), vector3df(0,1,0), SColor(~0), vector2df(0,0)));
 
-		assert(LineBuffer_);
-		LineBuffer_->drop();
-		LineBuffer_ = nullptr;
-	}
-
-	assert(!LineBuffer_);
-}
-
-void WallMeshNode2D::OnRegisterSceneNode()
-{
-	if ( isVisible() )
-	{
-		assert(FaceBuffer_ && LineBuffer_);
-
-		SceneManager->registerNodeForRendering(this, irr::scene::ESNRP_SOLID);
-	}
-
-	ISceneNode::OnRegisterSceneNode();
-}
-
-void WallMeshNode2D::render()
-{
-	assert(FaceBuffer_ && LineBuffer_);
-
-	auto driver = SceneManager->getVideoDriver();
-
-	driver->setTransform(video::ETS_WORLD, AbsoluteTransformation);
-
-	driver->setMaterial(FaceBuffer_->getMaterial());
-	driver->drawMeshBuffer(FaceBuffer_);
-
-	driver->setMaterial(LineBuffer_->getMaterial());
-	driver->drawVertexPrimitiveList(LineBuffer_->getVertices(), LineBuffer_->getVertexCount(), LineBuffer_->getIndices(), LineBuffer_->getIndexCount()/2, EVT_STANDARD, EPT_LINES);
-}
-
-irr::video::SMaterial& WallMeshNode2D::getMaterial( irr::u32 i )
-{
-	if ( FaceBuffer_ )
-	{
-		return FaceBuffer_->getMaterial();
-	}
-
-	return ISceneNode::getMaterial(i);
-}
-
-irr::u32 WallMeshNode2D::getMaterialCount() const
-{
-	if ( FaceBuffer_ )
-	{
-		return 1;
-	}
-	else
-	{
-		return ISceneNode::getMaterialCount();
-	}
-}
-
-const irr::core::aabbox3df& WallMeshNode2D::getBoundingBox() const
-{
-	if ( FaceBuffer_ )
-	{
-		return FaceBuffer_->getBoundingBox();
-	}
-	
-	static	aabbox3df box;
-	return box;
-}
-
-void WallMeshNode2D::UpdateMesh( const TopoDS_Shape& wallBottomFace )
-{
-	if ( FaceBuffer_ )
-	{
-		FaceBuffer_->drop();
-	}
-	FaceBuffer_ = ODLTools::NEW_CreateMeshBuffer(wallBottomFace);
-
-	if ( LineBuffer_ )
-	{
-		LineBuffer_->drop();
-	}
-	LineBuffer_ = new irr::scene::SMeshBuffer;
-
-	for ( TopExp_Explorer expEdge(wallBottomFace, TopAbs_EDGE); expEdge.More(); expEdge.Next() )
-	{
-		auto& curEdge = TopoDS::Edge(expEdge.Current());
-		auto& firstVertex = TopExp::FirstVertex(curEdge);
-		auto& secondVertex = TopExp::LastVertex(curEdge);
-		auto firstPnt = BRep_Tool::Pnt(firstVertex);
-		auto secondPnt = BRep_Tool::Pnt(secondVertex);
-
-		static vector3df lineNormal(0,1,0);
-		static SColor lineColor(0xFF8F8F8F);
-		static vector2df lineCoord(0,0);
-
-		S3DVertex sv1(vector3df(static_cast<float>(firstPnt.X()), static_cast<float>(firstPnt.Y()), static_cast<float>(firstPnt.Z())), lineNormal, lineColor, lineCoord);
-		S3DVertex sv2(vector3df(static_cast<float>(secondPnt.X()), static_cast<float>(secondPnt.Y()), static_cast<float>(secondPnt.Z())), lineNormal, lineColor, lineCoord);
-
-		auto curIndex = LineBuffer_->Indices.size();
-		LineBuffer_->Vertices.push_back(sv1);
-		LineBuffer_->Vertices.push_back(sv2);
-		LineBuffer_->Indices.push_back(curIndex++);
-		LineBuffer_->Indices.push_back(curIndex++);
-	}
+	FaceBuffer_->Indices.reallocate(6);
+	FaceBuffer_->Indices.push_back(0);
+	FaceBuffer_->Indices.push_back(1);
+	FaceBuffer_->Indices.push_back(2);
+	FaceBuffer_->Indices.push_back(3);
+	FaceBuffer_->Indices.push_back(4);
+	FaceBuffer_->Indices.push_back(5);
 
 	FaceBuffer_->getMaterial().Lighting = false;
 	FaceBuffer_->getMaterial().BackfaceCulling = false;
@@ -145,11 +50,75 @@ void WallMeshNode2D::UpdateMesh( const TopoDS_Shape& wallBottomFace )
 		FaceBuffer_->getMaterial().setTextureMatrix(0, rotate*scale);
 	}
 
-	LineBuffer_->getMaterial().Lighting = false;
-	LineBuffer_->getMaterial().BackfaceCulling = false;
-	LineBuffer_->getMaterial().Thickness = 2;
-	LineBuffer_->getMaterial().Wireframe = true;
-	//LineBuffer_->getMaterial().AntiAliasing = irr::video::EAAM_LINE_SMOOTH;
+	LineMaterial_.Lighting = false;
+	LineMaterial_.BackfaceCulling = false;
+	LineMaterial_.Thickness = 2;
+	LineMaterial_.Wireframe = true;
+	LineMaterial_.MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_LINE);
+	LineMaterial_.DiffuseColor = 0xFF8F8F8F;
+	//LineMaterial_.AntiAliasing = irr::video::EAAM_LINE_SMOOTH;
+}
+
+WallMeshNode2D::~WallMeshNode2D()
+{
+	FaceBuffer_->drop();
+}
+
+void WallMeshNode2D::OnRegisterSceneNode()
+{
+	if ( isVisible() )
+	{
+		SceneManager->registerNodeForRendering(this, irr::scene::ESNRP_SOLID);
+	}
+
+	ISceneNode::OnRegisterSceneNode();
+}
+
+void WallMeshNode2D::render()
+{
+	assert(FaceBuffer_);
+
+	auto driver = SceneManager->getVideoDriver();
+
+	driver->setTransform(video::ETS_WORLD, AbsoluteTransformation);
+
+	driver->setMaterial(FaceBuffer_->getMaterial());
+	driver->drawVertexPrimitiveList(FaceBuffer_->getVertices(), FaceBuffer_->getVertexCount(), FaceBuffer_->getIndices(), FaceBuffer_->getIndexCount()-2, EVT_STANDARD, EPT_TRIANGLE_FAN);
+
+	driver->setMaterial(LineMaterial_);
+	driver->drawVertexPrimitiveList(FaceBuffer_->getVertices(), FaceBuffer_->getVertexCount(), FaceBuffer_->getIndices(), FaceBuffer_->getIndexCount(), EVT_STANDARD, EPT_LINE_LOOP);
+}
+
+irr::video::SMaterial& WallMeshNode2D::getMaterial( irr::u32 i )
+{
+	return FaceBuffer_->getMaterial();
+}
+
+irr::u32 WallMeshNode2D::getMaterialCount() const
+{
+	return 1;
+}
+
+const irr::core::aabbox3df& WallMeshNode2D::getBoundingBox() const
+{
+	return FaceBuffer_->getBoundingBox();
+}
+
+void WallMeshNode2D::UpdateMesh( const WallODLSPtr& wall )
+{
+	wall->GetDataSceneNode()->updateAbsolutePosition();
+	auto wallMat = wall->GetDataSceneNode()->getAbsoluteTransformation();
+	wallMat.makeInverse();
+
+	auto index = 0;
+	for ( auto& curPnt : wall->GetMeshPoints() )
+	{
+		vector3df pos(static_cast<float>(curPnt.X()), static_cast<float>(curPnt.Y())+200.f, static_cast<float>(curPnt.Z()));
+		wallMat.transformVect(pos);
+		FaceBuffer_->Vertices[index].Pos = pos;
+		FaceBuffer_->Vertices[index].TCoords = vector2df(pos.X, pos.Z);
+		++index;
+	}
 }
 
 void WallMeshNode2D::SetSweeping( bool val )

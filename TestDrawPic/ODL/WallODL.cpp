@@ -410,11 +410,7 @@ void WallODL::UpdateCutMesh()
 	}
 
 	{//2D模型
-		gp_Trsf tfs;
-		tfs.SetTranslationPart(gp_Vec(gp::Origin(), gp_Pnt(0, 200, 0)));
-		auto transformedFace = BottomShape_.Moved(tfs);
-
-		ImpUPtr_->Node2D_->UpdateMesh(transformedFace);
+		ImpUPtr_->Node2D_->UpdateMesh(std::static_pointer_cast<WallODL>(shared_from_this()));
 
 		//标注
 		auto length = static_cast<int>(FirstCorner_.lock()->GetPosition().Distance(SecondCorner_.lock()->GetPosition()) + 0.5f);
@@ -468,11 +464,7 @@ void WallODL::UpdateBaseMesh()
 	}
 	
 	{//2D模型
-		gp_Trsf tfs;
-		tfs.SetTranslationPart(gp_Vec(gp::Origin(), gp_Pnt(0, 200, 0)));
-		auto transformedFace = BottomShape_.Moved(tfs);
-
-		ImpUPtr_->Node2D_->UpdateMesh(transformedFace);
+		ImpUPtr_->Node2D_->UpdateMesh(std::static_pointer_cast<WallODL>(shared_from_this()));
 
 		//标注
 		auto length = static_cast<int>(FirstCorner_.lock()->GetPosition().Distance(SecondCorner_.lock()->GetPosition()) + 0.5f);
