@@ -64,6 +64,7 @@ public:
 	vector3df		CurrentPos_;
 	vector3df		SavePos_;
 	gp_Dir			ModifyDir_;
+	gp_Pnt			ModifyPnt_;
 
 	boost::optional<EUserType>			PropertyCallBack_;
 	boost::optional<SEventPillarInfo>	EventInfo_;			
@@ -192,7 +193,6 @@ bool RoomLayoutPillarController::PreRender3D()
 			}
 
 			auto box = activePilar->GetBaseBndBox();
-			auto pos = activePilar->GetAbsoluteTransform();
 
 			Standard_Real xMin,xMax,yMin,yMax,zMin,zMax;
 			box.Get(xMin, yMin, zMin, xMax, yMax, zMax);
@@ -223,25 +223,36 @@ bool RoomLayoutPillarController::PreRender3D()
 
 			gp_Dir cursorDir = gp_Vec(gp::Origin(), relationCursorPnt);
 			{
-				auto rad = cursorDir.Angle(gp::DX());
-				rad = rad > M_PI_2 ? M_PI - rad : rad;
-
-				if ( rad < M_PI_4 )
+				auto rad = gp::DX().AngleWithRef(cursorDir, gp::DY());
+				rad = rad < 0 ? M_PI * 2 + rad : rad;
+				auto mod = std::fmod(rad, M_PI_2);
+				if ( mod < M_PI_4 )
 				{
-					cursorDir.Rotate(gp::OY(), rad);
+					rad -= mod;
+				}
+				else
+				{
+					rad = rad - mod + M_PI_2;
+				}
+
+				cursorDir = gp::DX().Rotated(gp::OY(), rad);
+
+				mod = std::fmod(rad, M_PI);
+				if ( mod < Precision::Angular() )
+				{
 					GetRenderContextSPtr()->CursorControl_->setActiveIcon(gui::ECI_SIZEWE);
 				}
 				else
 				{
-					cursorDir.Rotate(gp::OY(), M_PI_2 - rad);
 					GetRenderContextSPtr()->CursorControl_->setActiveIcon(gui::ECI_SIZENS);
 				}
 			}
 
-			imp_.ModifyDir_ = cursorDir;
-
 			if ( imp_.LMousePressDown_ )
 			{
+				imp_.ModifyDir_ = cursorDir;
+				imp_.ModifyPnt_ = relationCursorPnt;
+
 				imp_.State_ = EPilarState::EPS_MODIFY;
 				break;
 			}
@@ -252,7 +263,50 @@ bool RoomLayoutPillarController::PreRender3D()
 			auto activePilar = std::static_pointer_cast<PillarODL>(GetPickingODL().lock());
 			activePilar->SetPicking(true);
 
+			if ( imp_.LMouseLeftUp_ )
+			{
+				activePilar->UpdateMesh();
+				imp_.State_ = EPilarState::EPS_SWEEPING;
+				break;
+			}
 
+			auto relationCursorPnt = cursorPnt.Transformed(activePilar->GetAbsoluteTransform().Inverted());
+
+			auto moveVec = gp_Vec(imp_.ModifyPnt_, relationCursorPnt);
+			if ( moveVec.Magnitude() < Precision::Confusion() )
+			{
+				break;
+			}
+
+			auto projMoveVec = moveVec.Magnitude() * gp_Dir(moveVec).Dot(imp_.ModifyDir_) * gp_Vec(imp_.ModifyDir_);
+			if ( projMoveVec.Magnitude() < Precision::Confusion() )
+			{
+				break;
+			}
+			auto moveFactor = gp_Dir(projMoveVec).Dot(imp_.ModifyDir_);
+
+			auto curSize = activePilar->GetSize();
+
+			gp_XYZ offsetSize(moveFactor * std::abs(projMoveVec.X()), moveFactor * std::abs(projMoveVec.Y()), moveFactor * std::abs(projMoveVec.Z()));
+			auto newSize = curSize + offsetSize;
+			if ( newSize.X() < Precision::Confusion() || newSize.Y() < Precision::Confusion() || newSize.Z() < Precision::Confusion() )
+			{
+				break;
+			}
+
+			activePilar->SetSize(newSize);
+
+			activePilar->SetTranslation(activePilar->GetTranslation() + projMoveVec.XYZ()/2);
+			{
+				auto pos = activePilar->GetDataSceneNode()->getPosition();
+				vector3df offset(static_cast<float>(projMoveVec.X()/2), static_cast<float>(projMoveVec.Y()/2), static_cast<float>(projMoveVec.Z()/2));
+				activePilar->GetDataSceneNode()->setPosition(pos + offset);
+			}
+			activePilar->Update2DMesh();
+
+			activePilar->UpdateAbsoluteTransform();
+			relationCursorPnt = cursorPnt.Transformed(activePilar->GetAbsoluteTransform().Inverted());
+			imp_.ModifyPnt_ = relationCursorPnt;
 		}
 		break;
 	case EPilarState::EPS_MOUSEHOLDING:
