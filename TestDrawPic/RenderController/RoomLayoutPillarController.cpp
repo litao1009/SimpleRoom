@@ -20,6 +20,7 @@
 #include "BRepAdaptor_Curve.hxx"
 #include "GeomAPI.hxx"
 #include "Geom2dAPI_InterCurveCurve.hxx"
+#include "GeomAPI_ProjectPointOnCurve.hxx"
 
 #include <boost/optional.hpp>
 
@@ -58,13 +59,15 @@ public:
 	bool			LMouseLeftUp_;
 	bool			LMousePressDown_;
 	bool			CtrllHolding_;
+	
 	bool			Valid_;
 	EPilarState		State_;
 	vector2di		CursorIPos_;
 	vector3df		CurrentPos_;
 	vector3df		SavePos_;
-	gp_Dir			ModifyDir_;
-	gp_Pnt			ModifyPnt_;
+
+	Standard_Real		ModifyPar_;
+	BRepAdaptor_Curve	ModifyEdge_;
 
 	boost::optional<EUserType>			PropertyCallBack_;
 	boost::optional<SEventPillarInfo>	EventInfo_;			
@@ -250,8 +253,22 @@ bool RoomLayoutPillarController::PreRender3D()
 
 			if ( imp_.LMousePressDown_ )
 			{
-				imp_.ModifyDir_ = cursorDir;
-				imp_.ModifyPnt_ = relationCursorPnt;
+				auto edge = BRepBuilderAPI_MakeEdge(gp_Lin(gp::Origin(), cursorDir)).Edge();
+				edge.Move(activePilar->GetAbsoluteTransform());
+				BRepAdaptor_Curve moveBC(edge);
+				auto testP = relationCursorPnt.Transformed(activePilar->GetAbsoluteTransform());
+				auto testLin = moveBC.Line();
+				GeomAPI_ProjectPointOnCurve ppc(testP, moveBC.Curve().Curve());
+				{
+					ppc.Point(1);
+					auto tp = ppc.NearestPoint();
+					auto p = ppc.LowerDistanceParameter();
+					gp_Pnt tp2;
+					moveBC.D0(p, tp2);
+					auto p1 = ppc.Parameter(1);
+				}
+				imp_.ModifyEdge_ = moveBC;
+				imp_.ModifyPar_ = ppc.LowerDistanceParameter();
 
 				imp_.State_ = EPilarState::EPS_MODIFY;
 				break;
@@ -270,43 +287,30 @@ bool RoomLayoutPillarController::PreRender3D()
 				break;
 			}
 
-			auto relationCursorPnt = cursorPnt.Transformed(activePilar->GetAbsoluteTransform().Inverted());
+			GeomAPI_ProjectPointOnCurve ppcCur(cursorPnt, imp_.ModifyEdge_.Curve().Curve());
 
-			auto moveVec = gp_Vec(imp_.ModifyPnt_, relationCursorPnt);
-			if ( moveVec.Magnitude() < Precision::Confusion() )
+			auto curPar = ppcCur.LowerDistanceParameter();
+			if ( std::abs(curPar - imp_.ModifyPar_) < Precision::Confusion() )
 			{
 				break;
 			}
 
-			auto projMoveVec = moveVec.Magnitude() * gp_Dir(moveVec).Dot(imp_.ModifyDir_) * gp_Vec(imp_.ModifyDir_);
-			if ( projMoveVec.Magnitude() < Precision::Confusion() )
-			{
-				break;
-			}
-			auto moveFactor = gp_Dir(projMoveVec).Dot(imp_.ModifyDir_);
+			gp_Pnt fromPnt,toPnt;
+			imp_.ModifyEdge_.D0(imp_.ModifyPar_, fromPnt);
+			imp_.ModifyEdge_.D0(curPar, toPnt);
+
+			gp_Vec moveVec(fromPnt, toPnt);
+			auto relationMoveVec = moveVec.Transformed(activePilar->GetAbsoluteTransform().Inverted());
+			auto moveFactor = Standard_True == imp_.ModifyEdge_.Line().Direction().IsEqual(gp_Dir(moveVec), Precision::Angular()) ? 1 : -1;
 
 			auto curSize = activePilar->GetSize();
-
-			gp_XYZ offsetSize(moveFactor * std::abs(projMoveVec.X()), moveFactor * std::abs(projMoveVec.Y()), moveFactor * std::abs(projMoveVec.Z()));
-			auto newSize = curSize + offsetSize;
+			auto newSize = curSize + relationMoveVec.XYZ();
 			if ( newSize.X() < Precision::Confusion() || newSize.Y() < Precision::Confusion() || newSize.Z() < Precision::Confusion() )
 			{
 				break;
 			}
 
-			activePilar->SetSize(newSize);
 
-			activePilar->SetTranslation(activePilar->GetTranslation() + projMoveVec.XYZ()/2);
-			{
-				auto pos = activePilar->GetDataSceneNode()->getPosition();
-				vector3df offset(static_cast<float>(projMoveVec.X()/2), static_cast<float>(projMoveVec.Y()/2), static_cast<float>(projMoveVec.Z()/2));
-				activePilar->GetDataSceneNode()->setPosition(pos + offset);
-			}
-			activePilar->Update2DMesh();
-
-			activePilar->UpdateAbsoluteTransform();
-			relationCursorPnt = cursorPnt.Transformed(activePilar->GetAbsoluteTransform().Inverted());
-			imp_.ModifyPnt_ = relationCursorPnt;
 		}
 		break;
 	case EPilarState::EPS_MOUSEHOLDING:
@@ -438,6 +442,7 @@ bool RoomLayoutPillarController::PreRender3D()
 			}
 
 			activePilar->SetRotation(gp_Quaternion(gp::DZ(), gp::DZ()));
+			activePilar->GetDataSceneNode()->setRotation(vector3df(0));
 
 			auto size = activePilar->GetSize();
 			auto offset = activePilar->GetOffsetHeight();
