@@ -253,20 +253,11 @@ bool RoomLayoutPillarController::PreRender3D()
 
 			if ( imp_.LMousePressDown_ )
 			{
-				auto edge = BRepBuilderAPI_MakeEdge(gp_Lin(gp::Origin(), cursorDir)).Edge();
-				edge.Move(activePilar->GetAbsoluteTransform());
+				auto edge = BRepBuilderAPI_MakeEdge(gp_Lin(gp::Origin().Transformed(activePilar->GetAbsoluteTransform()), cursorDir.Transformed(activePilar->GetAbsoluteTransform()))).Edge();
 				BRepAdaptor_Curve moveBC(edge);
-				auto testP = relationCursorPnt.Transformed(activePilar->GetAbsoluteTransform());
-				auto testLin = moveBC.Line();
-				GeomAPI_ProjectPointOnCurve ppc(testP, moveBC.Curve().Curve());
-				{
-					ppc.Point(1);
-					auto tp = ppc.NearestPoint();
-					auto p = ppc.LowerDistanceParameter();
-					gp_Pnt tp2;
-					moveBC.D0(p, tp2);
-					auto p1 = ppc.Parameter(1);
-				}
+
+				GeomAPI_ProjectPointOnCurve ppc(relationCursorPnt.Transformed(activePilar->GetAbsoluteTransform()), moveBC.Curve().Curve());
+
 				imp_.ModifyEdge_ = moveBC;
 				imp_.ModifyPar_ = ppc.LowerDistanceParameter();
 
@@ -300,17 +291,23 @@ bool RoomLayoutPillarController::PreRender3D()
 			imp_.ModifyEdge_.D0(curPar, toPnt);
 
 			gp_Vec moveVec(fromPnt, toPnt);
-			auto relationMoveVec = moveVec.Transformed(activePilar->GetAbsoluteTransform().Inverted());
 			auto moveFactor = Standard_True == imp_.ModifyEdge_.Line().Direction().IsEqual(gp_Dir(moveVec), Precision::Angular()) ? 1 : -1;
+			if ( moveFactor < 0 )
+			{//·ÀÖ¹´óÐ¡Ëõ³É0
+				auto curSize = activePilar->GetSize();
+				auto relationDir = imp_.ModifyEdge_.Line().Direction().Transformed(activePilar->GetAbsoluteTransform().Inverted());
+				auto newSize = curSize + (gp_Vec(relationDir) * (imp_.ModifyPar_-curPar)).XYZ();
 
-			auto curSize = activePilar->GetSize();
-			auto newSize = curSize + relationMoveVec.XYZ();
-			if ( newSize.X() < Precision::Confusion() || newSize.Y() < Precision::Confusion() || newSize.Z() < Precision::Confusion() )
-			{
-				break;
+				auto minSize = 100;
+				auto alignSize = newSize - gp_XYZ(minSize,minSize,minSize);
+				if ( alignSize.X() < Precision::Confusion() || alignSize.Y() < Precision::Confusion() || alignSize.Z() < Precision::Confusion() )
+				{
+					break;
+				}
 			}
 
-
+			auto curBox = activePilar->GetBaseBndBox();
+			
 		}
 		break;
 	case EPilarState::EPS_MOUSEHOLDING:
