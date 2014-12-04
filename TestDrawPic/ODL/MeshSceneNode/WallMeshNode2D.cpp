@@ -119,6 +119,8 @@ void WallMeshNode2D::UpdateMesh( const WallODLSPtr& wall )
 		FaceBuffer_->Vertices[index].TCoords = vector2df(pos.X, pos.Z);
 		++index;
 	}
+
+	FaceBuffer_->recalculateBoundingBox();
 }
 
 void WallMeshNode2D::SetSweeping( bool val )

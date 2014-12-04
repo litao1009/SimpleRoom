@@ -286,28 +286,188 @@ bool RoomLayoutPillarController::PreRender3D()
 				break;
 			}
 
+			//偏移的起始点、终点（绝对）
 			gp_Pnt fromPnt,toPnt;
 			imp_.ModifyEdge_.D0(imp_.ModifyPar_, fromPnt);
 			imp_.ModifyEdge_.D0(curPar, toPnt);
 
 			gp_Vec moveVec(fromPnt, toPnt);
+			auto relationInPillarDir = imp_.ModifyEdge_.Line().Direction().Transformed(activePilar->GetAbsoluteTransform().Inverted());
+			auto relationOffset = gp_Vec(relationInPillarDir) * (curPar - imp_.ModifyPar_);
+			auto curPillarSize = activePilar->GetSize();
 			auto moveFactor = Standard_True == imp_.ModifyEdge_.Line().Direction().IsEqual(gp_Dir(moveVec), Precision::Angular()) ? 1 : -1;
 			if ( moveFactor < 0 )
-			{//防止大小缩成0
-				auto curSize = activePilar->GetSize();
-				auto relationDir = imp_.ModifyEdge_.Line().Direction().Transformed(activePilar->GetAbsoluteTransform().Inverted());
-				auto newSize = curSize + (gp_Vec(relationDir) * (imp_.ModifyPar_-curPar)).XYZ();
+			{//防止大小缩成0				
+				auto testSize = curPillarSize + curPillarSize;
 
 				auto minSize = 100;
-				auto alignSize = newSize - gp_XYZ(minSize,minSize,minSize);
+				auto alignSize = testSize - gp_XYZ(minSize,minSize,minSize);
 				if ( alignSize.X() < Precision::Confusion() || alignSize.Y() < Precision::Confusion() || alignSize.Z() < Precision::Confusion() )
 				{
 					break;
 				}
 			}
 
-			auto curBox = activePilar->GetBaseBndBox();
+			Bnd_Box pillarBox;
+			gp_Trsf pillarTranslation,pillarRotation,pillarTransformation;
+			{
+				auto offsetSize = relationOffset;
+				offsetSize.SetX(std::abs(offsetSize.X()));
+				offsetSize.SetY(std::abs(offsetSize.Y()));
+				offsetSize.SetZ(std::abs(offsetSize.Z()));
+				auto boxSize = curPillarSize + offsetSize.XYZ() * moveFactor;
+				pillarBox.Update(-boxSize.X()/2, -boxSize.Y()/2, -boxSize.Z()/2, boxSize.X()/2, boxSize.Y()/2, boxSize.Z()/2);
+
+				auto translation = activePilar->GetTranslation() + relationOffset.XYZ()/2;
+				pillarTranslation.SetTranslationPart(translation);
+				pillarRotation.SetRotation(activePilar->GetRotation());
+			}
+			pillarTransformation = pillarTranslation * pillarRotation;
+
+			auto offsetHeight = activePilar->GetOffsetHeight();
+
+			//新的位置
+			gp_Pnt newPnt = gp::Origin().Transformed(pillarTransformation);
 			
+			//吸附距离
+			static auto alignDis = 200.0;
+
+			//当前的吸附物体
+			auto alignODLs = activePilar->GetAlignList();
+			alignODLs.erase(std::remove_if(alignODLs.begin(), alignODLs.end(), [&pillarBox,&pillarTransformation](const BaseODLSPtr& alignODL)
+			{
+				if ( !alignODL )
+				{
+					return true;
+				}
+
+				return alignODL->GetBaseBndBox().Distance(pillarBox.Transformed(alignODL->GetAbsoluteTransform().Inverted() * pillarTransformation)) > alignDis;
+			}), alignODLs.end());
+			activePilar->SetAlignList(BaseODLList());
+
+			std::multimap<double,BaseODLSPtr> disMap;
+			for ( auto& curODL : RootODL_.lock()->GetChildrenList() )
+			{
+				if ( EODLT_PILLAR != curODL->GetType() && EODLT_WALL != curODL->GetType() )
+				{
+					continue;
+				}
+
+				if ( std::find(alignODLs.begin(), alignODLs.end(), curODL) != alignODLs.end() )
+				{
+					continue;
+				}
+
+				if ( EODLT_PILLAR == curODL->GetType() && curODL == activePilar )
+				{
+					continue;
+				}
+
+				auto dis = curODL->GetBaseBndBox().Distance(pillarBox.Transformed(curODL->GetAbsoluteTransform().Inverted() * pillarTransformation));
+				if ( dis > alignDis )
+				{
+					continue;
+				}
+
+				disMap.emplace(dis, curODL);
+			}
+
+			for ( auto& curODL : disMap )
+			{
+				alignODLs.push_back(curODL.second);
+			}
+
+			auto foundAlign = false;
+
+			for ( auto& curODL : alignODLs )
+			{
+				auto alignTransformation = curODL->GetAbsoluteTransform();
+
+				//调整柱box的旋转
+				auto activeRotationPillarBox = pillarBox;
+				{
+					gp_Trsf tfsODL;
+					tfsODL.SetRotation(alignTransformation.GetRotation());
+
+					activeRotationPillarBox = activeRotationPillarBox.Transformed(tfsODL.Inverted() * pillarRotation);
+				}
+
+				Bnd_Box movingBox,alignODLBox;
+				{
+					auto curBox = curODL->GetBaseBndBox();
+
+					Standard_Real xAlignMin,yAlignMin,zAlignMin,xAlignMax,yAlignMax,zAlignMax;
+					curBox.Get(xAlignMin, yAlignMin, zAlignMin, xAlignMax, yAlignMax, zAlignMax);
+
+					Standard_Real xPillarMin,yPillarMin,zPillarMin,xPillarMax,yPillarMax,zPillarMax;
+					activeRotationPillarBox.Get(xPillarMin, yPillarMin, zPillarMin, xPillarMax, yPillarMax, zPillarMax);
+
+					movingBox.Update(xAlignMin+xPillarMin, yAlignMin+yPillarMin, zAlignMin+zPillarMin,
+						xAlignMax+xPillarMax, yAlignMax+yPillarMax, zAlignMax+zPillarMax);
+
+					alignODLBox.Update(xAlignMin+xPillarMin-alignDis, yAlignMin+yPillarMin-alignDis, zAlignMin+zPillarMin-alignDis,
+						xAlignMax+xPillarMax+alignDis, yAlignMax+yPillarMax+alignDis, zAlignMax+zPillarMax+alignDis);
+				}
+
+				auto inODLPnt = newPnt.Transformed(curODL->GetAbsoluteTransform().Inverted());
+
+				if ( Standard_True == alignODLBox.IsOut(inODLPnt) )
+				{
+					continue;
+				}
+
+				//当前被停靠物体的box shape
+				Standard_Real xMin,yMin,zMin,xMax,yMax,zMax;
+				movingBox.Get(xMin, yMin, zMin, xMax, yMax, zMax);
+				auto alignBoxShape = BRepPrimAPI_MakeBox(gp_Pnt(xMin, yMin, zMin), gp_Pnt(xMax, yMax, zMax)).Shape();
+				TopExp_Explorer exp(alignBoxShape, TopAbs_SHELL);
+
+				BRepExtrema_DistShapeShape dss(imp_.ModifyEdge_.Edge().Moved(curODL->GetAbsoluteTransform().Inverted()), exp.Current());
+
+				std::map<double, gp_Pnt> tmp;
+				for ( auto index=1; index<=dss.NbSolution(); ++index )
+				{
+					if ( dss.SupportTypeShape2(index) == BRepExtrema_IsOnEdge )
+					{
+						activePilar->AddAlign(curODL);
+						break;
+					}
+
+					auto pntOnEdge = dss.PointOnShape1(index);
+					auto pntOnBox = dss.PointOnShape2(index);
+
+					if ( pntOnEdge.Distance(pntOnBox) > Precision::Confusion() )
+					{
+						continue;
+					}
+
+					tmp.emplace(pntOnEdge.Distance(inODLPnt), pntOnEdge);
+				}
+
+				newPnt = tmp.begin()->second.Transformed(curODL->GetAbsoluteTransform());
+				activePilar->AddAlign(curODL);
+				foundAlign = true;
+				break;
+			}
+
+			if ( foundAlign )
+			{
+				auto newOffset = gp_Vec(gp::Origin().Transformed(pillarTransformation), newPnt);
+				auto newRelationOffset = newOffset.Transformed(pillarTransformation.Inverted());
+				
+			}
+
+			vector3df newPos;
+			newPos.X = static_cast<float>(newPnt.X());
+			newPos.Y = static_cast<float>(newPnt.Y());
+			newPos.Z = static_cast<float>(newPnt.Z());
+			activePilar->GetDataSceneNode()->setPosition(newPos);
+			activePilar->SetTranslation(newPnt.XYZ());
+
+			for ( auto& curAlign : activePilar->GetAlignList() )
+			{
+				curAlign->SetSweeping(true);
+			}
 		}
 		break;
 	case EPilarState::EPS_MOUSEHOLDING:
