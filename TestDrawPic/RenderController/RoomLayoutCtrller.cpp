@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
 #include "RoomLayoutCtrller.h"
+#include "irrEngine/SRenderContext.h"
 #include "UserEvent.h"
 
 #include "RenderController/RoomLayoutDrawingCtrller.h"
@@ -19,6 +20,7 @@ bool RoomLayoutCtrller::OnPostEvent( const irr::SEvent& evt )
 	{
 		if ( evt.UserEvent.UserData1 == EUT_ROOMLAYOUT_DRAWLINE_FINISH )
 		{
+			::PostMessage((HWND)GetRenderContextSPtr()->GetHandle(), WM_IRR_DLG_MSG, WM_USER_ROOMLAYOUT_DRAWWALL_FINISH, 0);
 			SetCurrentState(ERoomLayoutSatate::ERS_BROWSE);
 			return true;
 		}
@@ -29,7 +31,7 @@ bool RoomLayoutCtrller::OnPostEvent( const irr::SEvent& evt )
 			return true;
 		}
 
-		if ( evt.UserEvent.UserData1 == EUT_ROOMLAYOUT_DRAWLINE )
+		if ( evt.UserEvent.UserData1 == EUT_ROOMLAYOUT_DRAWWALL )
 		{
 			SetCurrentState(ERoomLayoutSatate::ERS_DRAWING);
 		}

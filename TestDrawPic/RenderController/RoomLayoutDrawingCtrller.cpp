@@ -933,7 +933,7 @@ bool RoomLayoutDrawingCtrller::OnPostEvent( const irr::SEvent& evt )
 {
 	auto& imp_ = *ImpUPtr_;
 
-	if ( evt.EventType == EET_USER_EVENT && evt.UserEvent.UserData1 == EUT_ROOMLAYOUT_DRAWLINE )
+	if ( evt.EventType == EET_USER_EVENT && evt.UserEvent.UserData1 == EUT_ROOMLAYOUT_DRAWWALL )
 	{
 		imp_.Reset_ = true;
 

@@ -5,6 +5,8 @@
 #include "DlgSelectHTML.h"
 #include "MainFrm.h"
 
+#include "RenderController/UserEvent.h"
+
 #include <boost/filesystem.hpp>
 // CDlgSelectHTML ¶Ô»°¿ò
 
@@ -30,7 +32,7 @@ BOOL CDlgSelectHTML::OnInitDialog()
 {
 	auto curDir = boost::filesystem::current_path();
 	
-	curDir = curDir.parent_path() / "Data\\Resource\\HTML\\roomlayoutlist.html";
+	curDir = curDir.parent_path() / "Data/Resource/HTML/roomlayoutlist.html";
 	m_strCurrentUrl = curDir.wstring().c_str();
 
 	CBaseHTMLDialog::OnInitDialog();
@@ -99,7 +101,10 @@ void CDlgSelectHTML::OnNavigateComplete(LPDISPATCH pDisp, LPCTSTR szUrl)
 
 void CDlgSelectHTML::OnDrawWall()
 {
+	auto mainFrame = static_cast<CMainFrame*>(AfxGetMainWnd());
+	auto curView = mainFrame->MDIGetActive()->GetActiveView();
 
+	curView->PostMessage(WM_IRR_DLG_MSG, WM_USER_ROOMLAYOUT_DRAWWALL, 0);
 }
 
 void CDlgSelectHTML::OnDropDoor()

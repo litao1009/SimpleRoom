@@ -77,7 +77,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		TRACE0("未能创建“选择产品”窗口\n");
 		return FALSE; // 未能创建
 	}
-	m_wndSelect.EnableDocking(CBRS_ALIGN_ANY);
+	m_wndSelect.EnableDocking(CBRS_ALIGN_LEFT);
 	//this->AddPane(&m_wndSelect);
 	DockPane(&m_wndSelect);
 

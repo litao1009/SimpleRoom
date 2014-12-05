@@ -295,6 +295,22 @@ LRESULT CTestDrawPicView::DefWindowProc(UINT message, WPARAM wParam, LPARAM lPar
 			dlg.DoModal();
 		}
 
+		if ( WM_USER_ROOMLAYOUT_DRAWWALL == wParam )
+		{
+			irr::SEvent evt;
+			evt.EventType = irr::EET_USER_EVENT;
+			evt.UserEvent.UserData1 = EUT_ROOMLAYOUT_DRAWWALL;
+			GetRootODL()->GetRenderContext()->PostEvent(evt);
+			SetFocus();
+
+			GetMainFrame()->SetHTMLDlgVisiable(false);
+		}
+
+		if ( WM_USER_ROOMLAYOUT_DRAWWALL_FINISH == wParam )
+		{
+			GetMainFrame()->SetHTMLDlgVisiable(true);
+		}
+
 		return TRUE;
 	}
 
@@ -469,12 +485,7 @@ CMainFrame* CTestDrawPicView::GetMainFrame() const
 
 void CTestDrawPicView::OnBtnRoomLayoutCreateDrawWall()
 {
-	irr::SEvent evt;
-	evt.EventType = irr::EET_USER_EVENT;
-	evt.UserEvent.UserData1 = EUT_ROOMLAYOUT_DRAWLINE;
-
 	
-	GetRootODL()->GetRenderContext()->PostEvent(evt);
 }
 
 

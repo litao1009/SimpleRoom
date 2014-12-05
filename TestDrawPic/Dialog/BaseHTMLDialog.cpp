@@ -138,7 +138,7 @@ void CBaseHTMLDialog::MovingWindow()
 	//PostMessage(WM_NCLBUTTONDOWN, HTCAPTION);
 	POINT pt; 
 	GetCursorPos(&pt);
-	POINTS pts = {pt.x, pt.y};
+	POINTS pts = {(SHORT)pt.x, (SHORT)pt.y};
 
 	::SendMessage(m_hWnd,WM_NCLBUTTONDOWN, HTCAPTION, (LPARAM)&pts);
 	TRACE("xxx%d,%d\r\n", pts.x,pts.y);

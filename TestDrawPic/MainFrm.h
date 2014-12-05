@@ -31,7 +31,10 @@ public:
 	BOOL CreateDockableDlg(int nInitialWidth);
 	BOOL CreateCaptionBar();
 
-	
+	void	SetHTMLDlgVisiable( bool val )
+	{
+		m_wndSelect.ShowWindow(val ? SW_SHOW : SW_HIDE);
+	}
 // ÖØÐ´
 public:
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
