@@ -127,6 +127,7 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClInclude Include="DAL\FloorDAL.h" />
     <ClInclude Include="DAL\sqlite3.h" />
     <ClInclude Include="DAL\DataManager.h" />
+    <ClInclude Include="Dialog\BaseHTMLDialog.h" />
     <ClInclude Include="Dialog\DlgRoomLayoutDoorProperty.h" />
     <ClInclude Include="Dialog\DlgRoomLayoutPictureSize.h" />
     <ClInclude Include="Dialog\DlgRoomLayoutDrawlinInfo.h" />
@@ -134,6 +135,8 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClInclude Include="Dialog\DlgRoomLayoutRoomProperty.h" />
     <ClInclude Include="Dialog\DlgRoomLayoutWallProperty.h" />
     <ClInclude Include="Dialog\DlgRoomLayoutWindowProperty.h" />
+    <ClInclude Include="Dialog\DlgSelectHTML.h" />
+    <ClInclude Include="Dialog\DockSelect.h" />
     <ClInclude Include="DragDataListCtrl.h" />
     <ClInclude Include="irrEngine\IrrExtension\BaseSceneNode.h" />
     <ClInclude Include="irrEngine\IrrExtension\CameraFollowSplineAnimator.h" />
@@ -248,6 +251,7 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="DAL\DataManager.cpp" />
+    <ClCompile Include="Dialog\BaseHTMLDialog.cpp" />
     <ClCompile Include="Dialog\DlgRoomLayoutDoorProperty.cpp" />
     <ClCompile Include="Dialog\DlgRoomLayoutPictureSize.cpp" />
     <ClCompile Include="Dialog\DlgRoomLayoutDrawlinInfo.cpp" />
@@ -255,6 +259,8 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClCompile Include="Dialog\DlgRoomLayoutRoomProperty.cpp" />
     <ClCompile Include="Dialog\DlgRoomLayoutWallProperty.cpp" />
     <ClCompile Include="Dialog\DlgRoomLayoutWindowProperty.cpp" />
+    <ClCompile Include="Dialog\DlgSelectHTML.cpp" />
+    <ClCompile Include="Dialog\DockSelect.cpp" />
     <ClCompile Include="irrEngine\IrrExtension\BaseSceneNode.cpp" />
     <ClCompile Include="irrEngine\IrrExtension\CameraFollowSplineAnimator.cpp" />
     <ClCompile Include="irrEngine\IrrExtension\CameraInterpolationAnimator.cpp" />

@@ -15,7 +15,7 @@
 #pragma once
 
 #include "Resource.h"
-
+#include "Dialog/DockSelect.h"
 class CMainFrame : public CMDIFrameWndEx
 {
 	DECLARE_DYNAMIC(CMainFrame)
@@ -49,6 +49,7 @@ protected:  // 控件条嵌入成员
 	CMFCRibbonApplicationButton m_MainButton;
 	CMFCToolBarImages m_PanelImages;
 	CMFCRibbonStatusBar  m_wndStatusBar;
+	CDockSelect m_wndSelect;
 
 	CMFCCaptionBar    m_wndCaptionBar;
 

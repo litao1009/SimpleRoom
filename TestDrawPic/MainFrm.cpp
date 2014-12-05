@@ -72,6 +72,14 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		TRACE0("未能创建状态栏\n");
 		return -1;      // 未能创建
 	}
+	if (!m_wndSelect.Create(_T("选择产品"), this, CRect(0, 0, 250, 700), TRUE, IDR_DOCK_SELECT, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | CBRS_LEFT | CBRS_FLOAT_MULTI))//, AFX_CBRS_REGULAR_TABS, AFX_DEFAULT_DOCKING_PANE_STYLE))// & ~AFX_CBRS_FLOAT & ~AFX_CBRS_CLOSE))
+	{
+		TRACE0("未能创建“选择产品”窗口\n");
+		return FALSE; // 未能创建
+	}
+	m_wndSelect.EnableDocking(CBRS_ALIGN_ANY);
+	//this->AddPane(&m_wndSelect);
+	DockPane(&m_wndSelect);
 
 	CString strTitlePane1;
 	CString strTitlePane2;

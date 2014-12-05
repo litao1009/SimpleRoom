@@ -202,6 +202,8 @@ BOOL CTestDrawPicView::Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName, DWO
 	ImpUPtr_->DlgRoomLayoutDrawlinInfo_->Create(DlgRoomLayoutDrawlinInfo::IDD, this);
 	ImpUPtr_->DlgRoomLayoutDrawlinInfo_->SetVisible(false);
 
+	m_spRenderContext->CursorControl_->setActiveIcon(irr::gui::ECI_NORMAL);
+	
 	return bRet;
 }
 
@@ -665,5 +667,6 @@ void CTestDrawPicView::OnDestroy()
 BOOL CTestDrawPicView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
+
 	return FALSE;
 }

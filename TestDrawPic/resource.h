@@ -72,6 +72,8 @@
 #define IDD_DLG_ROOMLAYOUT_WINDOWPROPERTY 331
 #define IDD_DLG_ROOMLAYOUT_ROOMPROPERTY 332
 #define IDD_DLG_ROOMLAYOUT_PILLAR_PROPERTY 333
+#define IDD_DIALOG1                     334
+#define IDD_DLG_HTML_PAGE_NC            334
 #define IDC_PROP_OBJ                    1003
 #define IDC_SLIDER1                     1019
 #define IDC_SLIDER2                     1020
@@ -116,6 +118,7 @@
 #define IDC_RADIO_ALIGN_CEILING         1053
 #define IDC_RADIO2                      1054
 #define IDC_RADIO_ALIGN_FLOOR           1054
+#define IDC_LBL_SPLASH                  1055
 #define ID_WRITE_PASTEASHYPERLINK       32770
 #define ID_BTN_VIEW_TOP                 32774
 #define ID_BTN_CREATE_ROOM_AUTO         32775
@@ -160,9 +163,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        334
+#define _APS_NEXT_RESOURCE_VALUE        335
 #define _APS_NEXT_COMMAND_VALUE         32838
-#define _APS_NEXT_CONTROL_VALUE         1055
+#define _APS_NEXT_CONTROL_VALUE         1056
 #define _APS_NEXT_SYMED_VALUE           321
 #endif
 #endif

@@ -271,6 +271,15 @@
     <ClCompile Include="Dialog\DlgRoomLayoutPillarProperty.cpp">
       <Filter>src\Dialog</Filter>
     </ClCompile>
+    <ClCompile Include="Dialog\BaseHTMLDialog.cpp">
+      <Filter>src\Dialog</Filter>
+    </ClCompile>
+    <ClCompile Include="Dialog\DlgSelectHTML.cpp">
+      <Filter>src\Dialog</Filter>
+    </ClCompile>
+    <ClCompile Include="Dialog\DockSelect.cpp">
+      <Filter>src\Dialog</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BLL\BaseBLL.h">
@@ -619,6 +628,15 @@
       <Filter>ODL\MeshSceneNode</Filter>
     </ClInclude>
     <ClInclude Include="Dialog\DlgRoomLayoutPillarProperty.h">
+      <Filter>src\Dialog</Filter>
+    </ClInclude>
+    <ClInclude Include="Dialog\DockSelect.h">
+      <Filter>src\Dialog</Filter>
+    </ClInclude>
+    <ClInclude Include="Dialog\BaseHTMLDialog.h">
+      <Filter>src\Dialog</Filter>
+    </ClInclude>
+    <ClInclude Include="Dialog\DlgSelectHTML.h">
       <Filter>src\Dialog</Filter>
     </ClInclude>
   </ItemGroup>
