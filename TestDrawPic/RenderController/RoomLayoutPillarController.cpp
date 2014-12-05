@@ -291,14 +291,19 @@ bool RoomLayoutPillarController::PreRender3D()
 			imp_.ModifyEdge_.D0(imp_.ModifyPar_, fromPnt);
 			imp_.ModifyEdge_.D0(curPar, toPnt);
 
-			gp_Vec moveVec(fromPnt, toPnt);
-			auto relationInPillarDir = imp_.ModifyEdge_.Line().Direction().Transformed(activePilar->GetAbsoluteTransform().Inverted());
-			auto relationOffset = gp_Vec(relationInPillarDir) * (curPar - imp_.ModifyPar_);
+			gp_Vec moveOffset(fromPnt, toPnt);
+			auto relationMoveOffset = moveOffset.Transformed(activePilar->GetAbsoluteTransform().Inverted());
+			auto modifyDir = imp_.ModifyEdge_.Line().Direction().Transformed(activePilar->GetAbsoluteTransform().Inverted());
+			auto modifyOffset = relationMoveOffset;
+			{
+				modifyOffset.SetX(modifyOffset.X() * modifyDir.X());
+				modifyOffset.SetY(modifyOffset.Y() * modifyDir.Y());
+				modifyOffset.SetZ(modifyOffset.Z() * modifyDir.Z());
+			}
 			auto curPillarSize = activePilar->GetSize();
-			auto moveFactor = Standard_True == imp_.ModifyEdge_.Line().Direction().IsEqual(gp_Dir(moveVec), Precision::Angular()) ? 1 : -1;
-			if ( moveFactor < 0 )
+			if ( Standard_False == imp_.ModifyEdge_.Line().Direction().IsEqual(gp_Dir(moveOffset), Precision::Angular()) )
 			{//·ÀÖ¹´óÐ¡Ëõ³É0				
-				auto testSize = curPillarSize + curPillarSize;
+				auto testSize = curPillarSize + modifyOffset.XYZ();
 
 				auto minSize = 100;
 				auto alignSize = testSize - gp_XYZ(minSize,minSize,minSize);
@@ -309,16 +314,12 @@ bool RoomLayoutPillarController::PreRender3D()
 			}
 
 			Bnd_Box pillarBox;
+			auto pillarBoxSize = curPillarSize + modifyOffset.XYZ();
 			gp_Trsf pillarTranslation,pillarRotation,pillarTransformation;
 			{
-				auto offsetSize = relationOffset;
-				offsetSize.SetX(std::abs(offsetSize.X()));
-				offsetSize.SetY(std::abs(offsetSize.Y()));
-				offsetSize.SetZ(std::abs(offsetSize.Z()));
-				auto boxSize = curPillarSize + offsetSize.XYZ() * moveFactor;
-				pillarBox.Update(-boxSize.X()/2, -boxSize.Y()/2, -boxSize.Z()/2, boxSize.X()/2, boxSize.Y()/2, boxSize.Z()/2);
+				pillarBox.Update(-pillarBoxSize.X()/2, -pillarBoxSize.Y()/2, -pillarBoxSize.Z()/2, pillarBoxSize.X()/2, pillarBoxSize.Y()/2, pillarBoxSize.Z()/2);
 
-				auto translation = activePilar->GetTranslation() + relationOffset.XYZ()/2;
+				auto translation = activePilar->GetTranslation() + relationMoveOffset.XYZ()/2;
 				pillarTranslation.SetTranslationPart(translation);
 				pillarRotation.SetRotation(activePilar->GetRotation());
 			}
@@ -377,8 +378,6 @@ bool RoomLayoutPillarController::PreRender3D()
 				alignODLs.push_back(curODL.second);
 			}
 
-			auto foundAlign = false;
-
 			for ( auto& curODL : alignODLs )
 			{
 				auto alignTransformation = curODL->GetAbsoluteTransform();
@@ -424,12 +423,14 @@ bool RoomLayoutPillarController::PreRender3D()
 
 				BRepExtrema_DistShapeShape dss(imp_.ModifyEdge_.Edge().Moved(curODL->GetAbsoluteTransform().Inverted()), exp.Current());
 
+				auto needContinue = false;
 				std::map<double, gp_Pnt> tmp;
 				for ( auto index=1; index<=dss.NbSolution(); ++index )
 				{
 					if ( dss.SupportTypeShape2(index) == BRepExtrema_IsOnEdge )
 					{
 						activePilar->AddAlign(curODL);
+						needContinue = true;
 						break;
 					}
 
@@ -444,30 +445,45 @@ bool RoomLayoutPillarController::PreRender3D()
 					tmp.emplace(pntOnEdge.Distance(inODLPnt), pntOnEdge);
 				}
 
-				newPnt = tmp.begin()->second.Transformed(curODL->GetAbsoluteTransform());
-				activePilar->AddAlign(curODL);
-				foundAlign = true;
-				break;
+				if ( needContinue )
+				{
+					continue;
+				}
+
+				auto foundPnt = tmp.begin()->second.Transformed(curODL->GetAbsoluteTransform());
+				if ( foundPnt.Distance(newPnt) < 1)
+				{
+					activePilar->AddAlign(curODL);
+					continue;
+				}
+				else
+				{
+					newPnt = foundPnt;
+					break;
+				}
 			}
 
-			if ( foundAlign )
+ 			auto finalOffset = gp_Vec(pillarTranslation.TranslationPart(), newPnt);
+			auto finalRelationOffset = finalOffset.Transformed(pillarTransformation.Inverted());
+			auto finalModifyOffset = finalRelationOffset;
 			{
-				auto newOffset = gp_Vec(gp::Origin().Transformed(pillarTransformation), newPnt);
-				auto newRelationOffset = newOffset.Transformed(pillarTransformation.Inverted());
-				
+				finalModifyOffset.SetX(finalModifyOffset.X()*modifyDir.X());
+				finalModifyOffset.SetY(finalModifyOffset.Y()*modifyDir.Y());
+				finalModifyOffset.SetZ(finalModifyOffset.Z()*modifyDir.Z());
 			}
 
-			vector3df newPos;
-			newPos.X = static_cast<float>(newPnt.X());
-			newPos.Y = static_cast<float>(newPnt.Y());
-			newPos.Z = static_cast<float>(newPnt.Z());
-			activePilar->GetDataSceneNode()->setPosition(newPos);
-			activePilar->SetTranslation(newPnt.XYZ());
+			auto finalSize = pillarBoxSize + finalModifyOffset.XYZ();
+			auto finalTranslation = pillarTranslation.TranslationPart() + finalRelationOffset.XYZ()/2;
 
-			for ( auto& curAlign : activePilar->GetAlignList() )
+			activePilar->SetSize(finalSize);
+			activePilar->SetTranslation(finalTranslation);
 			{
-				curAlign->SetSweeping(true);
+				vector3df newPos(static_cast<float>(finalTranslation.X()), static_cast<float>(finalTranslation.Y()), static_cast<float>(finalTranslation.Z()));
+				activePilar->GetDataSceneNode()->setPosition(newPos);
 			}
+			activePilar->Update2DMesh();
+
+			imp_.ModifyPar_ = curPar;
 		}
 		break;
 	case EPilarState::EPS_MOUSEHOLDING:
