@@ -197,15 +197,12 @@ bool RoomODL::Build()
 			auto font = FreetypeFontMgr::GetInstance().GetTtFont(GetRenderContextWPtr().lock()->Smgr_->getVideoDriver(), "simsun.ttc", 64);
 			assert(font);
 
-			auto tex = font->GenerateTextTexture(ImpUPtr_->RoomName_.c_str());
-			auto txtSize = tex->getSize();
-			auto factor = 200.f / txtSize.Height;
+			auto txtMesh = font->GenerateTextMesh(ImpUPtr_->RoomName_.c_str());
+			ImpUPtr_->NameMesh_->setMesh(txtMesh);
+			txtMesh->drop();
 
-			ImpUPtr_->NameMesh_->setScale(irr::core::vector3df(factor * txtSize.Width, 1, factor * txtSize.Height));
+			ImpUPtr_->NameMesh_->setScale(irr::core::vector3df(200.f, 1, 200.f));
 			ImpUPtr_->NameMesh_->setPosition(irr::core::vector3df(static_cast<float>(massCenter.X()), 0, static_cast<float>(massCenter.Z())-100));
-			ImpUPtr_->NameMesh_->getMaterial(0).setTexture(0, tex);
-
-			static_cast<irr::scene::SMesh*>(ImpUPtr_->NameMesh_->getMesh())->recalculateBoundingBox();
 		}
 		else
 		{
@@ -223,15 +220,12 @@ bool RoomODL::Build()
 		auto font = FreetypeFontMgr::GetInstance().GetTtFont(GetRenderContextWPtr().lock()->Smgr_->getVideoDriver(), "arial.ttf", 32);
 		assert(font);
 
-		auto tex = font->GenerateTextTexture((fmt.str()+L"m2").c_str());
-		auto txtSize = tex->getSize();
-		auto factor = 150.f / txtSize.Height;
+		auto txtMesh = font->GenerateTextMesh((fmt.str()+L"m2").c_str());
+		ImpUPtr_->AreaMesh_->setMesh(txtMesh);
+		txtMesh->drop();
 
-		ImpUPtr_->AreaMesh_->setScale(irr::core::vector3df(factor * txtSize.Width, 1, factor * txtSize.Height));
+		ImpUPtr_->AreaMesh_->setScale(irr::core::vector3df(150.f, 1, 150.f));
 		ImpUPtr_->AreaMesh_->setPosition(irr::core::vector3df(static_cast<float>(massCenter.X()), 0, static_cast<float>(massCenter.Z())+100));
-		ImpUPtr_->AreaMesh_->getMaterial(0).setTexture(0, tex);
-
-		static_cast<irr::scene::SMesh*>(ImpUPtr_->NameMesh_->getMesh())->recalculateBoundingBox();
 	}
 	
 	return true;
@@ -255,14 +249,8 @@ void RoomODL::SetName( const std::wstring& name )
 	auto font = FreetypeFontMgr::GetInstance().GetTtFont(GetRenderContextWPtr().lock()->Smgr_->getVideoDriver(), "simsun.ttc", 64);
 	assert(font);
 
-	auto tex = font->GenerateTextTexture(ImpUPtr_->RoomName_.c_str());
-	auto txtSize = tex->getSize();
-	auto factor = 200.f / txtSize.Height;
-	
-	ImpUPtr_->NameMesh_->setScale(irr::core::vector3df(factor * txtSize.Width, 1, factor * txtSize.Height));
-	ImpUPtr_->NameMesh_->getMaterial(0).setTexture(0, tex);
-
-	static_cast<irr::scene::SMesh*>(ImpUPtr_->NameMesh_->getMesh())->recalculateBoundingBox();
+	auto txtMesh = font->GenerateTextMesh(ImpUPtr_->RoomName_.c_str());
+	ImpUPtr_->NameMesh_->setMesh(txtMesh);
 }
 
 const std::wstring& RoomODL::GetName() const

@@ -33,7 +33,7 @@ public:
 
 	void	SetHTMLDlgVisiable( bool val )
 	{
-		m_wndSelect.ShowWindow(val ? SW_SHOW : SW_HIDE);
+		m_wndSelect.ShowPane(val ? TRUE : FALSE, FALSE, FALSE);
 	}
 // ÖØÐ´
 public:

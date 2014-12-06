@@ -278,19 +278,11 @@ void WallODL::Init()
 	ImpUPtr_->Node2D_ = wall2DNode;
 	wall2DNode->drop();
 
-	auto lableMeshBuf = ODLTools::NEW_CreateRectMeshBuffer(0.5f);
-	lableMeshBuf->getMaterial().DiffuseColor = 0xFF000000;
-	lableMeshBuf->getMaterial().MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_FONT);
-
-	auto lableMesh = new irr::scene::SMesh;
-	lableMesh->addMeshBuffer(lableMeshBuf);
-	lableMeshBuf->recalculateBoundingBox();
-
-	auto lableNode = GetDataSceneNode()->getSceneManager()->addMeshSceneNode(lableMesh, wall2DNode);
+	auto tmpMesh = new irr::scene::SMesh;
+	auto lableNode = GetDataSceneNode()->getSceneManager()->addMeshSceneNode(tmpMesh, wall2DNode);
+	tmpMesh->drop();
 	ImpUPtr_->Lable_ = lableNode;
-
-	lableMeshBuf->drop();
-	lableMesh->drop();
+	//ImpUPtr_->Lable_->setDebugDataVisible(irr::scene::EDS_BBOX|irr::scene::EDS_BBOX_BUFFERS);
 }
 
 bool WallODL::IsBezierCurve() const
@@ -420,16 +412,14 @@ void WallODL::UpdateCutMesh()
 		auto font = FreetypeFontMgr::GetInstance().GetTtFont(ImpUPtr_->Lable_->getSceneManager()->getVideoDriver(), "arial.ttf", 32);
 		assert(font);
 
-		auto txtTexture = font->GenerateTextTexture(lableTxt.c_str());
-		assert(txtTexture);
+		auto texMesh = font->GenerateTextMesh(lableTxt.c_str());
+		assert(texMesh);
 
-		ImpUPtr_->Lable_->getMaterial(0).setTexture(0, txtTexture);
+		ImpUPtr_->Lable_->setMesh(texMesh);
+		texMesh->drop();
 
-		auto txtSize = txtTexture->getSize();
 		auto border = 10;
-		auto factor = (Thickness_ - border * 2) / txtSize.Height;
-		ImpUPtr_->Lable_->setScale(irr::core::vector3df(factor * txtSize.Width, 1, factor * txtSize.Height));
-		static_cast<irr::scene::SMesh*>(ImpUPtr_->Lable_->getMesh())->recalculateBoundingBox();
+		ImpUPtr_->Lable_->setScale(irr::core::vector3df(Thickness_ - border * 2, 1, Thickness_ - border * 2));
 
 		gp_Dir wallDir = gp_Vec(FirstCorner_.lock()->GetPosition(), SecondCorner_.lock()->GetPosition());
 		wallDir.Cross(gp::DY());
@@ -474,16 +464,14 @@ void WallODL::UpdateBaseMesh()
 		auto font = FreetypeFontMgr::GetInstance().GetTtFont(ImpUPtr_->Lable_->getSceneManager()->getVideoDriver(), "arial.ttf", 32);
 		assert(font);
 
-		auto txtTexture = font->GenerateTextTexture(lableTxt.c_str());
-		assert(txtTexture);
+		auto txtMesh = font->GenerateTextMesh(lableTxt.c_str());
+		assert(txtMesh);
 
-		ImpUPtr_->Lable_->getMaterial(0).setTexture(0, txtTexture);
+		ImpUPtr_->Lable_->setMesh(txtMesh);
+		txtMesh->drop();
 
-		auto txtSize = txtTexture->getSize();
 		auto border = 10;
-		auto factor = (Thickness_ - border * 2) / txtSize.Height;
-		ImpUPtr_->Lable_->setScale(irr::core::vector3df(factor * txtSize.Width, 1, factor * txtSize.Height));
-		static_cast<irr::scene::SMesh*>(ImpUPtr_->Lable_->getMesh())->recalculateBoundingBox();
+		ImpUPtr_->Lable_->setScale(irr::core::vector3df(Thickness_ - border * 2, 1, Thickness_ - border * 2));
 
 		gp_Dir wallDir = gp_Vec(FirstCorner_.lock()->GetPosition(), SecondCorner_.lock()->GetPosition());
 		wallDir.Cross(gp::DY());

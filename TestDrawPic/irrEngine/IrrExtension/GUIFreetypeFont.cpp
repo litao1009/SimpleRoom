@@ -2,6 +2,11 @@
 
 #include "GUIFreetypeFont.h"
 
+#include "SMesh.h"
+#include "SMeshBuffer.h"
+
+#include "irrEngine/irrEngine.h"
+
 #if COMPILE_WITH_FREETYPE
 
 #include <cassert>
@@ -10,6 +15,9 @@
 
 using namespace irr;
 using namespace gui;
+using namespace scene;
+using namespace core;
+using namespace video;
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4996)
@@ -616,6 +624,91 @@ irr::video::ITexture* CGUIFreetypeFont::GenerateTextTexture( const irr::core::st
 
 		return ret;
 	}
+}
+
+irr::scene::IMesh* CGUIFreetypeFont::GenerateTextMesh(const irr::core::stringw& txt )
+{
+	std::vector<CGUITTGlyph*> vec;
+	{
+		auto *text = txt.c_str();
+		irr::u32 n = 0;
+		while(*text)
+		{
+			n = getGlyphByChar(*text);
+			if ( n > 0)
+			{
+				vec.push_back(Glyphs[n-1]);
+			}
+
+			++text;
+		}
+	}
+
+	auto mesh = new SMesh;
+
+	unsigned totalOffset = 0;
+
+	for ( auto& curGlyph : vec )
+	{
+		auto texw = curGlyph->texw;
+		auto texh = curGlyph->texh;
+		auto offx = curGlyph->left;
+		auto offy = static_cast<int>(curGlyph->size - curGlyph->texh)-static_cast<int>(curGlyph->size - curGlyph->top);
+
+		auto umin = -static_cast<float>(offx)/curGlyph->imgw;
+		auto umax = static_cast<float>(texw)/curGlyph->imgw;
+		auto vmin = static_cast<float>(curGlyph->imgh - curGlyph->texh)/curGlyph->imgh;
+		auto vmax = 1.f;
+
+		auto meshBuf = new SMeshBuffer;
+		meshBuf->getMaterial().Lighting = false;
+		meshBuf->getMaterial().BackfaceCulling = false;
+		meshBuf->getMaterial().MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_FONT);
+		meshBuf->getMaterial().DiffuseColor = 0xFF000000;
+		meshBuf->getMaterial().setTexture(0, curGlyph->tex);
+
+		meshBuf->Vertices.reallocate(4);
+
+		meshBuf->Vertices.push_back(S3DVertex(vector3df(static_cast<float>(totalOffset), 0, -static_cast<float>(offy)), vector3df(0,1,0), SColor(~0), vector2df(umin, -vmin)));
+		meshBuf->Vertices.push_back(S3DVertex(vector3df(static_cast<float>(totalOffset+offx+texw), 0, -static_cast<float>(offy)), vector3df(0,1,0), SColor(~0), vector2df(umax, -vmin)));
+		meshBuf->Vertices.push_back(S3DVertex(vector3df(static_cast<float>(totalOffset+offx+texw), 0, -static_cast<float>(texh)-static_cast<float>(offy)), vector3df(0,1,0), SColor(~0), vector2df(umax, -vmax)));
+		meshBuf->Vertices.push_back(S3DVertex(vector3df(static_cast<float>(totalOffset), 0, -static_cast<float>(texh)-static_cast<float>(offy)), vector3df(0,1,0), SColor(~0), vector2df(umin, -vmax)));
+
+		meshBuf->Indices.reallocate(6);
+		meshBuf->Indices.push_back(0);
+		meshBuf->Indices.push_back(1);
+		meshBuf->Indices.push_back(2);
+		meshBuf->Indices.push_back(0);
+		meshBuf->Indices.push_back(2);
+		meshBuf->Indices.push_back(3);
+
+		mesh->addMeshBuffer(meshBuf);
+		meshBuf->recalculateBoundingBox();
+		meshBuf->drop();
+
+		totalOffset += offx + texw;
+	}
+
+	mesh->recalculateBoundingBox();
+	auto curBox = mesh->getBoundingBox();
+	auto center = curBox.getCenter();
+	auto extent = curBox.getExtent();
+
+	for ( unsigned index=0; index<mesh->getMeshBufferCount(); ++index )
+	{
+		auto curBuf = mesh->getMeshBuffer(index);
+		for ( unsigned vindex=0; vindex<curBuf->getVertexCount(); ++vindex )
+		{
+			auto& curPos = curBuf->getPosition(vindex);
+			curPos -= center;
+			curPos.X /= extent.Z;
+			curPos.Z /= extent.Z;
+		}
+		curBuf->recalculateBoundingBox();
+	}
+	mesh->recalculateBoundingBox();
+
+	return mesh;
 }
 
 #endif // #if COMPILE_WITH_FREETYPE

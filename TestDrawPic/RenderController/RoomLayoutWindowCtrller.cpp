@@ -61,18 +61,6 @@ public:
 			LineBuf_->getMaterial().DiffuseColor = SColor(0xFF0000FF);
 			LineBuf_->getMaterial().Thickness = 2;
 		}
-
-		{
-			Num1Buf_ = ODLTools::NEW_CreateRectMeshBuffer(.5f);
-			Num1Buf_->getMaterial().MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_FONT);
-			Num1Buf_->getMaterial().DiffuseColor = SColor(0xFF000000);
-		}
-
-		{
-			Num2Buf_ = ODLTools::NEW_CreateRectMeshBuffer(.5f);
-			Num2Buf_->getMaterial().MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_FONT);
-			Num2Buf_->getMaterial().DiffuseColor = SColor(0xFF000000);
-		}
 	}
 
 	~Imp()
@@ -80,16 +68,6 @@ public:
 		if ( LineBuf_ )
 		{
 			LineBuf_->drop();
-		}
-
-		if ( Num1Buf_ )
-		{
-			Num1Buf_->drop();
-		}
-
-		if ( Num2Buf_ )
-		{
-			Num2Buf_->drop();
 		}
 	}
 
@@ -111,24 +89,23 @@ public:
 		assert(font);
 
 		{
-			auto tex = font->GenerateTextTexture(std::to_wstring(static_cast<int>(lin1Length+0.5)).c_str());
-			auto texSize = tex->getSize();
-
-			auto factor = 100.f / texSize.Height;
-			Num1Scale_.setScale(vector3df(texSize.Width*factor, 1, texSize.Height*factor));
-			Num1Pos_.setTranslation(vector3df(static_cast<float>(lin1Length/2 - wallLength/2), 0, -50));
-			Num1Buf_->getMaterial().setTexture(0, tex);
+			auto txtMesh = font->GenerateTextMesh(std::to_wstring(static_cast<int>(lin1Length+0.5)).c_str());
+			Lable1_->setMesh(txtMesh);
+			txtMesh->drop();
+			Lable1_->setPosition(vector3df(static_cast<float>(lin1Length/2 - wallLength/2), 0, -50));
 		}
 
 		{
-			auto tex = font->GenerateTextTexture(std::to_wstring(static_cast<int>(lin2Length+0.5)).c_str());
-			auto texSize = tex->getSize();
-
-			auto factor = 100.f / texSize.Height;
-			Num2Scale_.setScale(vector3df(texSize.Width*factor, 1, texSize.Height*factor));
-			Num2Pos_.setTranslation(vector3df(static_cast<float>(lin1Length + size.X() + lin2Length/2 - wallLength/2), 0, -50));
-			Num2Buf_->getMaterial().setTexture(0, tex);
+			auto txtMesh = font->GenerateTextMesh(std::to_wstring(static_cast<int>(lin2Length+0.5)).c_str());
+			Lable2_->setMesh(txtMesh);
+			txtMesh->drop();
+			Lable2_->setPosition(vector3df(static_cast<float>(lin1Length + size.X() + lin2Length/2 - wallLength/2), 0, -50));
 		}
+
+		Lable1_->setVisible(true);
+		Lable1_->setParent(PickingWall_.lock()->GetDataSceneNode().get());
+		Lable2_->setVisible(true);
+		Lable2_->setParent(PickingWall_.lock()->GetDataSceneNode().get());
 	}
 public:
 
@@ -146,12 +123,8 @@ public:
 	boost::optional<SEventWindowInfo>	EventInfo_;			
 
 	SMeshBuffer*	LineBuf_;
-	IMeshBuffer*	Num1Buf_;
-	matrix4			Num1Pos_;
-	matrix4			Num1Scale_;
-	IMeshBuffer*	Num2Buf_;
-	matrix4			Num2Pos_;
-	matrix4			Num2Scale_;
+	IMeshSceneNode*	Lable1_;
+	IMeshSceneNode*	Lable2_;
 };
 
 RoomLayoutWindowCtrller::RoomLayoutWindowCtrller(const GraphODLWPtr& graphODL, const SRenderContextWPtr& rc):IRoomLayoutODLBaseCtrller(rc),ImpUPtr_(new Imp)
@@ -166,7 +139,15 @@ RoomLayoutWindowCtrller::~RoomLayoutWindowCtrller()
 
 void RoomLayoutWindowCtrller::Init()
 {
+	auto tmpMesh = new SMesh;
+	ImpUPtr_->Lable1_ = GetRenderContextSPtr()->Smgr_->addMeshSceneNode(tmpMesh);
+	ImpUPtr_->Lable2_ = GetRenderContextSPtr()->Smgr_->addMeshSceneNode(tmpMesh);
+	tmpMesh->drop();
 
+	ImpUPtr_->Lable1_->setScale(vector3df(100,1,100));
+	ImpUPtr_->Lable1_->setVisible(false);
+	ImpUPtr_->Lable2_->setScale(vector3df(100,1,100));
+	ImpUPtr_->Lable2_->setVisible(false);
 }
 
 bool RoomLayoutWindowCtrller::OnPostEvent( const irr::SEvent& evt )
@@ -488,15 +469,23 @@ void RoomLayoutWindowCtrller::PostRender3D()
 			}
 
 			{
-				driver->setTransform(ETS_WORLD, pntMat * imp_.Num1Pos_ * imp_.Num1Scale_);
-				driver->setMaterial(imp_.Num1Buf_->getMaterial());
-				driver->drawMeshBuffer(imp_.Num1Buf_);
+// 				imp_.Lable1_->setVisible(true);
+// 				imp_.Lable1_->setParent(imp_.PickingWall_.lock()->GetDataSceneNode().get());
+// 				imp_.Lable1_->updateAbsolutePosition();
+// 				imp_.Lable1_->render();
+
+				imp_.Lable1_->setParent(GetRenderContextSPtr()->Smgr_->getRootSceneNode());
+				imp_.Lable1_->setVisible(false);
 			}
 
 			{
-				driver->setTransform(ETS_WORLD, pntMat * imp_.Num2Pos_ * imp_.Num2Scale_);
-				driver->setMaterial(imp_.Num2Buf_->getMaterial());
-				driver->drawMeshBuffer(imp_.Num2Buf_);
+// 				imp_.Lable2_->setVisible(true);
+// 				imp_.Lable2_->setParent(imp_.PickingWall_.lock()->GetDataSceneNode().get());
+// 				imp_.Lable2_->updateAbsolutePosition();
+// 				imp_.Lable2_->render();
+
+				imp_.Lable2_->setParent(GetRenderContextSPtr()->Smgr_->getRootSceneNode());
+				imp_.Lable2_->setVisible(false);
 			}
 		}
 		break;

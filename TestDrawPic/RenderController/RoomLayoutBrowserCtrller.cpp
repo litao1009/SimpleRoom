@@ -62,6 +62,11 @@ void RoomLayoutBrowserCtrller::Init()
 	imp_.CtrllerMap_[EODLT_WALL] = std::make_shared<RoomLayoutWallCtrller>(ImpUPtr_->Graph_, GetRenderContextSPtr());
 	imp_.CtrllerMap_[EODLT_ROOM] = std::make_shared<RoomLayoutRoomController>(ImpUPtr_->Graph_, GetRenderContextSPtr());
 	imp_.CtrllerMap_[EODLT_PILLAR] = std::make_shared<RoomLayoutPillarController>(ImpUPtr_->Graph_.lock(), GetRenderContextSPtr());
+
+	for ( auto& ctrller : imp_.CtrllerMap_ )
+	{
+		ctrller.second->Init();
+	}
 }
 
 bool RoomLayoutBrowserCtrller::OnPostEvent( const irr::SEvent& evt )

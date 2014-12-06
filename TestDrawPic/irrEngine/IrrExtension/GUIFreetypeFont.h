@@ -104,6 +104,8 @@ public:
 
 	irr::video::ITexture*	GenerateTextTexture(const irr::core::stringw& txt);
 
+	irr::scene::IMesh*	GenerateTextMesh(const irr::core::stringw& txt);
+
 
 	bool AntiAlias;
 	bool Transparency;
