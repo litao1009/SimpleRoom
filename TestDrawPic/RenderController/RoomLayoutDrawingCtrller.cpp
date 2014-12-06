@@ -72,6 +72,7 @@ public:
 		AuxiliaryLine_->getMaterial().ZBuffer = ECFN_ALWAYS;
 
 		LMousePressDown_ = false;
+		RMousePressDown_ = false;
 		EscPressDown_ = false;
 
 		Polar_ = 30.f;
@@ -138,6 +139,7 @@ public:
 
 	//绘制路径点
 	std::vector<CornerODLSPtr>	DrawingPathList_;
+	std::vector<WallODLSPtr>	CreatingWalls_;
 
 	//Floating的起始点
 	CornerODLSPtr				LastCorner_;
@@ -146,6 +148,7 @@ public:
 	vector2di					CursorIPos_;
 	
 	bool						LMousePressDown_;
+	bool						RMousePressDown_;
 	bool						EscPressDown_;
 	bool						Reset_;
 	bool						SpecifyCreate_;
@@ -884,6 +887,10 @@ bool RoomLayoutDrawingCtrller::PreRender3D()
 		::PostMessage((HWND)(GetRenderContextSPtr()->GetHandle()), WM_IRR_DLG_MSG, WM_USER_ROOMLAYOUT_DLG_LINELENGTH_HIDE, 0);
 	}
 
+	imp_.LMousePressDown_ = false;
+	imp_.RMousePressDown_ = false;
+	imp_.EscPressDown_ = false;
+
 	return false;
 }
 
@@ -951,6 +958,11 @@ bool RoomLayoutDrawingCtrller::OnPostEvent( const irr::SEvent& evt )
 		if ( evt.MouseInput.Event == EMIE_LMOUSE_PRESSED_DOWN )
 		{
 			imp_.LMousePressDown_ = true;
+		}
+
+		if ( evt.MouseInput.Event == EMIE_RMOUSE_PRESSED_DOWN )
+		{
+			imp_.RMousePressDown_ = true;
 		}
 	}
 

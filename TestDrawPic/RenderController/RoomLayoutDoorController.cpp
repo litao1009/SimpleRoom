@@ -392,8 +392,11 @@ bool RoomLayoutDoorController::PreRender3D()
 				break;
 			case EUT_ROOMLAYOUT_DOOR_UPDATE:
 				{
-// 					activeDoor->SetHeight(imp_.EventInfo_.Height_);
-// 					activeDoor->SetThickness(imp_.EventInfo_.Thickness_);
+					auto& info = *imp_.EventInfo_;
+					imp_.PickingWall_.lock()->SeamHole(activeDoor);
+					activeDoor->SetHoleSize(info.XLength_, info.YLength_, info.ZLength_);
+					activeDoor->UpdateHole();
+					imp_.PickingWall_.lock()->CutHole(activeDoor);
 					imp_.State_ = EDoorState::EDS_SWEEPING;
 				}
 				break;

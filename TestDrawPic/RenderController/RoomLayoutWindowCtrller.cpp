@@ -401,6 +401,12 @@ bool RoomLayoutWindowCtrller::PreRender3D()
 				break;
 			case EUT_ROOMLAYOUT_WINDOW_UPDATE:
 				{
+					imp_.PickingWall_.lock()->SeamHole(activeWindow);
+					auto& info = *imp_.EventInfo_;
+					activeWindow->SetHoleSize(info.XLength_, info.YLength_, info.ZLength_);
+					activeWindow->SetOffsetHeight(info.OffsetHeight_);
+					activeWindow->UpdateHole();
+					imp_.PickingWall_.lock()->CutHole(activeWindow);
 					imp_.State_ = EWindowState::EWS_SWEEPING;
 				}
 				break;

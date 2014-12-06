@@ -251,6 +251,7 @@ void RoomODL::SetName( const std::wstring& name )
 
 	auto txtMesh = font->GenerateTextMesh(ImpUPtr_->RoomName_.c_str());
 	ImpUPtr_->NameMesh_->setMesh(txtMesh);
+	txtMesh->drop();
 }
 
 const std::wstring& RoomODL::GetName() const
@@ -267,11 +268,17 @@ void RoomODL::UpdateSweeping()
 {
 	if ( IsSweeping() )
 	{
-		ImpUPtr_->NameMesh_->getMaterial(0).DiffuseColor = 0xFFFFFF00;
+		for ( unsigned index=0; index<ImpUPtr_->NameMesh_->getMaterialCount(); ++ index)
+		{
+			ImpUPtr_->NameMesh_->getMaterial(index).DiffuseColor = 0xFFFFFF00;
+		}
 	}
 	else
 	{
-		ImpUPtr_->NameMesh_->getMaterial(0).DiffuseColor = 0xFF000000;
+		for ( unsigned index=0; index<ImpUPtr_->NameMesh_->getMaterialCount(); ++ index)
+		{
+			ImpUPtr_->NameMesh_->getMaterial(index).DiffuseColor = 0xFF000000;
+		}
 	}
 }
 
@@ -279,10 +286,16 @@ void RoomODL::UpdatePicking()
 {
 	if ( IsPicking() )
 	{
-		ImpUPtr_->NameMesh_->getMaterial(0).DiffuseColor = 0xFF0000FF;
+		for ( unsigned index=0; index<ImpUPtr_->NameMesh_->getMaterialCount(); ++ index)
+		{
+			ImpUPtr_->NameMesh_->getMaterial(index).DiffuseColor = 0xFF0000FF;
+		}
 	}
 	else
 	{
-		ImpUPtr_->NameMesh_->getMaterial(0).DiffuseColor = 0xFF000000;
+		for ( unsigned index=0; index<ImpUPtr_->NameMesh_->getMaterialCount(); ++ index)
+		{
+			ImpUPtr_->NameMesh_->getMaterial(index).DiffuseColor = 0xFF000000;
+		}
 	}
 }
