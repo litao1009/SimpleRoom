@@ -220,7 +220,6 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClInclude Include="RenderController\RoomLayoutRoomController.h" />
     <ClInclude Include="RenderController\RoomLayoutWallCtrller.h" />
     <ClInclude Include="RenderController\StatesController.h" />
-    <ClInclude Include="RenderController\TestDecorGUIBoard.h" />
     <ClInclude Include="RenderController\RoomLayoutDrawingCtrller.h" />
     <ClInclude Include="RenderController\TopPickingController.h" />
     <ClInclude Include="RenderController\TopViewController.h" />
@@ -328,7 +327,6 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClCompile Include="RenderController\RoomLayoutPillarController.cpp" />
     <ClCompile Include="RenderController\RoomLayoutRoomController.cpp" />
     <ClCompile Include="RenderController\RoomLayoutWallCtrller.cpp" />
-    <ClCompile Include="RenderController\TestDecorGUIBoard.cpp" />
     <ClCompile Include="RenderController\RoomLayoutDrawingCtrller.cpp" />
     <ClCompile Include="RenderController\TopPickingController.cpp" />
     <ClCompile Include="RenderController\UpdateTransformingCtrller.cpp" />

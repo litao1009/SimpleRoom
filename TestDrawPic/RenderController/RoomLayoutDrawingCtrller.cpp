@@ -1018,7 +1018,7 @@ void RoomLayoutDrawingCtrller::Init()
 
 		imp_.PositionRectScaleMat_.setScale(vector3df(radius, 1, radius));
 
-		imp_.PositionRect_->getMaterial().setTexture(0, GetRenderContextSPtr()->Smgr_->getVideoDriver()->getTexture("../Data/Resource/3D/dot.png"));
+		imp_.PositionRect_->getMaterial().setTexture(0, GetRenderContextSPtr()->Smgr_->getVideoDriver()->getTexture("3D/dot.png"));
 	}
 	
 	{

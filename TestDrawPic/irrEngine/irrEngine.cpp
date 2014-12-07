@@ -1,12 +1,10 @@
 #include "stdafx.h"
 
 #include "irrEngine.h"
-#include "Irrlicht/CSceneNodeAnimatorCameraMayaRH.h"
 #include "Irrlicht/CIrrDeviceWin32.h"
 #include "Irrlicht/os.h"
-#include "SRenderContext.h"
 
-#include "irrEngine/IrrExtension/ExtShaders.h"
+#include "SRenderContext.h"
 
 #include <map>
 #include <vector>
@@ -85,55 +83,6 @@ IrrEngine::IrrEngine(const irr::SIrrlichtCreationParameters& params):ImpUPtr_(ne
 
 	auto rawDevice = irr::createDeviceEx(imp_.Params_);
 	imp_.DeviceSPtr_.reset(static_cast<irr::CIrrDeviceWin32*>(rawDevice), std::bind(&irr::IrrlichtDevice::drop, std::placeholders::_1));
-
-	{
-		auto selectionCB = new LuminanceCB;
-		auto material = rawDevice->getVideoDriver()->getGPUProgrammingServices()->addHighLevelShaderMaterial(LuminanceCB::GetVertexShader(), LuminanceCB::GetPixelShader(), selectionCB);
-		selectionCB->drop();
-		imp_.ShaderMap_[EST_LUMINANCE] = material;
-	}
-
-	{
-		auto blueLine = new LineColorCB;
-		auto material = rawDevice->getVideoDriver()->getGPUProgrammingServices()->addHighLevelShaderMaterial(LineColorCB::GetVertexShader(), LineColorCB::GetPixelShader(), blueLine);
-		blueLine->drop();
-		imp_.ShaderMap_[EST_LINE] = material;
-	}
-
-	{
-		auto vertexAlpha = new VertexAlphaCB;
-		auto material = rawDevice->getVideoDriver()->getGPUProgrammingServices()->addHighLevelShaderMaterial(VertexAlphaCB::GetVertexShader(), VertexAlphaCB::GetPixelShader(), vertexAlpha, irr::video::EMT_TRANSPARENT_VERTEX_ALPHA);
-		vertexAlpha->drop();
-		imp_.ShaderMap_[EST_VERTEX_ALPHA] = material;
-	}
-
-	{
-		auto font = new FontColorCB;
-		auto material = rawDevice->getVideoDriver()->getGPUProgrammingServices()->addHighLevelShaderMaterial(FontColorCB::GetVertexShader(), FontColorCB::GetPixelShader(), font, irr::video::EMT_TRANSPARENT_VERTEX_ALPHA);
-		font->drop();
-		imp_.ShaderMap_[EST_FONT] = material;
-	}
-
-	{
-		auto ads = new ADSLightCB;
-		auto material = rawDevice->getVideoDriver()->getGPUProgrammingServices()->addHighLevelShaderMaterial(ADSLightCB::GetVertexShader(), ADSLightCB::GetPixelShader(), ads);
-		ads->drop();
-		imp_.ShaderMap_[EST_ADS_LIGHT] = material;
-
-		auto ftr = [ads](const SRenderContextSPtr& rc)
-		{
-			ads->SetSmgr(rc->Smgr_.get());
-		};
-
-		Register(ftr);
-	}
-
-	{
-		auto picking = new PickingColorCB;
-		auto material = rawDevice->getVideoDriver()->getGPUProgrammingServices()->addHighLevelShaderMaterial(PickingColorCB::GetVertexShader(), PickingColorCB::GetPixelShader(), picking);
-		picking->drop();
-		imp_.ShaderMap_[EST_PICKING] = material;
-	}
 }
 
 IrrEngine::~IrrEngine()
@@ -223,5 +172,10 @@ void IrrEngine::Update( const SRenderContextSPtr& rc )
 void IrrEngine::Register( const UpdateFunctor& ftr )
 {
 	ImpUPtr_->UpdateList_.push_back(ftr);
+}
+
+void IrrEngine::AddShaderType( EShaderType enm, irr::video::E_MATERIAL_TYPE emt )
+{
+	ImpUPtr_->ShaderMap_.emplace(enm, emt);
 }
 

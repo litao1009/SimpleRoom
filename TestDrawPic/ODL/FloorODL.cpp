@@ -28,7 +28,7 @@ FloorODL::~FloorODL( void )
 
 void FloorODL::SetDefaultTexture()
 {
-	auto tex = GetDataSceneNode()->getSceneManager()->getVideoDriver()->getTexture("../Data/Resource/3D/floor.jpg");
+	auto tex = GetDataSceneNode()->getSceneManager()->getVideoDriver()->getTexture("3D/floor.jpg");
 	assert(tex);
 
 	auto uLen = tex->getSize().Width;
@@ -49,6 +49,7 @@ FloorODLSPtr FloorODL::CreateByFace( SRenderContextWPtr renderContext, const Top
 
 	{//3D
 		auto meshBuf = ODLTools::NEW_CreateMeshBuffer(floorFace);
+		meshBuf->getMaterial().MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_ADS_LIGHT);
 		assert(meshBuf);
 
 		auto mesh = new irr::scene::SMesh;
@@ -70,7 +71,7 @@ FloorODLSPtr FloorODL::CreateByFace( SRenderContextWPtr renderContext, const Top
 
 		auto smgr = newFloor->GetDataSceneNode()->getSceneManager();
 
-		meshBuf->getMaterial().setTexture(0, smgr->getVideoDriver()->getTexture("../Data/Resource/3D/floorLine.png"));
+		meshBuf->getMaterial().setTexture(0, smgr->getVideoDriver()->getTexture("3D/floorLine.png"));
 //  	meshBuf->getMaterial().PolygonOffsetDirection = irr::video::EPO_BACK;
 //  	meshBuf->getMaterial().PolygonOffsetFactor = 1;
 

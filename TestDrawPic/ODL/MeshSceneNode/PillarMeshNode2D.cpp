@@ -49,7 +49,7 @@ PillarMeshNode2D::PillarMeshNode2D(irr::scene::ISceneNode* parent, irr::s32 id):
 	MeshBuffer_->getMaterial().BackfaceCulling = false;
 	MeshBuffer_->getMaterial().PolygonOffsetDirection = irr::video::EPO_FRONT;
 	MeshBuffer_->getMaterial().PolygonOffsetFactor = 7;
-	MeshBuffer_->getMaterial().setTexture(0, SceneManager->getVideoDriver()->getTexture("../Data/Resource/3D/wallLine.png"));
+	MeshBuffer_->getMaterial().setTexture(0, SceneManager->getVideoDriver()->getTexture("3D/wallLine.png"));
 	MeshBuffer_->getMaterial().MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_PICKING);
 	MeshBuffer_->getMaterial().DiffuseColor = 0xFFD0D0D0;
 

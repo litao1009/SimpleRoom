@@ -42,7 +42,7 @@ WallMeshNode2D::WallMeshNode2D(irr::scene::ISceneNode* parent, irr::s32 id):IMes
 
 	FaceBuffer_->getMaterial().Lighting = false;
 	FaceBuffer_->getMaterial().BackfaceCulling = false;
-	FaceBuffer_->getMaterial().setTexture(0, SceneManager->getVideoDriver()->getTexture("../Data/Resource/3D/wallLine.png"));
+	FaceBuffer_->getMaterial().setTexture(0, SceneManager->getVideoDriver()->getTexture("3D/wallLine.png"));
 	{
 		matrix4 scale,rotate;
 		scale.setTextureScale(1/300.f, 1/300.f);

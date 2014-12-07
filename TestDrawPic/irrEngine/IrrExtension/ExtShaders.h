@@ -7,6 +7,8 @@
 #include "SMaterial.h"
 #include "ISceneManager.h"
 
+#include "irrEngine/irrEngineFwd.h"
+
 class	LuminanceCB : public irr::video::IShaderConstantSetCallBack
 {
 public:
@@ -114,6 +116,14 @@ public:
 private:
 
 	irr::video::SMaterial	CurrentMaterial_;
+};
+
+
+class	ExtShaders
+{
+public:
+
+	static	void	Init(const IrrEngineUPtr& engine);
 };
 
 

@@ -148,7 +148,7 @@ public:
 			mat.BackfaceCulling = false;
 			mat.MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_VERTEX_ALPHA);
 			mat.MaterialTypeParam = 0.5f;
-			mat.setTexture(0, IrrEngine::GetInstance()->GetDevice()->getVideoDriver()->getTexture("../Data/Resource/3D/dot.png"));
+			mat.setTexture(0, IrrEngine::GetInstance()->GetDevice()->getVideoDriver()->getTexture("3D/dot.png"));
 		}
 
 		{

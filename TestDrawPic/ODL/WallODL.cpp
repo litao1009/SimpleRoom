@@ -391,6 +391,7 @@ void WallODL::UpdateCutMesh()
 
 	{//3D模型
 		auto meshBuf = ODLTools::NEW_CreateMeshBuffer(CutShape_);
+		meshBuf->getMaterial().MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_ADS_LIGHT);
 		assert(meshBuf);
 		auto newMesh = new irr::scene::SMesh;
 		newMesh->addMeshBuffer(meshBuf);
@@ -443,6 +444,7 @@ void WallODL::UpdateBaseMesh()
 {
 	{//3D模型
 		auto meshBuf = ODLTools::NEW_CreateMeshBuffer(GetBaseShape());
+		meshBuf->getMaterial().MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_ADS_LIGHT);
 		assert(meshBuf);
 		auto newMesh = new irr::scene::SMesh;
 		newMesh->addMeshBuffer(meshBuf);
@@ -493,7 +495,7 @@ void WallODL::UpdateBaseMesh()
 
 void WallODL::SetDefaultTexture()
 {
-	auto tex = GetDataSceneNode()->getSceneManager()->getVideoDriver()->getTexture("../Data/Resource/3D/wall.jpg");
+	auto tex = GetDataSceneNode()->getSceneManager()->getVideoDriver()->getTexture("3D/wall.jpg");
 	assert(tex);
 
 	auto uLen = 4000.f;//tex->getSize().Width;

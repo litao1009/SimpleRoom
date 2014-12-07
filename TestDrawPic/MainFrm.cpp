@@ -14,14 +14,16 @@
 
 #include "stdafx.h"
 #include "TestDrawPic.h"
-#include "irrEngine/irrEngine.h"
 #include "MainFrm.h"
 #include "TestDrawPicView.h"
 #include "DAL/BaseDAL.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#endif
+#include "irrEngine/irrEngine.h"
+#include "irrEngine/IrrExtension/ExtShaders.h"
+
+// #ifdef _DEBUG
+// #define new DEBUG_NEW
+// #endif
 
 // CMainFrame
 
@@ -126,6 +128,9 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	ModifyStyle(0, FWS_PREFIXTITLE);
 
 	IrrEngine::CreateDeviceInstance(GetSafeHwnd(), false, 16);
+	ExtShaders::Init(IrrEngine::GetInstance());
+	IrrEngine::GetInstance()->GetDevice()->getFileSystem()->addFileArchive("../Data/Resource/", true, true, irr::io::EFAT_FOLDER);
+
 	return 0;
 }
 

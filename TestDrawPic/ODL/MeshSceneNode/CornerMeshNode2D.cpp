@@ -43,7 +43,7 @@ CornerMeshNode2D::CornerMeshNode2D(irr::scene::ISceneNode* parent, irr::s32 id):
 	MeshBuffer_->Indices.push_back(3);
 
 	setScale(vector3df(Imp::Radius_, 1, Imp::Radius_));
-	MeshBuffer_->getMaterial().setTexture(0, SceneManager->getVideoDriver()->getTexture("../Data/Resource/3D/dot.png"));
+	MeshBuffer_->getMaterial().setTexture(0, SceneManager->getVideoDriver()->getTexture("3D/dot.png"));
 
 	MeshBuffer_->getMaterial().Lighting = false;
 	MeshBuffer_->getMaterial().BackfaceCulling = false;

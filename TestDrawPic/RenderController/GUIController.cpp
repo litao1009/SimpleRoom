@@ -51,8 +51,8 @@ void GUIController::Init()
 	sprc->SetOnResize();
 
 	{//camera
-		auto showTex = driver->getTexture("../Data/Resource/3D/camera.png");
-		auto hideTex = driver->getTexture("../Data/Resource/3D/camera_d.png");
+		auto showTex = driver->getTexture("3D/camera.png");
+		auto hideTex = driver->getTexture("3D/camera_d.png");
 
 		auto guiImage = AddImage(sprc->GUIEnv_.get(), showTex);
 
@@ -63,12 +63,12 @@ void GUIController::Init()
 	}
 
 	{//camera type
-		auto fpsActTex = driver->getTexture("../Data/Resource/3D/fps_cam_a.png");
-		auto fpsDActTex = driver->getTexture("../Data/Resource/3D/fps_cam_d.png");
-		auto mayaActTex = driver->getTexture("../Data/Resource/3D/maya_cam_a.png");
-		auto mayaDActTex = driver->getTexture("../Data/Resource/3D/maya_cam_d.png");
-		auto topActTex = driver->getTexture("../Data/Resource/3D/top_cam_a.png");
-		auto topDActTex = driver->getTexture("../Data/Resource/3D/top_cam_d.png");
+		auto fpsActTex = driver->getTexture("3D/fps_cam_a.png");
+		auto fpsDActTex = driver->getTexture("3D/fps_cam_d.png");
+		auto mayaActTex = driver->getTexture("3D/maya_cam_a.png");
+		auto mayaDActTex = driver->getTexture("3D/maya_cam_d.png");
+		auto topActTex = driver->getTexture("3D/top_cam_a.png");
+		auto topDActTex = driver->getTexture("3D/top_cam_d.png");
 
 		auto fpsImage = AddImage(sprc->GUIEnv_.get(), fpsDActTex);
 		auto mayaImage = AddImage(sprc->GUIEnv_.get(), mayaDActTex);
@@ -87,8 +87,8 @@ void GUIController::Init()
 	}
 
 	{//real
-		auto realTex = driver->getTexture("../Data/Resource/3D/real_a.png");
-		auto realDTex = driver->getTexture("../Data/Resource/3D/real_d.png");
+		auto realTex = driver->getTexture("3D/real_a.png");
+		auto realDTex = driver->getTexture("3D/real_d.png");
 		auto guiImage = AddImage(sprc->GUIEnv_.get(), realDTex);
 		RealActiveTex_.reset(realTex, [](video::ITexture*){});
 		RealDActiveTex_.reset(realDTex, [](video::ITexture*){});

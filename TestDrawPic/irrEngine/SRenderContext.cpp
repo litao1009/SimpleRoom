@@ -92,18 +92,18 @@ SRenderContext::SRenderContext( void* Hwnd, irr::video::SColor clr ):ImpUPtr_(ne
 		auto randVecTexture = imp_.Effect_->generateRandomVectorTexture(irr::core::dimension2du(512, 512));
 		imp_.Effect_->setPostProcessingUserTexture(randVecTexture);
 		
-		irr::s32 SSAO = imp_.Effect_->addPostProcessingEffectFromFile("../Data/Resource/3D/shaders/SSAO.glsl");
-		irr::s32 BlurH = imp_.Effect_->addPostProcessingEffectFromFile("../Data/Resource/3D/shaders/BlurHP.glsl");
-		irr::s32 BlurV = imp_.Effect_->addPostProcessingEffectFromFile("../Data/Resource/3D/shaders/BlurVP.glsl");
-		irr::s32 SSAOCombine = imp_.Effect_->addPostProcessingEffectFromFile("../Data/Resource/3D/shaders/SSAOCombine.glsl");
+		//irr::s32 SSAO = imp_.Effect_->addPostProcessingEffectFromFile("../Data/Resource/3D/shaders/SSAO.glsl");
+		//irr::s32 BlurH = imp_.Effect_->addPostProcessingEffectFromFile("../Data/Resource/3D/shaders/BlurHP.glsl");
+		//irr::s32 BlurV = imp_.Effect_->addPostProcessingEffectFromFile("../Data/Resource/3D/shaders/BlurVP.glsl");
+		//irr::s32 SSAOCombine = imp_.Effect_->addPostProcessingEffectFromFile("../Data/Resource/3D/shaders/SSAOCombine.glsl");
 
 		//Effect_->addPostProcessingEffectFromFile("../Data/Resource/3D/shaders/BrightPass.glsl");
 		//Effect_->addPostProcessingEffectFromFile("../Data/Resource/3D/shaders/BlurHP.glsl");
 		//Effect_->addPostProcessingEffectFromFile("../Data/Resource/3D/shaders/BlurVP.glsl");
 		//Effect_->addPostProcessingEffectFromFile("../Data/Resource/3D/shaders/BloomP.glsl");
 
-		auto ssaoCallback = new SSAORenderCallback(SSAO);
-		imp_.Effect_->setPostProcessingRenderCallback(SSAO, ssaoCallback);
+		//auto ssaoCallback = new SSAORenderCallback(SSAO);
+		//imp_.Effect_->setPostProcessingRenderCallback(SSAO, ssaoCallback);
 	}
 }
 
@@ -200,8 +200,8 @@ void SRenderContext::Render()
 	auto absorbed3D = imp_.RenderController_->PreRender3D();
 	if ( !absorbed3D )
 	{
-		//smgr->drawAll();
-		imp_.Effect_->update();
+		smgr->drawAll();
+		//imp_.Effect_->update();
 
 		imp_.RenderController_->PostRender3D();
 	}

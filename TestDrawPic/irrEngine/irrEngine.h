@@ -95,6 +95,8 @@ public:
 
 	irr::video::E_MATERIAL_TYPE	GetShaderType(EShaderType enm);
 
+	void						AddShaderType(EShaderType enm, irr::video::E_MATERIAL_TYPE emt);
+
 	//************************************
 	// Method:  IrrEngine::SetResPath
 	// Access:    public 

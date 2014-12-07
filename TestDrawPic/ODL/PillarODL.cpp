@@ -98,7 +98,7 @@ void PillarODL::Init()
 
 void PillarODL::SetDefaultTexture()
 {
-	auto tex = GetDataSceneNode()->getSceneManager()->getVideoDriver()->getTexture("../Data/Resource/3D/wall.jpg");
+	auto tex = GetDataSceneNode()->getSceneManager()->getVideoDriver()->getTexture("3D/wall.jpg");
 	assert(tex);
 
 	auto uLen = 4000.f;//tex->getSize().Width;

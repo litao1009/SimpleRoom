@@ -3,6 +3,9 @@
 #include "ExtShaders.h"
 #include "irrlicht.h"
 
+#include "irrEngine/irrEngine.h"
+#include "irrEngine/SRenderContext.h"
+
 const char*	LuminanceSahder[2] = 
 {
 	//"varying	vec4		vertexColor;"
@@ -376,4 +379,58 @@ const char* PickingColorCB::GetVertexShader()
 const char* PickingColorCB::GetPixelShader()
 {
 	return PickingColorShader[1];
+}
+
+void ExtShaders::Init( const IrrEngineUPtr& engine )
+{
+	auto device = engine->GetDevice();
+
+	{
+		auto selectionCB = new LuminanceCB;
+		auto material = device->getVideoDriver()->getGPUProgrammingServices()->addHighLevelShaderMaterial(LuminanceCB::GetVertexShader(), LuminanceCB::GetPixelShader(), selectionCB);
+		selectionCB->drop();
+		engine->AddShaderType(EST_LUMINANCE, static_cast<irr::video::E_MATERIAL_TYPE>(material));
+	}
+
+	{
+		auto blueLine = new LineColorCB;
+		auto material = device->getVideoDriver()->getGPUProgrammingServices()->addHighLevelShaderMaterial(LineColorCB::GetVertexShader(), LineColorCB::GetPixelShader(), blueLine);
+		blueLine->drop();
+		engine->AddShaderType(EST_LINE, static_cast<irr::video::E_MATERIAL_TYPE>(material));
+	}
+
+	{
+		auto vertexAlpha = new VertexAlphaCB;
+		auto material = device->getVideoDriver()->getGPUProgrammingServices()->addHighLevelShaderMaterial(VertexAlphaCB::GetVertexShader(), VertexAlphaCB::GetPixelShader(), vertexAlpha, irr::video::EMT_TRANSPARENT_VERTEX_ALPHA);
+		vertexAlpha->drop();
+		engine->AddShaderType(EST_VERTEX_ALPHA, static_cast<irr::video::E_MATERIAL_TYPE>(material));
+	}
+
+	{
+		auto font = new FontColorCB;
+		auto material = device->getVideoDriver()->getGPUProgrammingServices()->addHighLevelShaderMaterial(FontColorCB::GetVertexShader(), FontColorCB::GetPixelShader(), font, irr::video::EMT_TRANSPARENT_VERTEX_ALPHA);
+		font->drop();
+		engine->AddShaderType(EST_FONT, static_cast<irr::video::E_MATERIAL_TYPE>(material));
+	}
+
+	{
+		auto ads = new ADSLightCB;
+		auto material = device->getVideoDriver()->getGPUProgrammingServices()->addHighLevelShaderMaterial(ADSLightCB::GetVertexShader(), ADSLightCB::GetPixelShader(), ads);
+		ads->drop();
+		engine->AddShaderType(EST_ADS_LIGHT, static_cast<irr::video::E_MATERIAL_TYPE>(material));
+
+		auto ftr = [ads](const SRenderContextSPtr& rc)
+		{
+			ads->SetSmgr(rc->Smgr_.get());
+		};
+
+		engine->Register(ftr);
+	}
+
+	{
+		auto picking = new PickingColorCB;
+		auto material = device->getVideoDriver()->getGPUProgrammingServices()->addHighLevelShaderMaterial(PickingColorCB::GetVertexShader(), PickingColorCB::GetPixelShader(), picking);
+		picking->drop();
+		engine->AddShaderType(EST_PICKING, static_cast<irr::video::E_MATERIAL_TYPE>(material));
+	}
 }

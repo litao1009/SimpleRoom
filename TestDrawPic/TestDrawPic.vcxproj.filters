@@ -169,9 +169,6 @@
     <ClCompile Include="RenderController\UpdateTransformingCtrller.cpp">
       <Filter>RenderController</Filter>
     </ClCompile>
-    <ClCompile Include="RenderController\TestDecorGUIBoard.cpp">
-      <Filter>RenderController</Filter>
-    </ClCompile>
     <ClCompile Include="ODL\MeshSceneNode\WallMeshNode2D.cpp">
       <Filter>ODL\MeshSceneNode</Filter>
     </ClCompile>
@@ -502,9 +499,6 @@
       <Filter>ODL</Filter>
     </ClInclude>
     <ClInclude Include="RenderController\UpdateTransformingCtrller.h">
-      <Filter>RenderController</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderController\TestDecorGUIBoard.h">
       <Filter>RenderController</Filter>
     </ClInclude>
     <ClInclude Include="ODL\MeshSceneNode\WallMeshNode2D.h">
