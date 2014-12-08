@@ -4,6 +4,7 @@
 #include "SMeshBuffer.h"
 #include "irrEngine/SRenderContext.h"
 #include "irrEngine/irrEngine.h"
+#include "irrEngine/IrrExtension/ExtShaders.h"
 #include "UserEvent.h"
 
 #include "ODL/GraphODL.h"
@@ -50,7 +51,7 @@ public:
 		PositionRect_->getMaterial().Lighting = false;
 		PositionRect_->getMaterial().BackfaceCulling = false;
 		PositionRect_->getMaterial().ZWriteEnable = false;
-		PositionRect_->getMaterial().MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_VERTEX_ALPHA);
+		PositionRect_->getMaterial().MaterialType = ExtShaders::GetInstance().GetShaderType(EST_VERTEX_ALPHA);
 		PositionRect_->getMaterial().MaterialTypeParam = 0.65f;
 		PositionRect_->getMaterial().ZBuffer = ECFN_ALWAYS;
 
@@ -59,14 +60,14 @@ public:
 		FloatingLine_->getMaterial().BackfaceCulling = false;
 		FloatingLine_->getMaterial().ZWriteEnable = false;
 		FloatingLine_->getMaterial().Thickness = 4;
-		FloatingLine_->getMaterial().MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_LINE);
+		FloatingLine_->getMaterial().MaterialType = ExtShaders::GetInstance().GetShaderType(EST_LINE);
 		FloatingLine_->getMaterial().ZBuffer = ECFN_ALWAYS;
 
 		AuxiliaryLine_ = new SMeshBuffer;
 		AuxiliaryLine_->getMaterial().Lighting = false;
 		AuxiliaryLine_->getMaterial().BackfaceCulling = false;
 		AuxiliaryLine_->getMaterial().ZWriteEnable = false;
-		AuxiliaryLine_->getMaterial().MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_LINE);
+		AuxiliaryLine_->getMaterial().MaterialType = ExtShaders::GetInstance().GetShaderType(EST_LINE);
 		AuxiliaryLine_->getMaterial().DiffuseColor = 0xFF000000;
 		AuxiliaryLine_->getMaterial().Thickness = 2;
 		AuxiliaryLine_->getMaterial().ZBuffer = ECFN_ALWAYS;

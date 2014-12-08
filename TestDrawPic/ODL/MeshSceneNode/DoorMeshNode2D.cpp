@@ -7,7 +7,7 @@
 #include "Geom2dAdaptor_Curve.hxx"
 #include "GCPnts_UniformAbscissa.hxx"
 
-#include "irrEngine/irrEngine.h"
+#include "irrEngine/IrrExtension/ExtShaders.h"
 
 DoorMeshNode2D::DoorMeshNode2D( irr::scene::ISceneNode* parent, irr::s32 id /*= -1*/ ):IMeshSceneNode(parent, parent->getSceneManager(), id)
 {
@@ -65,7 +65,7 @@ DoorMeshNode2D::DoorMeshNode2D( irr::scene::ISceneNode* parent, irr::s32 id /*= 
 		CircleBuffer_->recalculateBoundingBox();
 		CircleBuffer_->getMaterial().ZBuffer = irr::video::ECFN_ALWAYS;
 		CircleBuffer_->getMaterial().Lighting = false;
-		CircleBuffer_->getMaterial().MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_LINE);
+		CircleBuffer_->getMaterial().MaterialType = ExtShaders::GetInstance().GetShaderType(EST_LINE);
 		CircleBuffer_->getMaterial().DiffuseColor = dbc;
 		//CircleBuffer_->getMaterial().AntiAliasing = irr::video::EAAM_LINE_SMOOTH;
 		CircleBuffer_->getMaterial().Thickness = 2;

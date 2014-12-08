@@ -8,7 +8,7 @@
 #include "IVideoDriver.h"
 #include "ISceneManager.h"
 
-#include "IrrEngine/IrrEngine.h"
+#include "irrEngine/IrrExtension/ExtShaders.h"
 #include "MeshSceneNode/WallMeshNode2D.h"
 #include "irrEngine/IrrExtension/FreetypeFontManager.h"
 
@@ -391,7 +391,7 @@ void WallODL::UpdateCutMesh()
 
 	{//3D模型
 		auto meshBuf = ODLTools::NEW_CreateMeshBuffer(CutShape_);
-		meshBuf->getMaterial().MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_ADS_LIGHT);
+		meshBuf->getMaterial().MaterialType = ExtShaders::GetInstance().GetShaderType(EST_ADS_LIGHT);
 		assert(meshBuf);
 		auto newMesh = new irr::scene::SMesh;
 		newMesh->addMeshBuffer(meshBuf);
@@ -435,6 +435,7 @@ void WallODL::UpdateCutMesh()
 
 	{//设置效果
 		GetDataSceneNode()->AddToDepthPass();
+		GetDataSceneNode()->AddToShadowPass();
 		SetDefaultTexture();
 	}
 }
@@ -444,7 +445,7 @@ void WallODL::UpdateBaseMesh()
 {
 	{//3D模型
 		auto meshBuf = ODLTools::NEW_CreateMeshBuffer(GetBaseShape());
-		meshBuf->getMaterial().MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_ADS_LIGHT);
+		meshBuf->getMaterial().MaterialType = ExtShaders::GetInstance().GetShaderType(EST_ADS_LIGHT);
 		assert(meshBuf);
 		auto newMesh = new irr::scene::SMesh;
 		newMesh->addMeshBuffer(meshBuf);
@@ -488,6 +489,7 @@ void WallODL::UpdateBaseMesh()
 	
 	{//设置效果
 		GetDataSceneNode()->AddToDepthPass();
+		GetDataSceneNode()->AddToShadowPass();
 		SetDefaultTexture();
 	}
 }
@@ -513,7 +515,7 @@ void WallODL::UpdateSweeping()
 {
 	if ( IsSweeping() )
 	{
-		GetDataSceneNode()->getMaterial(0).MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_LUMINANCE);
+		GetDataSceneNode()->getMaterial(0).MaterialType = ExtShaders::GetInstance().GetShaderType(EST_LUMINANCE);
 	}
 	else
 	{

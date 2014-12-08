@@ -3,7 +3,7 @@
 #include "RoomLayoutWindowCtrller.h"
 #include "RenderController/UserEvent.h"
 #include "irrEngine/SRenderContext.h"
-#include "irrEngine/irrEngine.h"
+#include "irrEngine/IrrExtension/ExtShaders.h"
 #include "irrEngine/IrrExtension/FreetypeFontManager.h"
 #include "SMeshBuffer.h"
 
@@ -57,7 +57,7 @@ public:
 			LineBuf_->Indices.push_back(2);
 			LineBuf_->Indices.push_back(3);
 
-			LineBuf_->getMaterial().MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_LINE);
+			LineBuf_->getMaterial().MaterialType = ExtShaders::GetInstance().GetShaderType(EST_LINE);
 			LineBuf_->getMaterial().DiffuseColor = SColor(0xFF0000FF);
 			LineBuf_->getMaterial().Thickness = 2;
 		}

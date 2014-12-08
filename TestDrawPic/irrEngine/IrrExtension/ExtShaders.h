@@ -5,125 +5,47 @@
 
 #include "IShaderConstantSetCallBack.h"
 #include "SMaterial.h"
-#include "ISceneManager.h"
 
 #include "irrEngine/irrEngineFwd.h"
 
-class	LuminanceCB : public irr::video::IShaderConstantSetCallBack
+enum EShaderType
 {
-public:
+	EST_LUMINANCE,
 
-	virtual void OnSetConstants(irr::video::IMaterialRendererServices* services, irr::s32 userData);
+	EST_LINE,
 
-	virtual void OnSetMaterial(const irr::video::SMaterial& material);
+	EST_VERTEX_ALPHA,
 
-	static	const char*	GetVertexShader();
-	static	const char*	GetPixelShader();
+	EST_FONT,
 
-private:
+	EST_ADS_LIGHT,
 
-	irr::video::SMaterial	CurrentMaterial_;
-};
+	EST_PICKING,
 
-class	LineColorCB : public irr::video::IShaderConstantSetCallBack
-{
-public:
-
-	virtual void OnSetConstants(irr::video::IMaterialRendererServices* services, irr::s32 userData);
-
-	virtual void OnSetMaterial(const irr::video::SMaterial& material);
-
-	static	const char*	GetVertexShader();
-	static	const char*	GetPixelShader();
-
-private:
-
-	irr::video::SMaterial	CurrentMaterial_;
-};
-
-class	VertexAlphaCB : public irr::video::IShaderConstantSetCallBack
-{
-public:
-
-	virtual void OnSetConstants(irr::video::IMaterialRendererServices* services, irr::s32 userData);
-
-	virtual void OnSetMaterial(const irr::video::SMaterial& material);
-
-	static	const char*	GetVertexShader();
-	static	const char*	GetPixelShader();
-
-private:
-
-	irr::video::SMaterial	CurrentMaterial_;
-};
-
-class	FontColorCB : public irr::video::IShaderConstantSetCallBack
-{
-public:
-
-	virtual void OnSetConstants(irr::video::IMaterialRendererServices* services, irr::s32 userData);
-
-	virtual void OnSetMaterial(const irr::video::SMaterial& material);
-
-	static	const char*	GetVertexShader();
-	static	const char*	GetPixelShader();
-
-private:
-
-	irr::video::SMaterial	CurrentMaterial_;
-};
-
-class	ADSLightCB : public irr::video::IShaderConstantSetCallBack
-{
-public:
-
-	ADSLightCB()
-	{
-		Smgr_ = nullptr;
-	}
-
-	virtual void OnSetConstants(irr::video::IMaterialRendererServices* services, irr::s32 userData);
-
-	virtual void OnSetMaterial(const irr::video::SMaterial& material);
-
-	static	const char*	GetVertexShader();
-	static	const char*	GetPixelShader();
-
-	void	SetSmgr(irr::scene::ISceneManager* smgr) { Smgr_ = smgr; }
-
-private:
-
-	irr::video::SMaterial	CurrentMaterial_;
-	irr::scene::ISceneManager*	Smgr_;
-};
-
-class	PickingColorCB : public irr::video::IShaderConstantSetCallBack
-{
-public:
-
-	PickingColorCB()
-	{
-		
-	}
-
-	virtual void OnSetConstants(irr::video::IMaterialRendererServices* services, irr::s32 userData);
-
-	virtual void OnSetMaterial(const irr::video::SMaterial& material);
-
-	static	const char*	GetVertexShader();
-	static	const char*	GetPixelShader();
-
-private:
-
-	irr::video::SMaterial	CurrentMaterial_;
+	EST_COUNT
 };
 
 
 class	ExtShaders
 {
+	class	Imp;
+	std::unique_ptr<Imp>	ImpUPtr_;
+
 public:
 
-	static	void	Init(const IrrEngineUPtr& engine);
+	static	void	InitInstance(const IrrEngineUPtr& engine);
+
+	static	ExtShaders&	GetInstance();
+
+public:
+
+	ExtShaders();
+
+	~ExtShaders();
+
+public:
+
+	irr::video::E_MATERIAL_TYPE	GetShaderType(EShaderType enm);
 };
 
 

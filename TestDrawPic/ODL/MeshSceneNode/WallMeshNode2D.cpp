@@ -13,7 +13,7 @@
 
 #include "ODL/ODLTools.h"
 #include "ODL/WallODL.h"
-#include "irrEngine/irrEngine.h"
+#include "irrEngine/IrrExtension/ExtShaders.h"
 
 using namespace irr;
 using namespace core;
@@ -54,7 +54,7 @@ WallMeshNode2D::WallMeshNode2D(irr::scene::ISceneNode* parent, irr::s32 id):IMes
 	LineMaterial_.BackfaceCulling = false;
 	LineMaterial_.Thickness = 2;
 	LineMaterial_.Wireframe = true;
-	LineMaterial_.MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_LINE);
+	LineMaterial_.MaterialType = ExtShaders::GetInstance().GetShaderType(EST_LINE);
 	LineMaterial_.DiffuseColor = 0xFF8F8F8F;
 	//LineMaterial_.AntiAliasing = irr::video::EAAM_LINE_SMOOTH;
 }
@@ -127,7 +127,7 @@ void WallMeshNode2D::SetSweeping( bool val )
 {
 	if ( val )
 	{
-		FaceBuffer_->getMaterial().MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_PICKING);
+		FaceBuffer_->getMaterial().MaterialType = ExtShaders::GetInstance().GetShaderType(EST_PICKING);
 		FaceBuffer_->getMaterial().DiffuseColor = 0xFFFFFF00;
 	}
 	else
@@ -140,7 +140,7 @@ void WallMeshNode2D::SetPicking( bool val )
 {
 	if ( val )
 	{
-		FaceBuffer_->getMaterial().MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_PICKING);
+		FaceBuffer_->getMaterial().MaterialType = ExtShaders::GetInstance().GetShaderType(EST_PICKING);
 		FaceBuffer_->getMaterial().DiffuseColor = 0xFF00FFFF;
 	}
 	else

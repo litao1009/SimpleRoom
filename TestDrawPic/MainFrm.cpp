@@ -128,7 +128,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	ModifyStyle(0, FWS_PREFIXTITLE);
 
 	IrrEngine::CreateDeviceInstance(GetSafeHwnd(), false, 16);
-	ExtShaders::Init(IrrEngine::GetInstance());
+	ExtShaders::InitInstance(IrrEngine::GetInstance());
 	IrrEngine::GetInstance()->GetDevice()->getFileSystem()->addFileArchive("../Data/Resource/", true, true, irr::io::EFAT_FOLDER);
 
 	return 0;

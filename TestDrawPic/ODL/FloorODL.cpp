@@ -14,7 +14,7 @@
 #include "ISceneManager.h"
 #include "SMesh.h"
 
-#include "irrEngine/irrEngine.h"
+#include "irrEngine/IrrExtension/ExtShaders.h"
 
 FloorODL::FloorODL(const SRenderContextWPtr& rc):BaseODL(rc)
 {
@@ -49,7 +49,7 @@ FloorODLSPtr FloorODL::CreateByFace( SRenderContextWPtr renderContext, const Top
 
 	{//3D
 		auto meshBuf = ODLTools::NEW_CreateMeshBuffer(floorFace);
-		meshBuf->getMaterial().MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_ADS_LIGHT);
+		meshBuf->getMaterial().MaterialType = ExtShaders::GetInstance().GetShaderType(EST_ADS_LIGHT);
 		assert(meshBuf);
 
 		auto mesh = new irr::scene::SMesh;
@@ -62,6 +62,7 @@ FloorODLSPtr FloorODL::CreateByFace( SRenderContextWPtr renderContext, const Top
 		newFloor->GetDataSceneNode()->getMaterial(0).PolygonOffsetDirection = irr::video::EPO_FRONT;
 		newFloor->GetDataSceneNode()->getMaterial(0).PolygonOffsetFactor = 1;
 		newFloor->GetDataSceneNode()->AddToDepthPass();
+		newFloor->GetDataSceneNode()->AddToShadowPass();
 		newFloor->SetDefaultTexture();
 	}
 

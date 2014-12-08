@@ -9,6 +9,7 @@
 
 #include "irrEngine/SRenderContext.h"
 #include "irrEngine/irrEngine.h"
+#include "irrEngine/IrrExtension/ExtShaders.h"
 #include "IMeshSceneNode.h"
 #include "SMeshBuffer.h"
 #include "ISceneManager.h"
@@ -45,7 +46,7 @@ public:
 		auto& mat = MeshBuffer_->getMaterial();
 		mat.Lighting = false;
 		mat.BackfaceCulling = false;
-		mat.MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_VERTEX_ALPHA);
+		mat.MaterialType = ExtShaders::GetInstance().GetShaderType(EST_VERTEX_ALPHA);
 		mat.MaterialTypeParam = 0.5f;
 	}
 
@@ -146,7 +147,7 @@ public:
 			auto& mat = Point_->getMaterial();
 			mat.Lighting = false;
 			mat.BackfaceCulling = false;
-			mat.MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_VERTEX_ALPHA);
+			mat.MaterialType = ExtShaders::GetInstance().GetShaderType(EST_VERTEX_ALPHA);
 			mat.MaterialTypeParam = 0.5f;
 			mat.setTexture(0, IrrEngine::GetInstance()->GetDevice()->getVideoDriver()->getTexture("3D/dot.png"));
 		}
@@ -165,7 +166,7 @@ public:
 			auto& mat = Line_->getMaterial();
 			mat.Lighting = false;
 			mat.BackfaceCulling = false;
-			mat.MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_LINE);
+			mat.MaterialType = ExtShaders::GetInstance().GetShaderType(EST_LINE);
 			mat.DiffuseColor = SColor(0xFF0000FF);
 			mat.Thickness = 4;
 		}

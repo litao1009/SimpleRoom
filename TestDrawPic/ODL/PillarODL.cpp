@@ -9,6 +9,8 @@
 
 #include "BRepPrimAPI_MakeBox.hxx"
 
+#include "irrEngine/IrrExtension/ExtShaders.h"
+
 using namespace irr;
 using namespace core;
 using namespace video;
@@ -78,6 +80,7 @@ void PillarODL::UpdateMesh()
 	mesh->recalculateBoundingBox();
 
 	GetDataSceneNode()->setMesh(mesh);
+	GetDataSceneNode()->getMaterial(0).MaterialType = ExtShaders::GetInstance().GetShaderType(EST_ADS_LIGHT);
 
 	meshbuf->drop();
 	mesh->drop();
@@ -85,6 +88,7 @@ void PillarODL::UpdateMesh()
 	ImpUPtr_->MeshNode2D_->UpdateMesh(static_cast<float>(ImpUPtr_->Size_.X()), static_cast<float>(ImpUPtr_->Size_.Z()));
 
 	GetDataSceneNode()->AddToDepthPass();
+	GetDataSceneNode()->AddToShadowPass();
 	SetDefaultTexture();
 }
 

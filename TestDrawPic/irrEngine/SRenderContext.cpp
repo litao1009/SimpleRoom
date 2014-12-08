@@ -83,27 +83,32 @@ SRenderContext::SRenderContext( void* Hwnd, irr::video::SColor clr ):ImpUPtr_(ne
 	{//Effect
 		imp_.Effect_ = std::make_shared<EffectHandler>(baseDevice, baseDriver->getScreenSize(), true, true, true);
 		imp_.Effect_->setActiveSceneManager(Smgr_.get());
-		imp_.Effect_->setAmbientColor(BackGroundClr_);
-		imp_.Effect_->setClearColour(BackGroundClr_);
-		imp_.Effect_->enableDepthPass(true);
 
-		//Effect_->addShadowLight(SShadowLight(1024, irr::core::vector3df(0, 4000, 0), irr::core::vector3df(0,0,0), irr::video::SColorf(1,1,1,1), 20, 10000, 120*irr::core::DEGTORAD64, true));
+		auto effectClr = BackGroundClr_;
+		effectClr.setRed(effectClr.getRed() > 0xa0 ? 0xa0 : effectClr.getRed());
+		effectClr.setGreen(effectClr.getGreen() > 0xa0 ? 0xa0 : effectClr.getGreen());
+		effectClr.setBlue(effectClr.getBlue() > 0xa0 ? 0xa0 : effectClr.getBlue());
+
+		imp_.Effect_->setAmbientColor(effectClr);
+		imp_.Effect_->setClearColour(BackGroundClr_);
+		//imp_.Effect_->enableDepthPass(true);
+
+		imp_.Effect_->addShadowLight(SShadowLight(1024, irr::core::vector3df(1000, 4000, 1000), irr::core::vector3df(0,0,0), irr::video::SColorf(1,1,1,1), 20, 10000, 120*irr::core::DEGTORAD64, false));
 		// Generate and set the random vector user texture for the SSAO to use.
 		auto randVecTexture = imp_.Effect_->generateRandomVectorTexture(irr::core::dimension2du(512, 512));
 		imp_.Effect_->setPostProcessingUserTexture(randVecTexture);
 		
 		//irr::s32 SSAO = imp_.Effect_->addPostProcessingEffectFromFile("../Data/Resource/3D/shaders/SSAO.glsl");
+		//auto ssaoCallback = new SSAORenderCallback(SSAO);
+		//imp_.Effect_->setPostProcessingRenderCallback(SSAO, ssaoCallback);
 		//irr::s32 BlurH = imp_.Effect_->addPostProcessingEffectFromFile("../Data/Resource/3D/shaders/BlurHP.glsl");
 		//irr::s32 BlurV = imp_.Effect_->addPostProcessingEffectFromFile("../Data/Resource/3D/shaders/BlurVP.glsl");
 		//irr::s32 SSAOCombine = imp_.Effect_->addPostProcessingEffectFromFile("../Data/Resource/3D/shaders/SSAOCombine.glsl");
 
-		//Effect_->addPostProcessingEffectFromFile("../Data/Resource/3D/shaders/BrightPass.glsl");
-		//Effect_->addPostProcessingEffectFromFile("../Data/Resource/3D/shaders/BlurHP.glsl");
-		//Effect_->addPostProcessingEffectFromFile("../Data/Resource/3D/shaders/BlurVP.glsl");
-		//Effect_->addPostProcessingEffectFromFile("../Data/Resource/3D/shaders/BloomP.glsl");
-
-		//auto ssaoCallback = new SSAORenderCallback(SSAO);
-		//imp_.Effect_->setPostProcessingRenderCallback(SSAO, ssaoCallback);
+		//imp_.Effect_->addPostProcessingEffectFromFile("../Data/Resource/3D/shaders/BrightPass.glsl");
+		//imp_.Effect_->addPostProcessingEffectFromFile("../Data/Resource/3D/shaders/BlurHP.glsl");
+		//imp_.Effect_->addPostProcessingEffectFromFile("../Data/Resource/3D/shaders/BlurVP.glsl");
+		//imp_.Effect_->addPostProcessingEffectFromFile("../Data/Resource/3D/shaders/BloomP.glsl");
 	}
 }
 

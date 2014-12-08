@@ -19,7 +19,6 @@ public:
 	boost::filesystem::path					ResPath_;
 	irr::SIrrlichtCreationParameters		Params_;
 	std::shared_ptr<irr::CIrrDeviceWin32>	DeviceSPtr_;
-	std::map<EShaderType,int>				ShaderMap_;
 	std::vector<UpdateFunctor>				UpdateList_;
 };
 
@@ -95,11 +94,6 @@ irr::IrrlichtDevice* IrrEngine::GetDevice()
 	return ImpUPtr_->DeviceSPtr_.get();
 }
 
-irr::video::E_MATERIAL_TYPE IrrEngine::GetShaderType( EShaderType enm )
-{
-	return static_cast<irr::video::E_MATERIAL_TYPE>(ImpUPtr_->ShaderMap_.at(enm));
-}
-
 bool IrrEngine::SetResPath( boost::filesystem::path dirPath )
 {
 	if ( !boost::filesystem::is_directory(dirPath) )
@@ -173,9 +167,3 @@ void IrrEngine::Register( const UpdateFunctor& ftr )
 {
 	ImpUPtr_->UpdateList_.push_back(ftr);
 }
-
-void IrrEngine::AddShaderType( EShaderType enm, irr::video::E_MATERIAL_TYPE emt )
-{
-	ImpUPtr_->ShaderMap_.emplace(enm, emt);
-}
-

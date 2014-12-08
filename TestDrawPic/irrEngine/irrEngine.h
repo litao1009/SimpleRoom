@@ -1,7 +1,6 @@
 #pragma once
 
 #include "irrlicht.h"
-#include "EShaderType.h"
 #include "SRenderContextFwd.h"
 #include "irrEngineFwd.h"
 
@@ -92,10 +91,6 @@ public:
 public:
 
 	irr::IrrlichtDevice*		GetDevice();
-
-	irr::video::E_MATERIAL_TYPE	GetShaderType(EShaderType enm);
-
-	void						AddShaderType(EShaderType enm, irr::video::E_MATERIAL_TYPE emt);
 
 	//************************************
 	// Method:  IrrEngine::SetResPath

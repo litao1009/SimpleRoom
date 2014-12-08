@@ -259,3 +259,9 @@ void CSceneNode3D::SetMaterialType( irr::video::E_MATERIAL_TYPE mt )
 		Mesh_->getMeshBuffer(index)->getMaterial().MaterialType = mt;
 	}
 }
+
+bool CSceneNode3D::isTrulyVisible() const
+{
+	auto r = 0 != (GetRenderMode() & ESNT_3D);
+	return ISceneNode::isTrulyVisible() && r;
+}

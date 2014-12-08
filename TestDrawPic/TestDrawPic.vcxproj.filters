@@ -330,9 +330,6 @@
     <ClInclude Include="irrEngine\irrEngineFwd.h">
       <Filter>IrrEngine</Filter>
     </ClInclude>
-    <ClInclude Include="irrEngine\EShaderType.h">
-      <Filter>IrrEngine</Filter>
-    </ClInclude>
     <ClInclude Include="ChildFrm.h">
       <Filter>src</Filter>
     </ClInclude>

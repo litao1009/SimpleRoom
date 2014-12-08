@@ -5,7 +5,7 @@
 #include "SMesh.h"
 #include "SMeshBuffer.h"
 
-#include "irrEngine/irrEngine.h"
+#include "irrEngine/IrrExtension/ExtShaders.h"
 
 #if COMPILE_WITH_FREETYPE
 
@@ -663,7 +663,7 @@ irr::scene::IMesh* CGUIFreetypeFont::GenerateTextMesh(const irr::core::stringw& 
 		auto meshBuf = new SMeshBuffer;
 		meshBuf->getMaterial().Lighting = false;
 		meshBuf->getMaterial().BackfaceCulling = false;
-		meshBuf->getMaterial().MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_FONT);
+		meshBuf->getMaterial().MaterialType = ExtShaders::GetInstance().GetShaderType(EST_FONT);
 		meshBuf->getMaterial().DiffuseColor = 0xFF000000;
 		meshBuf->getMaterial().setTexture(0, curGlyph->tex);
 

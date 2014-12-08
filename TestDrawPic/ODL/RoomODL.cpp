@@ -8,7 +8,7 @@
 #include "SMeshBuffer.h"
 #include "irrEngine/IrrExtension/FreetypeFontManager.h"
 #include "irrEngine/SRenderContext.h"
-#include "irrEngine/irrEngine.h"
+#include "irrEngine/IrrExtension/ExtShaders.h"
 
 #include "BRepBuilderAPI_MakePolygon.hxx"
 #include "BRepBuilderAPI_MakeFace.hxx"
@@ -155,7 +155,7 @@ bool RoomODL::Build()
 		{
 			auto lableMeshBuf = ODLTools::NEW_CreateRectMeshBuffer(0.5f);
 			lableMeshBuf->getMaterial().DiffuseColor = 0xFF000000;
-			lableMeshBuf->getMaterial().MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_FONT);
+			lableMeshBuf->getMaterial().MaterialType = ExtShaders::GetInstance().GetShaderType(EST_FONT);
 
 			auto lableMesh = new irr::scene::SMesh;
 			lableMesh->addMeshBuffer(lableMeshBuf);
@@ -171,7 +171,7 @@ bool RoomODL::Build()
 		{
 			auto lableMeshBuf = ODLTools::NEW_CreateRectMeshBuffer(0.5f);
 			lableMeshBuf->getMaterial().DiffuseColor = 0xFF000000;
-			lableMeshBuf->getMaterial().MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_FONT);
+			lableMeshBuf->getMaterial().MaterialType = ExtShaders::GetInstance().GetShaderType(EST_FONT);
 
 			auto lableMesh = new irr::scene::SMesh;
 			lableMesh->addMeshBuffer(lableMeshBuf);

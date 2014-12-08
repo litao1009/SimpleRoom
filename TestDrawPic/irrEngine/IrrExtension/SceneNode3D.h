@@ -32,6 +32,8 @@ public://ISceneNode
 
 	virtual void setVisible(bool isVisible);
 
+	virtual	bool isTrulyVisible() const;
+
 public://IMeshSceneNode
 
 	virtual void setMesh(irr::scene::IMesh* mesh);

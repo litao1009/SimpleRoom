@@ -282,7 +282,7 @@ void EffectHandler::update(irr::video::ITexture* outputTarget)
 				if(ShadowNodeArray[i].shadowMode == ESM_RECEIVE || ShadowNodeArray[i].shadowMode == ESM_EXCLUDE)
 					continue;
 
-				if ( !ShadowNodeArray[i].node->isVisible() )
+				if ( !ShadowNodeArray[i].node->isTrulyVisible() )
 				{
 					continue;
 				}
@@ -373,7 +373,7 @@ void EffectHandler::update(irr::video::ITexture* outputTarget)
 			ScreenQuad.getMaterial().setTexture(0, ScreenQuad.rt[1]);
 			auto blendFunc = ScreenQuad.getMaterial().BlendOperation;
 			ScreenQuad.getMaterial().MaterialType = (E_MATERIAL_TYPE)Simple;
-			ScreenQuad.getMaterial().BlendOperation = EBO_ADD;
+			//ScreenQuad.getMaterial().BlendOperation = EBO_ADD;
 			ScreenQuad.render(driver);
 			ScreenQuad.getMaterial().BlendOperation = blendFunc;
 		}

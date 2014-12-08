@@ -2,7 +2,7 @@
 
 #include "RoomLayoutWallCtrller.h"
 
-#include "irrEngine/irrEngine.h"
+#include "irrEngine/IrrExtension/ExtShaders.h"
 #include "irrEngine/SRenderContext.h"
 #include "UserEvent.h"
 
@@ -584,7 +584,7 @@ void RoomLayoutWallCtrller::PostRender3D()
 				v2 = v2 * -100000 + vector3df(static_cast<float>(pos.X()), static_cast<float>(pos.Y()), static_cast<float>(pos.Z()));
 
 				video::SMaterial mat;
-				mat.MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_LINE);
+				mat.MaterialType = ExtShaders::GetInstance().GetShaderType(EST_LINE);
 				mat.DiffuseColor = imp_.Valid_ ? video::SColor(0xFF000000) : video::SColor(0xFFFF0000);
 				mat.Thickness = 2;
 				mat.ZBuffer = video::ECFN_ALWAYS;

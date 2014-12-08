@@ -11,7 +11,7 @@
 #include "TopoDS_Edge.hxx"
 #include "BRep_Tool.hxx"
 
-#include "IrrEngine/IrrEngine.h"
+#include "irrEngine/IrrExtension/ExtShaders.h"
 
 using namespace irr;
 using namespace core;
@@ -43,7 +43,7 @@ WindowMeshNode2D::WindowMeshNode2D(irr::scene::ISceneNode* parent, irr::s32 id):
 	MeshBuffer_->recalculateBoundingBox();
 
 	LineMaterial_.Lighting = false;
-	LineMaterial_.MaterialType = IrrEngine::GetInstance()->GetShaderType(EST_LINE);
+	LineMaterial_.MaterialType = ExtShaders::GetInstance().GetShaderType(EST_LINE);
 	LineMaterial_.DiffuseColor = dbc;
 	LineMaterial_.Thickness = 2;
 	LineMaterial_.PolygonOffsetDirection = irr::video::EPO_FRONT;

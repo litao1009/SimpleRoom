@@ -194,7 +194,6 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     <ClInclude Include="BLL\DesignBLL.h" />
     <ClInclude Include="DAL\DesignDAL.h" />
     <ClInclude Include="DAL\DecorDAL.h" />
-    <ClInclude Include="irrEngine\EShaderType.h" />
     <ClInclude Include="irrEngine\irrEngine.h" />
     <ClInclude Include="irrEngine\irrEngineFwd.h" />
     <ClInclude Include="irrEngine\MaterialRenderer.h" />
