@@ -6,7 +6,7 @@
 #include "BRep_Tool.hxx"
 #include "BRepTools.hxx"
 #include "Geom_Surface.hxx"
-#include "BRepMesh.hxx"
+#include "BRepMesh_IncrementalMesh.hxx"
 #include "TColgp_Array1OfPnt.hxx"
 #include "Poly_Array1OfTriangle.hxx"
 #include "Poly_Triangulation.hxx"
@@ -36,7 +36,7 @@ ODLTools::SSingelMeshOpt ODLTools::CreateFaceMesh( TopoDS_Face& faceShape, const
 	Standard_Real umin,umax,vmin,vmax;
 	BRepTools::UVBounds(faceShape, umin, umax, vmin, vmax);
 
-	BRepMesh::Mesh(faceShape, 0.1);
+	BRepMesh_IncrementalMesh(faceShape, 0.1);
 
 	TopLoc_Location L;
 	Handle (Poly_Triangulation) polyTriangles = BRep_Tool::Triangulation(faceShape,L);
@@ -254,7 +254,7 @@ irr::scene::IMesh* ODLTools::CreateMesh( TopoDS_Shape& shape )
 			faceDir.Reverse();
 		}
 
-		BRepMesh::Mesh(curFace, 0.1);
+		BRepMesh_IncrementalMesh(curFace, 0.1);
 
 		TopLoc_Location L;
 		Handle (Poly_Triangulation) polyTriangles = BRep_Tool::Triangulation(curFace,L);
@@ -394,7 +394,7 @@ ODLTools::SMeshSet ODLTools::CreateMesh( const TopoDS_Shape& shape, const boost:
 				faceTrans = roateToDZ * tranToOriginal;				
 			}
 
-			BRepMesh::Mesh(curFace, 0.1);
+			BRepMesh_IncrementalMesh(curFace, 0.1);
 
 			TopLoc_Location L;
 			Handle (Poly_Triangulation) polyTriangles = BRep_Tool::Triangulation(curFace,L);
@@ -634,7 +634,7 @@ irr::scene::IMeshBuffer* ODLTools::NEW_CreateMeshBuffer( const TopoDS_Shape& sha
 			faceDir.Reverse();
 		}
 
-		BRepMesh::Mesh(curFace, 0.1);
+		BRepMesh_IncrementalMesh(curFace, 0.1);
 
 		TopLoc_Location L;
 		Handle (Poly_Triangulation) polyTriangles = BRep_Tool::Triangulation(curFace,L);

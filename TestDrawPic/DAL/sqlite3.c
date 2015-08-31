@@ -22,6 +22,7 @@ extern "C"{
 */
 #include <windows.h>
 #include <wincrypt.h>
+#include <VersionHelpers.h>
 
 #define SQLITE_CORE 1
 #define SQLITE_AMALGAMATION 1
@@ -28232,10 +28233,7 @@ static int sqlite3_os_type = 0;
 #else
   static int isNT(void){
     if( sqlite3_os_type==0 ){
-      OSVERSIONINFO sInfo;
-      sInfo.dwOSVersionInfoSize = sizeof(sInfo);
-      GetVersionEx(&sInfo);
-      sqlite3_os_type = sInfo.dwPlatformId==VER_PLATFORM_WIN32_NT ? 2 : 1;
+	  sqlite3_os_type = IsWindowsXPSP3OrGreater() ? 2 : 1;
     }
     return sqlite3_os_type==2;
   }

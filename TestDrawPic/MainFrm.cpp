@@ -82,6 +82,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_wndSelect.EnableDocking(CBRS_ALIGN_LEFT);
 	//this->AddPane(&m_wndSelect);
 	DockPane(&m_wndSelect);
+	SetHTMLDlgVisiable(true);
 
 	CString strTitlePane1;
 	CString strTitlePane2;

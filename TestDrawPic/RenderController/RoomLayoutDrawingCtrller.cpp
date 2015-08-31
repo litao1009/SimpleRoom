@@ -969,7 +969,7 @@ bool RoomLayoutDrawingCtrller::OnPostEvent( const irr::SEvent& evt )
 
 	if ( evt.EventType == EET_KEY_INPUT_EVENT )
 	{
-		if ( evt.KeyInput.Key == KEY_ESCAPE && evt.KeyInput.PressedDown )
+		if ( (evt.KeyInput.Key == KEY_F1 || evt.KeyInput.Key == KEY_ESCAPE) && evt.KeyInput.PressedDown )
 		{
 			imp_.EscPressDown_ = true;
 		}

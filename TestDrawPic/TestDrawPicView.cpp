@@ -485,7 +485,10 @@ CMainFrame* CTestDrawPicView::GetMainFrame() const
 
 void CTestDrawPicView::OnBtnRoomLayoutCreateDrawWall()
 {
-	
+	irr::SEvent evt;
+	evt.EventType = irr::EET_USER_EVENT;
+	evt.UserEvent.UserData1 = EUT_ROOMLAYOUT_DRAWWALL;
+	GetRootODL()->GetRenderContext()->PostEvent(evt);
 }
 
 

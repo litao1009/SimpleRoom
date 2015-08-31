@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -19,14 +19,14 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
     <UseOfMfc>Dynamic</UseOfMfc>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v110_xp</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
     <UseOfMfc>Dynamic</UseOfMfc>
@@ -43,8 +43,8 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)externals/OCCTLib/inc;$(SolutionDir)externals/Irrlicht/source;$(SolutionDir)externals/Irrlicht/include;$(ProjectDir);$(SolutionDir)externals/freetype/include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)externals/OCCTLib/libd;$(LibraryPath)</LibraryPath>
+    <IncludePath>G:\sugar\externals\OpenCasCade\inc;$(SolutionDir)externals/Irrlicht/source;$(SolutionDir)externals/Irrlicht/include;$(ProjectDir);$(SolutionDir)externals/freetype/include;$(IncludePath)</IncludePath>
+    <LibraryPath>G:\sugar\externals\OpenCasCade\lib\Debug\Win32\v120;$(LibraryPath)</LibraryPath>
     <GenerateManifest>false</GenerateManifest>
     <IntDir>$(ObjDir)</IntDir>
     <OutDir>$(SolutionDir)build\bin\$(ProjectName)\$(Configuration)$(Platform)\</OutDir>
@@ -67,7 +67,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>TKOffset.lib;TKFillet.lib;TKFeat.lib;TKBool.lib;TKShHealing.lib;TKSTL.lib;TKXMesh.lib;TKHLR.lib;TKBO.lib;TKMesh.lib;TKPrim.lib;TKTopAlgo.lib;TKGeomAlgo.lib;TKBRep.lib;TKGeomBase.lib;TKG3d.lib;TKG2d.lib;TKAdvTools.lib;TKMath.lib;TKernel.lib;$(SolutionDir)build\lib\Irrlicht\Static lib - DebugWin32\Irrlicht.lib;$(SolutionDir)build\lib\freetype\Debug MultithreadedWin32\freetype.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>TKernel.lib;TKTopAlgo.lib;TKBO.lib;TKBool.lib;TKBRep.lib;TKFeat.lib;TKG2d.lib;TKG3d.lib;TKGeomAlgo.lib;TKGeomBase.lib;TKMath.lib;TKMesh.lib;TKOffset.lib;TKPrim.lib;TKShHealing.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
@@ -80,8 +80,8 @@
       <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <PostBuildEvent>
-      <Command>copy /y $(SolutionDir)externals\OCCTLib\bind\*.dll $(OutDir)
-copy /y $(SolutionDir)externals\OCCTLib\bind\*.pdb $(OutDir)
+      <Command>copy /y G:\sugar\externals\OpenCasCade\bin\Debug\Win32\v120\*.dll $(OutDir)
+copy /y G:\sugar\externals\OpenCasCade\bin\Debug\Win32\v120\*.pdb $(OutDir)
 xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -368,6 +368,14 @@ xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
   <ItemGroup>
     <None Include="res\ribbon.mfcribbon-ms" />
     <None Include="res\TestDrawPic.rc2" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\externals\freetype\freetype.vcxproj">
+      <Project>{78b079bd-9fc7-4b9e-b4a6-96da0f00248b}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\externals\Irrlicht\source\Irrlicht\Irrlicht10.0.vcxproj">
+      <Project>{e08e042a-6c45-411b-92be-3cc31331019f}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
