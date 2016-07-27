@@ -43,8 +43,8 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>G:\sugar\externals\OpenCasCade\inc;$(SolutionDir)externals/Irrlicht/source;$(SolutionDir)externals/Irrlicht/include;$(ProjectDir);$(SolutionDir)externals/freetype/include;$(IncludePath)</IncludePath>
-    <LibraryPath>G:\sugar\externals\OpenCasCade\lib\Debug\Win32\v120;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)externals\OCCTLib\inc;$(SolutionDir)externals/Irrlicht/source;$(SolutionDir)externals/Irrlicht/include;$(ProjectDir);$(SolutionDir)externals/freetype/include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)externals\OCCTLib\libd;$(LibraryPath)</LibraryPath>
     <GenerateManifest>false</GenerateManifest>
     <IntDir>$(ObjDir)</IntDir>
     <OutDir>$(SolutionDir)build\bin\$(ProjectName)\$(Configuration)$(Platform)\</OutDir>
@@ -80,8 +80,8 @@
       <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <PostBuildEvent>
-      <Command>copy /y G:\sugar\externals\OpenCasCade\bin\Debug\Win32\v120\*.dll $(OutDir)
-copy /y G:\sugar\externals\OpenCasCade\bin\Debug\Win32\v120\*.pdb $(OutDir)
+      <Command>copy /y $(SolutionDir)externals\OCCTLib\bind\*.dll $(OutDir)
+copy /y $(SolutionDir)externals\OCCTLib\bind\*.pdb $(OutDir)
 xcopy /d /e /y "$(ProjectDir)Data" "$(OutDir)..\Data\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
