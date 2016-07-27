@@ -1,0 +1,372 @@
+Index: include/CDynamicMeshBuffer.h
+===================================================================
+--- include/CDynamicMeshBuffer.h	(revision 11)
++++ include/CDynamicMeshBuffer.h	(working copy)
+@@ -101,11 +101,16 @@
+ 			}
+ 		}
+ 
++		virtual	std::shared_ptr<evr::EVMaterial>	getRenderMaterial() { return RenderMaterialSPtr; }
++
++		virtual	void setRenderMaterial(std::shared_ptr<evr::EVMaterial> evmat) { RenderMaterialSPtr = evmat; }
++
+ 		video::SMaterial Material;
+ 		core::aabbox3d<f32> BoundingBox;
+ 	private:
+ 		IVertexBuffer *VertexBuffer;
+ 		IIndexBuffer *IndexBuffer;
++		std::shared_ptr<evr::EVMaterial>	RenderMaterialSPtr;
+ 	};
+ 
+ 
+Index: include/CMeshBuffer.h
+===================================================================
+--- include/CMeshBuffer.h	(revision 11)
++++ include/CMeshBuffer.h	(working copy)
+@@ -270,6 +270,10 @@
+ 		/** This shouldn't be used for anything outside the VideoDriver. */
+ 		virtual u32 getChangedID_Index() const {return ChangedID_Index;}
+ 
++		virtual	std::shared_ptr<evr::EVMaterial>	getRenderMaterial() { return RenderMaterialSPtr; }
++
++		virtual	void setRenderMaterial(std::shared_ptr<evr::EVMaterial> evmat) { RenderMaterialSPtr = evmat; }
++
+ 		u32 ChangedID_Vertex;
+ 		u32 ChangedID_Index;
+ 
+@@ -285,6 +289,8 @@
+ 		core::array<u16> Indices;
+ 		//! Bounding box of this meshbuffer.
+ 		core::aabbox3d<f32> BoundingBox;
++
++		std::shared_ptr<evr::EVMaterial>	RenderMaterialSPtr;
+ 	};
+ 
+ 	//! Standard meshbuffer
+Index: include/IMeshBuffer.h
+===================================================================
+--- include/IMeshBuffer.h	(revision 11)
++++ include/IMeshBuffer.h	(working copy)
+@@ -13,6 +13,13 @@
+ #include "EHardwareBufferFlags.h"
+ #include "EPrimitiveTypes.h"
+ 
++#include <memory>
++
++namespace evr
++{
++class	EVMaterial;
++}
++
+ namespace irr
+ {
+ namespace scene
+@@ -144,6 +151,10 @@
+ 		//! Get the currently used ID for identification of changes.
+ 		/** This shouldn't be used for anything outside the VideoDriver. */
+ 		virtual u32 getChangedID_Index() const = 0;
++
++		virtual	std::shared_ptr<evr::EVMaterial>	getRenderMaterial() { return std::shared_ptr<evr::EVMaterial>(); }
++
++		virtual	void setRenderMaterial(std::shared_ptr<evr::EVMaterial> evmat) {}
+ 	};
+ 
+ } // end namespace scene
+Index: source/Irrlicht/COBJMeshFileLoader.cpp
+===================================================================
+--- source/Irrlicht/COBJMeshFileLoader.cpp	(revision 11)
++++ source/Irrlicht/COBJMeshFileLoader.cpp	(working copy)
+@@ -17,6 +17,10 @@
+ #include "coreutil.h"
+ #include "os.h"
+ 
++#if	(_MSC_VER >= 1310)
++#pragma warning(disable:4309)
++#endif
++
+ namespace irr
+ {
+ namespace scene
+@@ -91,6 +95,15 @@
+ 	bool mtlChanged=false;
+ 	bool useGroups = !SceneManager->getParameters()->getAttributeAsBool(OBJ_LOADER_IGNORE_GROUPS);
+ 	bool useMaterials = !SceneManager->getParameters()->getAttributeAsBool(OBJ_LOADER_IGNORE_MATERIAL_FILES);
++
++	if ( bufPtr!=bufEnd && filesize>3 )
++	{
++		if ( bufPtr[0] == static_cast<c8>(0xef) && bufPtr[1] == static_cast<c8>(0xbb) && bufPtr[2] == static_cast<c8>(0xbf) )
++		{
++			bufPtr += 3;
++		}
++	}
++
+ 	while(bufPtr != bufEnd)
+ 	{
+ 		switch(bufPtr[0])
+@@ -512,6 +525,15 @@
+ 	SObjMtl* currMaterial = 0;
+ 
+ 	const c8* bufPtr = buf;
++
++	if ( bufPtr!=bufEnd && filesize>3 )
++	{
++		if ( bufPtr[0] == static_cast<c8>(0xef) && bufPtr[1] == static_cast<c8>(0xbb) && bufPtr[2] == static_cast<c8>(0xbf) )
++		{
++			bufPtr += 3;
++		}
++	}
++
+ 	while(bufPtr != bufEnd)
+ 	{
+ 		switch(*bufPtr)
+@@ -682,7 +704,7 @@
+ 	c8 wordBuffer[WORD_BUFFER_LENGTH];
+ 
+ 	bufPtr = goAndCopyNextWord(wordBuffer, bufPtr, WORD_BUFFER_LENGTH, bufEnd);
+-	vec.X=-core::fast_atof(wordBuffer); // change handedness
++	vec.X=/*-*/core::fast_atof(wordBuffer); // change handedness
+ 	bufPtr = goAndCopyNextWord(wordBuffer, bufPtr, WORD_BUFFER_LENGTH, bufEnd);
+ 	vec.Y=core::fast_atof(wordBuffer);
+ 	bufPtr = goAndCopyNextWord(wordBuffer, bufPtr, WORD_BUFFER_LENGTH, bufEnd);
+Index: source/Irrlicht/COBJMeshWriter.cpp
+===================================================================
+--- source/Irrlicht/COBJMeshWriter.cpp	(revision 11)
++++ source/Irrlicht/COBJMeshWriter.cpp	(working copy)
+@@ -17,6 +17,8 @@
+ #include "IFileSystem.h"
+ #include "ITexture.h"
+ 
++#include <boost/filesystem/path.hpp>
++
+ namespace irr
+ {
+ namespace scene
+@@ -64,10 +66,15 @@
+ 
+ 	// write OBJ MESH header
+ 
+-	const core::stringc name(FileSystem->getFileBasename(SceneManager->getMeshCache()->getMeshName(mesh), false)+".mtl");
++	boost::filesystem::path tmpName(file->getFileName().c_str());
++	auto fileName = tmpName.filename();
++	auto pntPath = tmpName.parent_path();
++	const core::stringc name((pntPath / fileName.replace_extension("mtl")).c_str());
++
++	auto mtlPath = fileName.replace_extension("mtl");
+ 	file->write("# exported by Irrlicht\n",23);
+ 	file->write("mtllib ",7);
+-	file->write(name.c_str(),name.size());
++	file->write(mtlPath.string().c_str(),mtlPath.string().size());
+ 	file->write("\n\n",2);
+ 
+ 	// write mesh buffers
+@@ -129,32 +136,66 @@
+ 			const u32 indexCount = buffer->getIndexCount();
+ 			for (j=0; j<indexCount; j+=3)
+ 			{
+-				file->write("f ",2);
+-				num = core::stringc(buffer->getIndices()[j+2]+allVertexCount);
+-				file->write(num.c_str(), num.size());
+-				file->write("/",1);
+-				file->write(num.c_str(), num.size());
+-				file->write("/",1);
+-				file->write(num.c_str(), num.size());
+-				file->write(" ",1);
++				if ( buffer->getIndexType() == video::EIT_16BIT )
++				{
++					file->write("f ",2);
++					num = core::stringc(buffer->getIndices()[j+2]+allVertexCount);
++					file->write(num.c_str(), num.size());
++					file->write("/",1);
++					file->write(num.c_str(), num.size());
++					file->write("/",1);
++					file->write(num.c_str(), num.size());
++					file->write(" ",1);
+ 
+-				num = core::stringc(buffer->getIndices()[j+1]+allVertexCount);
+-				file->write(num.c_str(), num.size());
+-				file->write("/",1);
+-				file->write(num.c_str(), num.size());
+-				file->write("/",1);
+-				file->write(num.c_str(), num.size());
+-				file->write(" ",1);
++					num = core::stringc(buffer->getIndices()[j+1]+allVertexCount);
++					file->write(num.c_str(), num.size());
++					file->write("/",1);
++					file->write(num.c_str(), num.size());
++					file->write("/",1);
++					file->write(num.c_str(), num.size());
++					file->write(" ",1);
+ 
+-				num = core::stringc(buffer->getIndices()[j+0]+allVertexCount);
+-				file->write(num.c_str(), num.size());
+-				file->write("/",1);
+-				file->write(num.c_str(), num.size());
+-				file->write("/",1);
+-				file->write(num.c_str(), num.size());
+-				file->write(" ",1);
++					num = core::stringc(buffer->getIndices()[j+0]+allVertexCount);
++					file->write(num.c_str(), num.size());
++					file->write("/",1);
++					file->write(num.c_str(), num.size());
++					file->write("/",1);
++					file->write(num.c_str(), num.size());
++					file->write(" ",1);
+ 
+-				file->write("\n",1);
++					file->write("\n",1);
++				}
++				else
++				{
++					auto pIndices = static_cast<u32*>(static_cast<void*>(buffer->getIndices()));
++					file->write("f ",2);
++					num = core::stringc(pIndices[j+2]+allVertexCount);
++					file->write(num.c_str(), num.size());
++					file->write("/",1);
++					file->write(num.c_str(), num.size());
++					file->write("/",1);
++					file->write(num.c_str(), num.size());
++					file->write(" ",1);
++
++					num = core::stringc(pIndices[j+1]+allVertexCount);
++					file->write(num.c_str(), num.size());
++					file->write("/",1);
++					file->write(num.c_str(), num.size());
++					file->write("/",1);
++					file->write(num.c_str(), num.size());
++					file->write(" ",1);
++
++					num = core::stringc(pIndices[j+0]+allVertexCount);
++					file->write(num.c_str(), num.size());
++					file->write("/",1);
++					file->write(num.c_str(), num.size());
++					file->write("/",1);
++					file->write(num.c_str(), num.size());
++					file->write(" ",1);
++
++					file->write("\n",1);
++				}
++				
+ 			}
+ 			file->write("\n",1);
+ 			allVertexCount += vertexCount;
+Index: source/Irrlicht/CSceneNodeAnimatorCameraMayaRH.cpp
+===================================================================
+--- source/Irrlicht/CSceneNodeAnimatorCameraMayaRH.cpp	(revision 11)
++++ source/Irrlicht/CSceneNodeAnimatorCameraMayaRH.cpp	(working copy)
+@@ -175,50 +175,27 @@
+ 	f32 nRotX = RotX;
+ 	f32 nZoom = CurrentZoom;
+ 
+-	if ( wheelZoom > 0 )
++	if ( wheelZoom < 0 )
+ 	{
+-		if ( CurrentZoom < 10000 )
+-		{
+-			if ( CurrentZoom < 5000 )
+-			{
+-				CurrentZoom += 100;
+-				nZoom = CurrentZoom;
+-			}
+-			else
+-			{
+-				core::vector3df translate(OldTarget);
++		core::vector3df translate(OldTarget);
+ 
+-				core::vector3df dir = OldTarget - camera->getPosition();
+-				dir.normalize();
+-				core::vector3df xdir = dir.crossProduct(camera->getUpVector());
++		core::vector3df dir = OldTarget - camera->getPosition();
++		dir.normalize();
++		core::vector3df xdir = dir.crossProduct(camera->getUpVector());
+ 
+-				translate -= 100.f*dir;
+-				OldTarget = translate;
+-			}
+-			
+-		}
++		translate -= 0.1f * TranslateSpeed * dir;
++		OldTarget = translate;
+ 	}
+-	else if ( wheelZoom < 0 )
++	else if ( wheelZoom > 0 )
+ 	{
+-		if ( CurrentZoom > 50 )
+-		{
+-			if ( CurrentZoom > 200 )
+-			{
+-				CurrentZoom -= 100;
+-			}
+-			else
+-			{
+-				core::vector3df translate(OldTarget);
++		core::vector3df translate(OldTarget);
+ 
+-				core::vector3df dir = OldTarget - camera->getPosition();
+-				dir.normalize();
+-				core::vector3df xdir = dir.crossProduct(camera->getUpVector());
++		core::vector3df dir = OldTarget - camera->getPosition();
++		dir.normalize();
++		core::vector3df xdir = dir.crossProduct(camera->getUpVector());
+ 
+-				translate += 100.f*dir;
+-				OldTarget = translate;
+-			}
+-		}
+-		nZoom = CurrentZoom;
++		translate += 0.1f * TranslateSpeed * dir;
++		OldTarget = translate;
+ 	}
+ 	wheelZoom = 0;
+ 
+Index: source/Irrlicht/CTriangleSelector.cpp
+===================================================================
+--- source/Irrlicht/CTriangleSelector.cpp	(revision 11)
++++ source/Irrlicht/CTriangleSelector.cpp	(working copy)
+@@ -86,19 +86,40 @@
+ 		const IMeshBuffer* buf = mesh->getMeshBuffer(i);
+ 
+ 		const u32 idxCnt = buf->getIndexCount();
+-		const u16* const indices = buf->getIndices();
++		auto indexType = buf->getIndexType();
+ 
+-		for (u32 j=0; j<idxCnt; j+=3)
++		if ( irr::video::EIT_32BIT == indexType )
+ 		{
+-			Triangles.push_back(core::triangle3df(
++			const u32* const indices = static_cast<const u32*>(static_cast<const void*>(buf->getIndices()));
++
++			for (u32 j=0; j<idxCnt; j+=3)
++			{
++				Triangles.push_back(core::triangle3df(
+ 					buf->getPosition(indices[j+0]),
+ 					buf->getPosition(indices[j+1]),
+ 					buf->getPosition(indices[j+2])));
+-			const core::triangle3df& tri = Triangles.getLast();
+-			BoundingBox.addInternalPoint(tri.pointA);
+-			BoundingBox.addInternalPoint(tri.pointB);
+-			BoundingBox.addInternalPoint(tri.pointC);
++				const core::triangle3df& tri = Triangles.getLast();
++				BoundingBox.addInternalPoint(tri.pointA);
++				BoundingBox.addInternalPoint(tri.pointB);
++				BoundingBox.addInternalPoint(tri.pointC);
++			}
+ 		}
++		else
++		{
++			const u16* const indices = buf->getIndices();
++
++			for (u32 j=0; j<idxCnt; j+=3)
++			{
++				Triangles.push_back(core::triangle3df(
++					buf->getPosition(indices[j+0]),
++					buf->getPosition(indices[j+1]),
++					buf->getPosition(indices[j+2])));
++				const core::triangle3df& tri = Triangles.getLast();
++				BoundingBox.addInternalPoint(tri.pointA);
++				BoundingBox.addInternalPoint(tri.pointB);
++				BoundingBox.addInternalPoint(tri.pointC);
++			}
++		}
+ 	}
+ }
+ 
