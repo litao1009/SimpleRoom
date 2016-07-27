@@ -1,0 +1,7 @@
+build/
+ipch/
+obj/
+*.opensdf
+*.sdf
+*.suo
+*.obj
